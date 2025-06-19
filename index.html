@@ -125,7 +125,7 @@
                     <div class="form-group"><label for="contentIdentifier">Content Name or TMDB ID</label><input type="text" id="contentIdentifier" placeholder="e.g., The Matrix or TMDB ID 603" required></div>
                     <div class="form-group"><label for="vjName">VJ Name</label><input type="text" id="vjName" placeholder="Enter VJ Name" required></div>
                     <div class="form-group video-url-group"><label for="videoSourceUrl">Video Source URL (for Movies/Single Videos)</label><input type="url" id="videoSourceUrl" placeholder="e.g., https://example.com/video.mp4"></div>
-                    <div class="form-group series-data-group" style="display: none;"><label for="seriesData">Series Data</label><textarea id="seriesData" rows="8" placeholder='[&#10;  {&#10;    "season": 1,&#10;    "episodes": [&#10;      { "episode": 1, "title": "Episode 1 Title", "url": "https://.../s01e01.mp4" },&#10;      { "episode": 2, "title": "Episode 2 Title", "url": "https://.../s01e02.mp4" }&#10;    ]&#10;  }&#10;]'></textarea></div>
+                    <div class="form-group series-data-group" style="display: none;"><label for="seriesData">Series Data (JSON format required)</label><textarea id="seriesData" rows="8" placeholder='[&#10;  {&#10;    "season": 1,&#10;    "episodes": [&#10;      { "episode": 1, "title": "Episode 1 Title", "url": "https://.../s01e01.mp4" },&#10;      { "episode": 2, "title": "Episode 2 Title", "url": "https://.../s01e02.mp4" }&#10;    ]&#10;  }&#10;]'></textarea></div>
                     <button type="submit" id="addContentBtn">Add Content<span class="spinner"></span></button>
                 </form>
                 <div id="addMessage" class="message"></div>
@@ -148,9 +148,9 @@
                             <label><input type="checkbox" name="manualContentType" value="indian"> Indian</label>
                         </div>
                     </div>
-                    <div class="form-group"><label for="manualTmdbId">Reference ID(Required)</label><input type="text" id="manualTmdbId" placeholder="Enter TMDB ID if known"></div>
+                    <div class="form-group"><label for="manualTmdbId">Reference ID (Required, e.g., TMDB ID)</label><input type="text" id="manualTmdbId" placeholder="Enter a unique ID" required></div>
                     <div class="form-group video-url-group"><label for="manualVideoSourceUrl">Video Source URL (for Movies/Single Videos)</label><input type="url" id="manualVideoSourceUrl"></div>
-                    <div class="form-group series-data-group" style="display: none;"><label for="manualSeriesData">Series Data</label><textarea id="manualSeriesData" rows="8" placeholder='[&#10;  {&#10;    "season": 1,&#10;    "episodes": [&#10;      { "episode": 1, "title": "Episode 1 Title", "url": "https://.../s01e01.mp4" },&#10;      { "episode": 2, "title": "Episode 2 Title", "url": "https://.../s01e02.mp4" }&#10;    ]&#10;  }&#10;]'></textarea></div>
+                    <div class="form-group series-data-group" style="display: none;"><label for="manualSeriesData">Series Data (JSON format required)</label><textarea id="manualSeriesData" rows="8" placeholder='[&#10;  {&#10;    "season": 1,&#10;    "episodes": [&#10;      { "episode": 1, "title": "Episode 1 Title", "url": "https://.../s01e01.mp4" },&#10;      { "episode": 2, "title": "Episode 2 Title", "url": "https://.../s01e02.mp4" }&#10;    ]&#10;  }&#10;]'></textarea></div>
                     <button type="submit" id="manualAddContentBtn">Add Manually<span class="spinner"></span></button>
                 </form>
                 <div id="manualAddMessage" class="message"></div>
@@ -262,7 +262,6 @@
                 const videoUrl = document.getElementById('videoSourceUrl').value.trim();
                 const seriesData = document.getElementById('seriesData').value.trim();
                 
-                // --- VALIDATION LOGIC ---
                 if (!identifier) return displayMessage(addMessage, 'Content Name or TMDB ID is required.', 'error');
                 if (!vjName) return displayMessage(addMessage, 'VJ Name is required.', 'error');
                 if (selectedTypes.length === 0) return displayMessage(addMessage, 'Please select at least one content type.', 'error');
@@ -281,23 +280,20 @@
                     return;
                 }
                 
-                let finalTitle = tmdbData.title || tmdbData.name;
-                const partNumber = document.getElementById('partNumber').value ? parseInt(document.getElementById('partNumber').value) : null;
-                if (partNumber) finalTitle = `${finalTitle} (Part ${partNumber})`;
-                
-                const payload = { title: finalTitle, tmdbId: tmdbData.id, posterUrl: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : '', overview: tmdbData.overview || "N/A", vjName, type: selectedTypes, contentType: apiType, partNumber: partNumber || null, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
+                const finalTitle = tmdbData.title || tmdbData.name;
+                const payload = { title: finalTitle, tmdbId: tmdbData.id, posterUrl: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : '', overview: tmdbData.overview || "N/A", vjName, type: selectedTypes, contentType: apiType, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
                 
                 if (isTV) {
                     try { payload.seriesInfo = JSON.parse(seriesData); }
                     catch (err) { displayMessage(addMessage, 'Invalid JSON format in Series Data.', 'error'); setLoading(addContentBtn, false); return; }
                 } else { payload.videoUrl = videoUrl; }
                 
-                const query = db.collection('movies').where('tmdbId', '==', payload.tmdbId).where('partNumber', '==', payload.partNumber);
+                const query = db.collection('movies').where('tmdbId', '==', payload.tmdbId);
                 const snapshot = await query.get();
                 
                 try {
                     if (!snapshot.empty) {
-                        if (confirm(`Content with this TMDB ID and Part # already exists. Do you want to overwrite it?`)) {
+                        if (confirm(`Content with this TMDB ID already exists. Do you want to overwrite it?`)) {
                             await db.collection('movies').doc(snapshot.docs[0].id).set(payload, { merge: true });
                             displayMessage(addMessage, 'Content updated successfully!', 'success');
                         } else { displayMessage(addMessage, 'Update cancelled.', 'info'); }
@@ -317,26 +313,35 @@
                 const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input:checked')).map(cb => cb.value);
                 const isTV = selectedTypes.includes('tv');
                 
-                // --- VALIDATION LOGIC ---
                 if (!document.getElementById('manualTitle').value.trim()) return displayMessage(manualAddMessage, 'Title is required.', 'error');
                 if (!document.getElementById('manualVjName').value.trim()) return displayMessage(manualAddMessage, 'VJ Name is required.', 'error');
+                if (!document.getElementById('manualTmdbId').value.trim()) return displayMessage(manualAddMessage, 'Reference ID is required.', 'error');
                 if (selectedTypes.length === 0) return displayMessage(manualAddMessage, 'Please select at least one content type.', 'error');
                 if (isTV && !document.getElementById('manualSeriesData').value.trim()) return displayMessage(manualAddMessage, 'Series Data (JSON) is required for TV Series.', 'error');
                 if (!isTV && !document.getElementById('manualVideoSourceUrl').value.trim()) return displayMessage(manualAddMessage, 'Video Source URL is required for this content type.', 'error');
 
                 setLoading(manualAddBtn, true);
-                let title = document.getElementById('manualTitle').value;
-                const partNumber = document.getElementById('manualPartNumber').value ? parseInt(document.getElementById('manualPartNumber').value) : null;
-                if (partNumber) title = `${title} (Part ${partNumber})`;
                 
-                const payload = { title: title, overview: document.getElementById('manualOverview').value, posterUrl: document.getElementById('manualPosterUrl').value, vjName: document.getElementById('manualVjName').value, type: selectedTypes, contentType: isTV ? 'tv' : 'movie', partNumber: partNumber || null, tmdbId: document.getElementById('manualTmdbId').value ? parseInt(document.getElementById('manualTmdbId').value) : null, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
+                const payload = { title: document.getElementById('manualTitle').value, overview: document.getElementById('manualOverview').value, posterUrl: document.getElementById('manualPosterUrl').value, vjName: document.getElementById('manualVjName').value, type: selectedTypes, contentType: isTV ? 'tv' : 'movie', tmdbId: document.getElementById('manualTmdbId').value, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
                 if (isTV) { try { payload.seriesInfo = JSON.parse(document.getElementById('manualSeriesData').value); } catch (err) { displayMessage(manualAddMessage, 'Invalid JSON.', 'error'); setLoading(manualAddBtn, false); return; } } else { payload.videoUrl = document.getElementById('manualVideoSourceUrl').value; }
                 
-                try { await db.collection('movies').add(payload); displayMessage(manualAddMessage, 'Content added successfully!', 'success'); manualAddForm.reset(); setupContentTypeToggle(document.getElementById('manualContentTypeCheckboxes')); } catch (error) { displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); } finally { setLoading(manualAddBtn, false); }
+                try {
+                    const duplicateCheck = await db.collection('movies').where('tmdbId', '==', payload.tmdbId).get();
+                    if(!duplicateCheck.empty) {
+                        displayMessage(manualAddMessage, 'A movie with this Reference ID already exists.', 'error');
+                        setLoading(manualAddBtn, false);
+                        return;
+                    }
+                    await db.collection('movies').add(payload);
+                    displayMessage(manualAddMessage, 'Content added successfully!', 'success');
+                    manualAddForm.reset();
+                    setupContentTypeToggle(document.getElementById('manualContentTypeCheckboxes'));
+                } catch (error) { displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); }
+                finally { setLoading(manualAddBtn, false); }
             });
 
             // --- Delete Content Logic ---
-            searchDeleteBtn.addEventListener('click', async () => { setLoading(searchDeleteBtn, true); deleteSearchResults.innerHTML = ''; selectedMoviesForDeletion.clear(); confirmDeleteBtn.style.display = 'none'; const term = document.getElementById('deleteContentIdentifier').value.trim(); if (!term) { displayMessage(deleteMessage, 'Enter a name or ID.', 'error'); setLoading(searchDeleteBtn, false); return; } try { const isId = /^\d+$/.test(term); let docs = []; if(isId) { (await db.collection('movies').where('tmdbId', '==', parseInt(term)).get()).forEach(doc => docs.push(doc)); } else { const l = term.toLowerCase(); (await db.collection('movies').get()).forEach(doc => { if((doc.data().title||'').toLowerCase().includes(l)) docs.push(doc); });} if(docs.length===0) displayMessage(deleteMessage, 'No content found.', 'info'); else docs.forEach(doc => {const i=doc.data(),p=i.partNumber?` (P${i.partNumber})`:''; deleteSearchResults.innerHTML+=`<div class="result-item"><span><strong>${i.title}</strong>${p}</span><div class="result-item-actions"><button class="action-btn select-delete" data-id="${doc.id}">Select</button></div></div>`;}); } catch (err) { displayMessage(deleteMessage, `Error: ${err.message}`, 'error'); } finally { setLoading(searchDeleteBtn, false); } });
+            searchDeleteBtn.addEventListener('click', async () => { setLoading(searchDeleteBtn, true); deleteSearchResults.innerHTML = ''; selectedMoviesForDeletion.clear(); confirmDeleteBtn.style.display = 'none'; const term = document.getElementById('deleteContentIdentifier').value.trim(); if (!term) { displayMessage(deleteMessage, 'Enter a name or ID.', 'error'); setLoading(searchDeleteBtn, false); return; } try { const isId = /^\d+$/.test(term); let docs = []; if(isId) { (await db.collection('movies').where('tmdbId', '==', term).get()).forEach(doc => docs.push(doc)); } else { const l = term.toLowerCase(); (await db.collection('movies').get()).forEach(doc => { if((doc.data().title||'').toLowerCase().includes(l)) docs.push(doc); });} if(docs.length===0) displayMessage(deleteMessage, 'No content found.', 'info'); else docs.forEach(doc => {const i=doc.data(); deleteSearchResults.innerHTML+=`<div class="result-item"><span><strong>${i.title}</strong></span><div class="result-item-actions"><button class="action-btn select-delete" data-id="${doc.id}">Select</button></div></div>`;}); } catch (err) { displayMessage(deleteMessage, `Error: ${err.message}`, 'error'); } finally { setLoading(searchDeleteBtn, false); } });
             deleteSearchResults.addEventListener('click', e => { if(e.target.matches('.select-delete')){ const btn=e.target, id=btn.dataset.id; if(selectedMoviesForDeletion.has(id)){selectedMoviesForDeletion.delete(id);btn.classList.remove('selected');btn.textContent='Select';}else{selectedMoviesForDeletion.add(id);btn.classList.add('selected');btn.textContent='Selected';} confirmDeleteBtn.style.display=selectedMoviesForDeletion.size>0?'block':'none'; confirmDeleteBtn.textContent=`Delete Selected (${selectedMoviesForDeletion.size})`;}});
             confirmDeleteBtn.addEventListener('click', async () => { if(confirm(`Delete ${selectedMoviesForDeletion.size} item(s)?`)){ setLoading(confirmDeleteBtn, true); const batch = db.batch(); selectedMoviesForDeletion.forEach(id => batch.delete(db.collection('movies').doc(id))); try { await batch.commit(); displayMessage(deleteMessage, `Deleted ${selectedMoviesForDeletion.size} items.`, 'success'); deleteSearchResults.innerHTML=''; confirmDeleteBtn.style.display='none'; selectedMoviesForDeletion.clear(); } catch(err){displayMessage(deleteMessage, `Error: ${err.message}`, 'error');} finally {setLoading(confirmDeleteBtn, false);}}});
 
