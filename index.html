@@ -109,22 +109,20 @@
                 <h2>Add Content from TMDB</h2>
                 <form id="addMovieForm">
                     <div class="form-group"><label for="tmdbApiKey">TMDB API Key</label><input type="text" id="tmdbApiKey" value="7707eccc54e32b83ac790b5352c67ed3" readonly></div>
-                    <div class="form-group"><label for="primaryContentType">Primary Content Type</label><select id="primaryContentType" class="primary-content-type-selector" required><option value="media">Movie / Animation</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group"><label for="primaryContentType">Primary Content Type</label><select id="primaryContentType" class="primary-content-type-selector" required><option value="media">Movie</option><option value="tv">TV Series</option></select></div>
                     <div class="form-group media-categories-group">
                         <label>Categories (Select all that apply)</label>
                         <div class="checkbox-group" id="contentTypeCheckboxes">
-                            <label><input type="checkbox" name="contentType" value="movie"> Movie</label>
+                            <label><input type="checkbox" name="contentType" value="movie"> Latest movies</label>
                             <label><input type="checkbox" name="contentType" value="animation"> Animation</label>
                             <label><input type="checkbox" name="contentType" value="popular"> Popular</label>
                             <label><input type="checkbox" name="contentType" value="indian"> Indian</label>
                             <label><input type="checkbox" name="contentType" value="horror"> Horror</label>
                             <label><input type="checkbox" name="contentType" value="comedy"> Comedy</label>
                             <label><input type="checkbox" name="contentType" value="romance"> Romance</label>
-                            <label><input type="checkbox" name="contentType" value="scifi"> Sci-fi</label>
-                            <label><input type="checkbox" name="contentType" value="fantasy"> Fantasy</label>
                             <label><input type="checkbox" name="contentType" value="adventure"> Adventure</label>
-                            <label><input type="checkbox" name="contentType" value="action"> Action</label>
-                            <label><input type="checkbox" name="contentType" value="thriller"> Thriller</label>
+                            <label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
+                            <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="contentIdentifier">Content Name or TMDB ID</label><input type="text" id="contentIdentifier" placeholder="e.g., The Matrix or TMDB ID 603" required></div>
@@ -143,22 +141,21 @@
                     <div class="form-group"><label for="manualOverview">Overview</label><textarea id="manualOverview" rows="4" required></textarea></div>
                     <div class="form-group"><label for="manualPosterUrl">Poster Image URL</label><input type="url" id="manualPosterUrl" required></div>
                     <div class="form-group"><label for="manualVjName">VJ Name</label><input type="text" id="manualVjName" required></div>
-                    <div class="form-group"><label for="manualPrimaryContentType">Primary Content Type</label><select id="manualPrimaryContentType" class="primary-content-type-selector" required><option value="media">Movie / Animation</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group"><label for="manualPrimaryContentType">Primary Content Type</label><select id="manualPrimaryContentType" class="primary-content-type-selector" required><option value="media">Movie 
+                </option><option value="tv">TV Series</option></select></div>
                     <div class="form-group media-categories-group">
                         <label>Categories (Select all that apply)</label>
                         <div class="checkbox-group" id="manualContentTypeCheckboxes">
-                             <label><input type="checkbox" name="manualContentType" value="movie"> Movie</label>
+                             <label><input type="checkbox" name="manualContentType" value="movie">Latest Movies</label>
                              <label><input type="checkbox" name="manualContentType" value="animation"> Animation</label>
                              <label><input type="checkbox" name="manualContentType" value="popular"> Popular</label>
                              <label><input type="checkbox" name="manualContentType" value="indian"> Indian</label>
                              <label><input type="checkbox" name="manualContentType" value="horror"> Horror</label>
                              <label><input type="checkbox" name="manualContentType" value="comedy"> Comedy</label>
                              <label><input type="checkbox" name="manualContentType" value="romance"> Romance</label>
-                             <label><input type="checkbox" name="manualContentType" value="scifi"> Sci-fi</label>
-                             <label><input type="checkbox" name="manualContentType" value="fantasy"> Fantasy</label>
                              <label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label>
-                             <label><input type="checkbox" name="manualContentType" value="action"> Action</label>
-                             <label><input type="checkbox" name="manualContentType" value="thriller"> Thriller</label>
+                             <label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
+                             <label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="manualTmdbId">Reference ID (Optional)</label><input type="text" id="manualTmdbId" placeholder="Enter TMDB ID if known"></div>
