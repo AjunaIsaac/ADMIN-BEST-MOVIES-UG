@@ -115,7 +115,7 @@
                         <div class="checkbox-group" id="contentTypeCheckboxes">
                             <label><input type="checkbox" name="contentType" value="movie"> Latest movies</label>
                             <label><input type="checkbox" name="contentType" value="animation"> Animation</label>
-                            <label><input type="checkbox" name="contentType" value="popular"> Popular</label>
+                            <label><input type="checkbox" name="contentType" value="popular"> Recently Added</label>
                             <label><input type="checkbox" name="contentType" value="indian"> Indian</label>
                             <label><input type="checkbox" name="contentType" value="horror"> Horror</label>
                             <label><input type="checkbox" name="contentType" value="comedy"> Comedy</label>
@@ -123,6 +123,8 @@
                             <label><input type="checkbox" name="contentType" value="adventure"> Adventure</label>
                             <label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
                             <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
+                            <label><input type="checkbox" name="contentType" value="high-school"> High School</label>
+                            <label><input type="checkbox" name="contentType" value="nigerian"> Nigerian Movies</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="contentIdentifier">Content Name or TMDB ID</label><input type="text" id="contentIdentifier" placeholder="e.g., The Matrix or TMDB ID 603" required></div>
@@ -156,6 +158,8 @@
                              <label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label>
                              <label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
                              <label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label>
+                             <label><input type="checkbox" name="manualContentType" value="high-school"> High School</label>
+                             <label><input type="checkbox" name="manualContentType" value="nigerian"> Nigerian Movies</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="manualTmdbId">Reference ID (Optional)</label><input type="text" id="manualTmdbId" placeholder="Enter TMDB ID if known"></div>
@@ -295,7 +299,6 @@
                 }
                 
                 const finalTitle = tmdbData.title || tmdbData.name;
-
                 const payload = { 
                     title: finalTitle, 
                     tmdbId: tmdbData.id, 
@@ -310,9 +313,11 @@
                     payload.contentType = 'tv';
                     payload.type = 'tv';
                     try {
-                        payload.seriesInfo = JSON.parse(document.getElementById('seriesData').value);
+                        const seriesDataValue = document.getElementById('seriesData').value;
+                        if(!seriesDataValue) throw new Error("Series Data cannot be empty for TV series.");
+                        payload.seriesInfo = JSON.parse(seriesDataValue);
                     } catch (err) {
-                        displayMessage(addMessage, 'Invalid JSON in Series Data.', 'error');
+                        displayMessage(addMessage, `Invalid JSON in Series Data: ${err.message}`, 'error');
                         setLoading(addContentBtn, false);
                         return;
                     }
@@ -332,17 +337,17 @@
                     const query = db.collection('movies').where('tmdbId', '==', payload.tmdbId);
                     const snapshot = await query.get();
                     if (!snapshot.empty) {
-                        if (confirm(`Content with this TMDB ID exists. Overwrite?`)) {
-                            await db.collection('movies').doc(snapshot.docs[0].id).set(payload, { merge: true });
-                            displayMessage(addMessage, 'Content updated.', 'success');
-                        }
+                        displayMessage(addMessage, 'Content with this TMDB ID already exists.', 'error');
                     } else {
                         await db.collection('movies').add(payload);
-                        displayMessage(addMessage, 'Content added.', 'success');
+                        displayMessage(addMessage, 'Content added successfully!', 'success');
+                        addMovieForm.reset();
                     }
-                    addMovieForm.reset();
-                } catch (error) { displayMessage(addMessage, `Error: ${error.message}`, 'error'); }
-                finally { setLoading(addContentBtn, false); }
+                } catch (error) { 
+                    displayMessage(addMessage, `Error: ${error.message}`, 'error'); 
+                } finally { 
+                    setLoading(addContentBtn, false); 
+                }
             });
             
             manualAddForm.addEventListener('submit', async (e) => {
@@ -366,9 +371,11 @@
                     payload.contentType = 'tv';
                     payload.type = 'tv';
                     try {
-                        payload.seriesInfo = JSON.parse(document.getElementById('manualSeriesData').value);
+                        const seriesDataValue = document.getElementById('manualSeriesData').value;
+                        if(!seriesDataValue) throw new Error("Series Data cannot be empty for TV series.");
+                        payload.seriesInfo = JSON.parse(seriesDataValue);
                     } catch (err) {
-                        displayMessage(manualAddMessage, 'Invalid JSON.', 'error');
+                        displayMessage(manualAddMessage, `Invalid JSON in Series Data: ${err.message}`, 'error');
                         setLoading(manualAddBtn, false);
                         return;
                     }
@@ -389,28 +396,33 @@
                         ? db.collection('movies').where('tmdbId', '==', payload.tmdbId)
                         : db.collection('movies').where('title', '==', payload.title);
                     
-                    if (!(await query.get()).empty) {
+                    const snapshot = await query.get();
+
+                    if (!snapshot.empty) {
                         displayMessage(manualAddMessage, 'Content with this Title or ID already exists.', 'error');
-                        setLoading(manualAddBtn, false); return;
+                    } else {
+                        await db.collection('movies').add(payload);
+                        displayMessage(manualAddMessage, 'Content added successfully!', 'success');
+                        manualAddForm.reset();
                     }
-                    await db.collection('movies').add(payload);
-                    displayMessage(manualAddMessage, 'Content added successfully!', 'success');
-                    manualAddForm.reset();
-                } catch (error) { displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); }
-                finally { setLoading(manualAddBtn, false); }
+                } catch (error) { 
+                    displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); 
+                } finally { 
+                    setLoading(manualAddBtn, false); 
+                }
             });
 
-            searchDeleteBtn.addEventListener('click', async () => { setLoading(searchDeleteBtn, true); deleteSearchResults.innerHTML = ''; selectedMoviesForDeletion.clear(); confirmDeleteBtn.style.display = 'none'; const term = document.getElementById('deleteContentIdentifier').value.trim(); if (!term) { displayMessage(deleteMessage, 'Enter a name or ID.', 'error'); setLoading(searchDeleteBtn, false); return; } try { const isId = /^\d+$/.test(term); let docs = []; if(isId) { (await db.collection('movies').where('tmdbId', '==', term).get()).forEach(doc => docs.push(doc)); } else { const l = term.toLowerCase(); (await db.collection('movies').get()).forEach(doc => { if((doc.data().title||'').toLowerCase().includes(l)) docs.push(doc); });} if(docs.length===0) displayMessage(deleteMessage, 'No content found.', 'info'); else docs.forEach(doc => {const i=doc.data(); deleteSearchResults.innerHTML+=`<div class="result-item"><span><strong>${i.title}</strong></span><div class="result-item-actions"><button class="action-btn select-delete" data-id="${doc.id}">Select</button></div></div>`;}); } catch (err) { displayMessage(deleteMessage, `Error: ${err.message}`, 'error'); } finally { setLoading(searchDeleteBtn, false); } });
+            searchDeleteBtn.addEventListener('click', async () => { setLoading(searchDeleteBtn, true); deleteSearchResults.innerHTML = ''; selectedMoviesForDeletion.clear(); confirmDeleteBtn.style.display = 'none'; const term = document.getElementById('deleteContentIdentifier').value.trim(); if (!term) { displayMessage(deleteMessage, 'Enter a name or ID.', 'error'); setLoading(searchDeleteBtn, false); return; } try { const isId = /^\d+$/.test(term); let docs = []; if(isId) { (await db.collection('movies').where('tmdbId', '==', Number(term)).get()).forEach(doc => docs.push(doc)); } else { const l = term.toLowerCase(); (await db.collection('movies').get()).forEach(doc => { if((doc.data().title||'').toLowerCase().includes(l)) docs.push(doc); });} if(docs.length===0) displayMessage(deleteMessage, 'No content found.', 'info'); else docs.forEach(doc => {const i=doc.data(); deleteSearchResults.innerHTML+=`<div class="result-item"><span><strong>${i.title}</strong> (ID: ${i.tmdbId || 'N/A'})</span><div class="result-item-actions"><button class="action-btn select-delete" data-id="${doc.id}">Select</button></div></div>`;}); } catch (err) { displayMessage(deleteMessage, `Error: ${err.message}`, 'error'); } finally { setLoading(searchDeleteBtn, false); } });
             deleteSearchResults.addEventListener('click', e => { if(e.target.matches('.select-delete')){ const btn=e.target, id=btn.dataset.id; if(selectedMoviesForDeletion.has(id)){selectedMoviesForDeletion.delete(id);btn.classList.remove('selected');btn.textContent='Select';}else{selectedMoviesForDeletion.add(id);btn.classList.add('selected');btn.textContent='Selected';} confirmDeleteBtn.style.display=selectedMoviesForDeletion.size>0?'block':'none'; confirmDeleteBtn.textContent=`Delete Selected (${selectedMoviesForDeletion.size})`;}});
-            confirmDeleteBtn.addEventListener('click', async () => { if(confirm(`Delete ${selectedMoviesForDeletion.size} item(s)?`)){ setLoading(confirmDeleteBtn, true); const batch = db.batch(); selectedMoviesForDeletion.forEach(id => batch.delete(db.collection('movies').doc(id))); try { await batch.commit(); displayMessage(deleteMessage, `Deleted ${selectedMoviesForDeletion.size} items.`, 'success'); deleteSearchResults.innerHTML=''; confirmDeleteBtn.style.display='none'; selectedMoviesForDeletion.clear(); } catch(err){displayMessage(deleteMessage, `Error: ${err.message}`, 'error');} finally {setLoading(confirmDeleteBtn, false);}}});
+            confirmDeleteBtn.addEventListener('click', async () => { if(confirm(`Delete ${selectedMoviesForDeletion.size} item(s)? This action cannot be undone.`)){ setLoading(confirmDeleteBtn, true); const batch = db.batch(); selectedMoviesForDeletion.forEach(id => batch.delete(db.collection('movies').doc(id))); try { await batch.commit(); displayMessage(deleteMessage, `Deleted ${selectedMoviesForDeletion.size} items.`, 'success'); deleteSearchResults.innerHTML=''; confirmDeleteBtn.style.display='none'; selectedMoviesForDeletion.clear(); } catch(err){displayMessage(deleteMessage, `Error: ${err.message}`, 'error');} finally {setLoading(confirmDeleteBtn, false);}}});
 
-            async function displayAllBanners() { allBannersContainer.innerHTML = '<div class="message info" style="display:block;">Loading banners...</div>'; try { const snapshot = await db.collection('banners').orderBy('updatedAt', 'desc').get(); if (snapshot.empty) { displayMessage(viewBannersMessage, 'No banners found. Add one from the "Add/Edit Banner" tab.', 'info'); allBannersContainer.innerHTML = ''; return; } allBannersContainer.innerHTML = ''; snapshot.forEach(doc => { const banner = doc.data(); const card = `<div class="banner-card"><img src="${banner.imageUrl}" alt="${banner.title}" onerror="this.src='https://via.placeholder.com/300x150?text=Image+Error';"><div class="banner-card-content"><h3>${banner.title}</h3><p>${(banner.description || 'No description available.').substring(0, 100)}</p><div class="banner-card-actions"><button class="action-btn edit" data-id="${doc.id}">Edit</button><button class="action-btn delete" data-id="${doc.id}">Delete</button></div></div></div>`; allBannersContainer.insertAdjacentHTML('beforeend', card); }); } catch (err) { displayMessage(viewBannersMessage, `Error: ${err.message}`, 'error'); allBannersContainer.innerHTML = ''; } }
+            async function displayAllBanners() { allBannersContainer.innerHTML = '<div class="message info" style="display:block;">Loading banners...</div>'; try { const snapshot = await db.collection('banners').orderBy('updatedAt', 'desc').get(); if (snapshot.empty) { allBannersContainer.innerHTML = ''; displayMessage(viewBannersMessage, 'No banners found. Add one from the "Add/Edit Banner" tab.', 'info'); return; } allBannersContainer.innerHTML = ''; snapshot.forEach(doc => { const banner = doc.data(); const card = `<div class="banner-card"><img src="${banner.imageUrl}" alt="${banner.title}" onerror="this.style.display='none';"><div class="banner-card-content"><h3>${banner.title}</h3><p>${(banner.description || 'No description available.').substring(0, 100)}</p><div class="banner-card-actions"><button class="action-btn edit" data-id="${doc.id}">Edit</button><button class="action-btn delete" data-id="${doc.id}">Delete</button></div></div></div>`; allBannersContainer.insertAdjacentHTML('beforeend', card); }); } catch (err) { allBannersContainer.innerHTML = ''; displayMessage(viewBannersMessage, `Error: ${err.message}`, 'error'); } }
             bannerNavTabs.addEventListener('click', e => { if (e.target.matches('.banner-tab-link')) { const tabId = e.target.dataset.tab; document.querySelectorAll('.banner-tab-link').forEach(t => t.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.banner-tab-content').forEach(c => c.classList.remove('active')); document.getElementById(tabId).classList.add('active'); if (tabId === 'viewBannersTab') { displayAllBanners(); } } });
-            allBannersContainer.addEventListener('click', async e => { const target = e.target; if (target.matches('.action-btn.delete')) { const docId = target.dataset.id; if (confirm('Are you sure you want to delete this banner permanently?')) { setLoading(target, true); try { await db.collection('banners').doc(docId).delete(); displayMessage(viewBannersMessage, 'Banner deleted successfully!', 'success'); displayAllBanners(); } catch (err) { displayMessage(viewBannersMessage, `Error deleting banner: ${err.message}`, 'error'); setLoading(target, false); } } } if (target.matches('.action-btn.edit')) { await loadBannerForEditing(target.dataset.id); } });
-            addEditBannerForm.addEventListener('submit', async e => { e.preventDefault(); setLoading(saveBannerBtn, true); const id = bannerDocId.value; const data = { title: document.getElementById('bannerTitle').value, imageUrl: document.getElementById('bannerImageUrl').value, description: document.getElementById('bannerDescription').value, link: document.getElementById('bannerLink').value, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }; try { if (id) await db.collection('banners').doc(id).update(data); else await db.collection('banners').add(data); displayMessage(addBannerMessage, 'Banner saved successfully!', 'success'); resetBannerForm(); document.querySelector('.banner-tab-link[data-tab="viewBannersTab"]').click(); } catch (err) { displayMessage(addBannerMessage, `Error saving banner: ${err.message}`, 'error'); } finally { setLoading(saveBannerBtn, false); } });
+            allBannersContainer.addEventListener('click', async e => { const target = e.target; if (target.matches('.action-btn.delete')) { const docId = target.dataset.id; if (confirm('Are you sure you want to delete this banner permanently?')) { setLoading(target, true); try { await db.collection('banners').doc(docId).delete(); displayMessage(viewBannersMessage, 'Banner deleted successfully!', 'success'); await displayAllBanners(); } catch (err) { displayMessage(viewBannersMessage, `Error deleting banner: ${err.message}`, 'error'); setLoading(target, false); } } } if (target.matches('.action-btn.edit')) { await loadBannerForEditing(target.dataset.id); } });
+            addEditBannerForm.addEventListener('submit', async e => { e.preventDefault(); setLoading(saveBannerBtn, true); const id = bannerDocId.value; const data = { title: document.getElementById('bannerTitle').value, imageUrl: document.getElementById('bannerImageUrl').value, description: document.getElementById('bannerDescription').value, link: document.getElementById('bannerLink').value, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }; try { if (id) await db.collection('banners').doc(id).update(data); else await db.collection('banners').add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); displayMessage(addBannerMessage, 'Banner saved successfully!', 'success'); resetBannerForm(); document.querySelector('.banner-tab-link[data-tab="viewBannersTab"]').click(); } catch (err) { displayMessage(addBannerMessage, `Error saving banner: ${err.message}`, 'error'); } finally { setLoading(saveBannerBtn, false); } });
             function resetBannerForm() { addEditBannerForm.reset(); bannerDocId.value = ''; bannerFormTitle.textContent = 'Add New Banner'; saveBannerBtn.textContent = 'Save Banner'; cancelEditBannerBtn.style.display = 'none'; }
             cancelEditBannerBtn.addEventListener('click', resetBannerForm);
-            async function loadBannerForEditing(id) { try { const doc = await db.collection('banners').doc(id).get(); if (doc.exists) { const d = doc.data(); bannerDocId.value = id; document.getElementById('bannerTitle').value = d.title || ''; document.getElementById('bannerImageUrl').value = d.imageUrl || ''; document.getElementById('bannerDescription').value = d.description || ''; document.getElementById('bannerLink').value = d.link || ''; bannerFormTitle.textContent = 'Editing Banner'; saveBannerBtn.textContent = 'Update Banner'; cancelEditBannerBtn.style.display = 'inline-block'; document.querySelector('.banner-tab-link[data-tab="addBannerTab"]').click(); } } catch(err) { displayMessage(addBannerMessage, 'Could not load banner for editing.', 'error'); } }
+            async function loadBannerForEditing(id) { try { const doc = await db.collection('banners').doc(id).get(); if (doc.exists) { const d = doc.data(); bannerDocId.value = id; document.getElementById('bannerTitle').value = d.title || ''; document.getElementById('bannerImageUrl').value = d.imageUrl || ''; document.getElementById('bannerDescription').value = d.description || ''; document.getElementById('bannerLink').value = d.link || ''; bannerFormTitle.textContent = 'Editing Banner'; saveBannerBtn.textContent = 'Update Banner'; cancelEditBannerBtn.style.display = 'inline-block'; document.querySelector('.banner-tab-link[data-tab="addBannerTab"]').click(); window.scrollTo(0, 0); } } catch(err) { displayMessage(addBannerMessage, 'Could not load banner for editing.', 'error'); } }
         });
     </script>
 </body>
