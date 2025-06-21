@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+    <title>Admin Panel (Multi-Project)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
@@ -205,7 +205,8 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = {
+            // --- Firebase Configurations ---
+            const primaryFirebaseConfig = {
                 apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
                 authDomain: "stream-zone-movies-a83c1.firebaseapp.com",
                 projectId: "stream-zone-movies-a83c1",
@@ -213,10 +214,46 @@
                 messagingSenderId: "148342664213",
                 appId: "1:148342664213:web:56df2549cc480df7cf721c"
             };
-            const app = firebase.initializeApp(firebaseConfig);
+
+            const secondary1FirebaseConfig = {
+                apiKey: "AIzaSyCQhwMc1uYLmjLMmBWk5QpT3XcLsuzBIEQ",
+                authDomain: "reyikingtv1.firebaseapp.com",
+                projectId: "reyikingtv1",
+                storageBucket: "reyikingtv1.appspot.com",
+                messagingSenderId: "617666017039",
+                appId: "1:617666017039:web:5fa4ce795d9a0da0cfb07a"
+            };
+
+            const secondary2FirebaseConfig = {
+                apiKey: "AIzaSyCgbaRR6ezvswehl1Q21ICHgBtXZ9bcLwA",
+                authDomain: "my-movies-admin.firebaseapp.com",
+                projectId: "my-movies-admin",
+                storageBucket: "my-movies-admin.appspot.com",
+                messagingSenderId: "492775126123",
+                appId: "1:492775126123:web:7ad51095ff15f61ed12d2e"
+            };
+
+            // --- Initialize Firebase Apps ---
+            // Primary app for auth and all write operations
+            const app = firebase.initializeApp(primaryFirebaseConfig);
             const db = firebase.firestore(app);
-            const auth = firebase.auth();
+            const auth = firebase.auth(app);
+
+            // Secondary apps for duplicate checking ONLY
+            const secondaryApp1 = firebase.initializeApp(secondary1FirebaseConfig, 'reyikingtv1');
+            const db1 = firebase.firestore(secondaryApp1);
+
+            const secondaryApp2 = firebase.initializeApp(secondary2FirebaseConfig, 'my-movies-admin');
+            const db2 = firebase.firestore(secondaryApp2);
+
+            // Array of all DBs to check for duplicates
+            const dbsToCheck = [
+                { name: primaryFirebaseConfig.projectId, instance: db },
+                { name: secondary1FirebaseConfig.projectId, instance: db1 },
+                { name: secondary2FirebaseConfig.projectId, instance: db2 }
+            ];
             
+            // --- DOM Element References ---
             const loginScreen = document.getElementById('loginScreen'), adminPanel = document.getElementById('adminPanel'), mainMenu = document.getElementById('mainMenu'), menuToggleBtn = document.getElementById('menuToggleBtn'), pageTitle = document.getElementById('pageTitle'), logoutBtn = document.getElementById('logoutBtn'), loginMessage = document.getElementById('loginMessage');
             const addMovieForm = document.getElementById('addMovieForm'), addContentBtn = document.getElementById('addContentBtn'), addMessage = document.getElementById('addMessage');
             const manualAddForm = document.getElementById('manualAddForm'), manualAddBtn = document.getElementById('manualAddContentBtn'), manualAddMessage = document.getElementById('manualAddMessage');
@@ -225,9 +262,44 @@
             const allBannersContainer = document.getElementById('allBannersContainer'), viewBannersMessage = document.getElementById('viewBannersMessage');
             let selectedMoviesForDeletion = new Set();
 
+            // --- Helper Functions ---
             function setLoading(button, isLoading) { if(button) { button.classList.toggle('loading', isLoading); button.disabled = isLoading; } }
-            function displayMessage(element, msg, type) { if (element) { element.textContent = msg; element.className = `message ${type}`; element.style.display = 'block'; setTimeout(() => { element.style.display = 'none'; }, 6000); } }
+            function displayMessage(element, msg, type) { if (element) { element.textContent = msg; element.className = `message ${type}`; element.style.display = 'block'; setTimeout(() => { element.style.display = 'none'; }, 8000); } }
             
+            /**
+             * Checks for duplicate content across all configured Firebase projects.
+             * @param {object} payload - The content payload, must contain 'tmdbId' or 'title'.
+             * @returns {Promise<object>} A promise that resolves to { found: boolean, project: string|null }.
+             */
+            async function checkForDuplicates(payload) {
+                const checkByTmdbId = payload.tmdbId && String(payload.tmdbId).trim() !== '';
+                const valueToCheck = checkByTmdbId ? Number(payload.tmdbId) : payload.title;
+                const fieldToCheck = checkByTmdbId ? 'tmdbId' : 'title';
+
+                console.log(`Checking for duplicates with ${fieldToCheck}: ${valueToCheck}`);
+
+                const checkPromises = dbsToCheck.map(dbInfo => 
+                    dbInfo.instance.collection('movies').where(fieldToCheck, '==', valueToCheck).get()
+                );
+
+                try {
+                    const snapshots = await Promise.all(checkPromises);
+                    for (let i = 0; i < snapshots.length; i++) {
+                        if (!snapshots[i].empty) {
+                            console.log(`Duplicate found in ${dbsToCheck[i].name}`);
+                            return { found: true, project: dbsToCheck[i].name };
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error during duplicate check:", error);
+                    // To be safe, prevent addition if any database check fails
+                    return { found: true, project: `an external project (check failed: ${error.code})` };
+                }
+                
+                return { found: false, project: null };
+            }
+
+            // --- Auth and Navigation ---
             auth.onAuthStateChanged(user => {
                 loginScreen.style.display = user ? 'none' : 'flex';
                 adminPanel.style.display = user ? 'flex' : 'none';
@@ -255,11 +327,9 @@
                 const mediaCategoriesGroup = formElement.querySelector('.media-categories-group');
                 const videoUrlGroup = formElement.querySelector('.video-url-group');
                 const seriesDataGroup = formElement.querySelector('.series-data-group');
-
                 function toggleFields() {
                     const primaryType = primarySelector.value;
                     const isTV = primaryType === 'tv';
-
                     if(mediaCategoriesGroup) mediaCategoriesGroup.style.display = isTV ? 'none' : 'block';
                     if(videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
                     if(seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
@@ -270,152 +340,85 @@
             setupMasterContentTypeToggle(document.getElementById('addMovieForm'));
             setupMasterContentTypeToggle(document.getElementById('manualAddForm'));
 
+            // --- TMDB Add Form Logic ---
             addMovieForm.addEventListener('submit', async e => {
                 e.preventDefault();
                 setLoading(addContentBtn, true);
-
                 const primaryType = document.getElementById('primaryContentType').value;
                 const isTV = primaryType === 'tv';
                 const identifier = document.getElementById('contentIdentifier').value.trim();
                 const vjName = document.getElementById('vjName').value.trim();
-                
                 const tmdbApiKey = document.getElementById('tmdbApiKey').value;
                 const apiType = isTV ? 'tv' : 'movie';
                 const tmdbData = await (async (id, key) => {
                     const isId = /^\d+$/.test(id);
                     const url = isId ? `https://api.themoviedb.org/3/${apiType}/${id}?api_key=${key}` : `https://api.themoviedb.org/3/search/${apiType}?api_key=${key}&query=${encodeURIComponent(id)}`;
-                    try {
-                        const r = await fetch(url);
-                        if (!r.ok) return null;
-                        const d = await r.json();
-                        return isId ? d : (d.results?.[0] || null);
-                    } catch (err) { return null; }
+                    try { const r = await fetch(url); if (!r.ok) return null; const d = await r.json(); return isId ? d : (d.results?.[0] || null); } catch (err) { return null; }
                 })(identifier, tmdbApiKey);
 
                 if (!tmdbData || !tmdbData.id) {
-                    displayMessage(addMessage, 'Could not find content on TMDB.', 'error');
-                    setLoading(addContentBtn, false);
-                    return;
+                    displayMessage(addMessage, 'Could not find content on TMDB.', 'error'); setLoading(addContentBtn, false); return;
                 }
                 
                 const finalTitle = tmdbData.title || tmdbData.name;
-                const payload = { 
-                    title: finalTitle, 
-                    tmdbId: tmdbData.id, 
-                    posterUrl: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : '', 
-                    overview: tmdbData.overview || "N/A", 
-                    vjName, 
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-                    addedBy: auth.currentUser.email 
-                };
+                const payload = { title: finalTitle, tmdbId: tmdbData.id, posterUrl: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : '', overview: tmdbData.overview || "N/A", vjName, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
 
                 if (isTV) {
-                    payload.contentType = 'tv';
-                    payload.type = 'tv';
-                    try {
-                        const seriesDataValue = document.getElementById('seriesData').value;
-                        if(!seriesDataValue) throw new Error("Series Data cannot be empty for TV series.");
-                        payload.seriesInfo = JSON.parse(seriesDataValue);
-                    } catch (err) {
-                        displayMessage(addMessage, `Invalid JSON in Series Data: ${err.message}`, 'error');
-                        setLoading(addContentBtn, false);
-                        return;
-                    }
+                    payload.contentType = 'tv'; payload.type = 'tv';
+                    try { const seriesDataValue = document.getElementById('seriesData').value; if(!seriesDataValue) throw new Error("Series Data cannot be empty for TV series."); payload.seriesInfo = JSON.parse(seriesDataValue); } catch (err) { displayMessage(addMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); setLoading(addContentBtn, false); return; }
                 } else {
                     const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input:checked')).map(cb => cb.value);
-                    if(selectedTypes.length === 0) {
-                        displayMessage(addMessage, 'Please select at least one category for the movie/animation.', 'error');
-                        setLoading(addContentBtn, false);
-                        return;
-                    }
-                    payload.contentType = 'movie';
-                    payload.type = selectedTypes;
-                    payload.videoUrl = document.getElementById('videoSourceUrl').value;
+                    if(selectedTypes.length === 0) { displayMessage(addMessage, 'Please select at least one category.', 'error'); setLoading(addContentBtn, false); return; }
+                    payload.contentType = 'movie'; payload.type = selectedTypes; payload.videoUrl = document.getElementById('videoSourceUrl').value;
                 }
                 
                 try {
-                    const query = db.collection('movies').where('tmdbId', '==', payload.tmdbId);
-                    const snapshot = await query.get();
-                    if (!snapshot.empty) {
-                        displayMessage(addMessage, 'Content with this TMDB ID already exists.', 'error');
+                    const duplicateCheck = await checkForDuplicates(payload);
+                    if (duplicateCheck.found) {
+                        displayMessage(addMessage, `Duplicate found in project: ${duplicateCheck.project}. Addition denied.`, 'error');
                     } else {
-                        await db.collection('movies').add(payload);
+                        await db.collection('movies').add(payload); // Add to primary DB
                         displayMessage(addMessage, 'Content added successfully!', 'success');
                         addMovieForm.reset();
                     }
-                } catch (error) { 
-                    displayMessage(addMessage, `Error: ${error.message}`, 'error'); 
-                } finally { 
-                    setLoading(addContentBtn, false); 
-                }
+                } catch (error) { displayMessage(addMessage, `Error: ${error.message}`, 'error'); } 
+                finally { setLoading(addContentBtn, false); }
             });
             
+            // --- Manual Add Form Logic ---
             manualAddForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 setLoading(manualAddBtn, true);
-
                 const primaryType = document.getElementById('manualPrimaryContentType').value;
                 const isTV = primaryType === 'tv';
-
-                let payload = {
-                    title: document.getElementById('manualTitle').value.trim(),
-                    overview: document.getElementById('manualOverview').value,
-                    posterUrl: document.getElementById('manualPosterUrl').value,
-                    vjName: document.getElementById('manualVjName').value,
-                    tmdbId: document.getElementById('manualTmdbId').value.trim() || null,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    addedBy: auth.currentUser.email
-                };
+                let payload = { title: document.getElementById('manualTitle').value.trim(), overview: document.getElementById('manualOverview').value, posterUrl: document.getElementById('manualPosterUrl').value, vjName: document.getElementById('manualVjName').value, tmdbId: document.getElementById('manualTmdbId').value.trim() || null, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
 
                 if (isTV) {
-                    payload.contentType = 'tv';
-                    payload.type = 'tv';
-                    try {
-                        const seriesDataValue = document.getElementById('manualSeriesData').value;
-                        if(!seriesDataValue) throw new Error("Series Data cannot be empty for TV series.");
-                        payload.seriesInfo = JSON.parse(seriesDataValue);
-                    } catch (err) {
-                        displayMessage(manualAddMessage, `Invalid JSON in Series Data: ${err.message}`, 'error');
-                        setLoading(manualAddBtn, false);
-                        return;
-                    }
+                    payload.contentType = 'tv'; payload.type = 'tv';
+                    try { const seriesDataValue = document.getElementById('manualSeriesData').value; if(!seriesDataValue) throw new Error("Series Data cannot be empty."); payload.seriesInfo = JSON.parse(seriesDataValue); } catch (err) { displayMessage(manualAddMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); setLoading(manualAddBtn, false); return; }
                 } else {
                     const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input:checked')).map(cb => cb.value);
-                    if (selectedTypes.length === 0) {
-                        displayMessage(manualAddMessage, 'Please select at least one category.', 'error');
-                        setLoading(manualAddBtn, false);
-                        return;
-                    }
-                    payload.contentType = 'movie';
-                    payload.type = selectedTypes;
-                    payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
+                    if (selectedTypes.length === 0) { displayMessage(manualAddMessage, 'Please select at least one category.', 'error'); setLoading(manualAddBtn, false); return; }
+                    payload.contentType = 'movie'; payload.type = selectedTypes; payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
                 }
                 
                 try {
-                    const query = payload.tmdbId 
-                        ? db.collection('movies').where('tmdbId', '==', payload.tmdbId)
-                        : db.collection('movies').where('title', '==', payload.title);
-                    
-                    const snapshot = await query.get();
-
-                    if (!snapshot.empty) {
-                        displayMessage(manualAddMessage, 'Content with this Title or ID already exists.', 'error');
+                    const duplicateCheck = await checkForDuplicates(payload);
+                    if (duplicateCheck.found) {
+                        displayMessage(manualAddMessage, `Duplicate found in project: ${duplicateCheck.project}. Addition denied.`, 'error');
                     } else {
-                        await db.collection('movies').add(payload);
+                        await db.collection('movies').add(payload); // Add to primary DB
                         displayMessage(manualAddMessage, 'Content added successfully!', 'success');
                         manualAddForm.reset();
                     }
-                } catch (error) { 
-                    displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); 
-                } finally { 
-                    setLoading(manualAddBtn, false); 
-                }
+                } catch (error) { displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); } 
+                finally { setLoading(manualAddBtn, false); }
             });
 
+            // --- Delete and Banner logic (operates on primary DB only) ---
             searchDeleteBtn.addEventListener('click', async () => { setLoading(searchDeleteBtn, true); deleteSearchResults.innerHTML = ''; selectedMoviesForDeletion.clear(); confirmDeleteBtn.style.display = 'none'; const term = document.getElementById('deleteContentIdentifier').value.trim(); if (!term) { displayMessage(deleteMessage, 'Enter a name or ID.', 'error'); setLoading(searchDeleteBtn, false); return; } try { const isId = /^\d+$/.test(term); let docs = []; if(isId) { (await db.collection('movies').where('tmdbId', '==', Number(term)).get()).forEach(doc => docs.push(doc)); } else { const l = term.toLowerCase(); (await db.collection('movies').get()).forEach(doc => { if((doc.data().title||'').toLowerCase().includes(l)) docs.push(doc); });} if(docs.length===0) displayMessage(deleteMessage, 'No content found.', 'info'); else docs.forEach(doc => {const i=doc.data(); deleteSearchResults.innerHTML+=`<div class="result-item"><span><strong>${i.title}</strong> (ID: ${i.tmdbId || 'N/A'})</span><div class="result-item-actions"><button class="action-btn select-delete" data-id="${doc.id}">Select</button></div></div>`;}); } catch (err) { displayMessage(deleteMessage, `Error: ${err.message}`, 'error'); } finally { setLoading(searchDeleteBtn, false); } });
             deleteSearchResults.addEventListener('click', e => { if(e.target.matches('.select-delete')){ const btn=e.target, id=btn.dataset.id; if(selectedMoviesForDeletion.has(id)){selectedMoviesForDeletion.delete(id);btn.classList.remove('selected');btn.textContent='Select';}else{selectedMoviesForDeletion.add(id);btn.classList.add('selected');btn.textContent='Selected';} confirmDeleteBtn.style.display=selectedMoviesForDeletion.size>0?'block':'none'; confirmDeleteBtn.textContent=`Delete Selected (${selectedMoviesForDeletion.size})`;}});
             confirmDeleteBtn.addEventListener('click', async () => { if(confirm(`Delete ${selectedMoviesForDeletion.size} item(s)? This action cannot be undone.`)){ setLoading(confirmDeleteBtn, true); const batch = db.batch(); selectedMoviesForDeletion.forEach(id => batch.delete(db.collection('movies').doc(id))); try { await batch.commit(); displayMessage(deleteMessage, `Deleted ${selectedMoviesForDeletion.size} items.`, 'success'); deleteSearchResults.innerHTML=''; confirmDeleteBtn.style.display='none'; selectedMoviesForDeletion.clear(); } catch(err){displayMessage(deleteMessage, `Error: ${err.message}`, 'error');} finally {setLoading(confirmDeleteBtn, false);}}});
-
             async function displayAllBanners() { allBannersContainer.innerHTML = '<div class="message info" style="display:block;">Loading banners...</div>'; try { const snapshot = await db.collection('banners').orderBy('updatedAt', 'desc').get(); if (snapshot.empty) { allBannersContainer.innerHTML = ''; displayMessage(viewBannersMessage, 'No banners found. Add one from the "Add/Edit Banner" tab.', 'info'); return; } allBannersContainer.innerHTML = ''; snapshot.forEach(doc => { const banner = doc.data(); const card = `<div class="banner-card"><img src="${banner.imageUrl}" alt="${banner.title}" onerror="this.style.display='none';"><div class="banner-card-content"><h3>${banner.title}</h3><p>${(banner.description || 'No description available.').substring(0, 100)}</p><div class="banner-card-actions"><button class="action-btn edit" data-id="${doc.id}">Edit</button><button class="action-btn delete" data-id="${doc.id}">Delete</button></div></div></div>`; allBannersContainer.insertAdjacentHTML('beforeend', card); }); } catch (err) { allBannersContainer.innerHTML = ''; displayMessage(viewBannersMessage, `Error: ${err.message}`, 'error'); } }
             bannerNavTabs.addEventListener('click', e => { if (e.target.matches('.banner-tab-link')) { const tabId = e.target.dataset.tab; document.querySelectorAll('.banner-tab-link').forEach(t => t.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.banner-tab-content').forEach(c => c.classList.remove('active')); document.getElementById(tabId).classList.add('active'); if (tabId === 'viewBannersTab') { displayAllBanners(); } } });
             allBannersContainer.addEventListener('click', async e => { const target = e.target; if (target.matches('.action-btn.delete')) { const docId = target.dataset.id; if (confirm('Are you sure you want to delete this banner permanently?')) { setLoading(target, true); try { await db.collection('banners').doc(docId).delete(); displayMessage(viewBannersMessage, 'Banner deleted successfully!', 'success'); await displayAllBanners(); } catch (err) { displayMessage(viewBannersMessage, `Error deleting banner: ${err.message}`, 'error'); setLoading(target, false); } } } if (target.matches('.action-btn.edit')) { await loadBannerForEditing(target.dataset.id); } });
