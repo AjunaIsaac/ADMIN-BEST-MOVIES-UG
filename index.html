@@ -58,6 +58,7 @@
         .result-item-actions { display: flex; gap: 8px; }
         .action-btn { background-color: var(--accent-color) !important; color: var(--primary-bg) !important; padding: 8px 12px !important; border-radius: 5px !important; width: auto !important; font-size: 14px !important; margin-top: 0 !important; }
         .action-btn.edit { background-color: var(--warn-color) !important; color: white !important; }
+        .action-btn.delete { background-color: var(--danger-color) !important; color: white !important; }
         .action-btn.select-delete.selected { background-color: var(--success-color) !important; color: white !important; }
         .banner-nav-tabs { display: flex; border-bottom: 1px solid var(--accent-color); margin-bottom: 20px; }
         .banner-tab-link { padding: 10px 20px; cursor: pointer; color: #aaa; border: none; background: none; font-size: 16px; }
@@ -95,7 +96,7 @@
             <div class="menu-header">Admin Menu</div>
             <a class="menu-link" data-page="addContentPage"><i class="fas fa-magic"></i> Add from TMDB</a>
             <a class="menu-link" data-page="manualAddPage"><i class="fas fa-edit"></i> Manual Add</a>
-            <a class="menu-link" data-page="deleteContentPage"><i class="fas fa-trash-alt"></i> Delete Content</a>
+            <a class="menu-link" data-page="manageContentPage"><i class="fas fa-search"></i> Search & Edit/Delete</a>
             <a class="menu-link" data-page="bannerPage"><i class="fas fa-images"></i> Manage Banners</a>
         </nav>
 
@@ -113,18 +114,7 @@
                     <div class="form-group media-categories-group">
                         <label>Categories (Select all that apply)</label>
                         <div class="checkbox-group" id="contentTypeCheckboxes">
-                            <label><input type="checkbox" name="contentType" value="movie"> Latest movies</label>
-                            <label><input type="checkbox" name="contentType" value="animation"> Animation</label>
-                            <label><input type="checkbox" name="contentType" value="popular"> Recently Added</label>
-                            <label><input type="checkbox" name="contentType" value="indian"> Indian</label>
-                            <label><input type="checkbox" name="contentType" value="horror"> Horror</label>
-                            <label><input type="checkbox" name="contentType" value="comedy"> Comedy</label>
-                            <label><input type="checkbox" name="contentType" value="romance"> Romance</label>
-                            <label><input type="checkbox" name="contentType" value="adventure"> Adventure</label>
-                            <label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
-                            <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
-                            <label><input type="checkbox" name="contentType" value="high-school"> High School</label>
-                            <label><input type="checkbox" name="contentType" value="nigerian"> Nigerian Movies</label>
+                            <label><input type="checkbox" name="contentType" value="movie"> Latest movies</label><label><input type="checkbox" name="contentType" value="animation"> Animation</label><label><input type="checkbox" name="contentType" value="popular"> Recently Added</label><label><input type="checkbox" name="contentType" value="indian"> Indian</label><label><input type="checkbox" name="contentType" value="horror"> Horror</label><label><input type="checkbox" name="contentType" value="comedy"> Comedy</label><label><input type="checkbox" name="contentType" value="romance"> Romance</label><label><input type="checkbox" name="contentType" value="adventure"> Adventure</label><label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label><label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label><label><input type="checkbox" name="contentType" value="high-school"> High School</label><label><input type="checkbox" name="contentType" value="nigerian"> Nigerian Movies</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="contentIdentifier">Content Name or TMDB ID</label><input type="text" id="contentIdentifier" placeholder="e.g., The Matrix or TMDB ID 603" required></div>
@@ -143,23 +133,11 @@
                     <div class="form-group"><label for="manualOverview">Overview</label><textarea id="manualOverview" rows="4" required></textarea></div>
                     <div class="form-group"><label for="manualPosterUrl">Poster Image URL</label><input type="url" id="manualPosterUrl" required></div>
                     <div class="form-group"><label for="manualVjName">VJ Name</label><input type="text" id="manualVjName" required></div>
-                    <div class="form-group"><label for="manualPrimaryContentType">Primary Content Type</label><select id="manualPrimaryContentType" class="primary-content-type-selector" required><option value="media">Movie 
-                </option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group"><label for="manualPrimaryContentType">Primary Content Type</label><select id="manualPrimaryContentType" class="primary-content-type-selector" required><option value="media">Movie</option><option value="tv">TV Series</option></select></div>
                     <div class="form-group media-categories-group">
-                        <label>Categories (Select all that apply)</label>
+                        <label>Categories</label>
                         <div class="checkbox-group" id="manualContentTypeCheckboxes">
-                             <label><input type="checkbox" name="manualContentType" value="movie">Latest Movies</label>
-                             <label><input type="checkbox" name="manualContentType" value="animation"> Animation</label>
-                             <label><input type="checkbox" name="manualContentType" value="popular"> Popular</label>
-                             <label><input type="checkbox" name="manualContentType" value="indian"> Indian</label>
-                             <label><input type="checkbox" name="manualContentType" value="horror"> Horror</label>
-                             <label><input type="checkbox" name="manualContentType" value="comedy"> Comedy</label>
-                             <label><input type="checkbox" name="manualContentType" value="romance"> Romance</label>
-                             <label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label>
-                             <label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
-                             <label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label>
-                             <label><input type="checkbox" name="manualContentType" value="high-school"> High School</label>
-                             <label><input type="checkbox" name="manualContentType" value="nigerian"> Nigerian Movies</label>
+                            <label><input type="checkbox" name="manualContentType" value="movie">Latest Movies</label><label><input type="checkbox" name="manualContentType" value="animation"> Animation</label><label><input type="checkbox" name="manualContentType" value="popular"> Popular</label><label><input type="checkbox" name="manualContentType" value="indian"> Indian</label><label><input type="checkbox" name="manualContentType" value="horror"> Horror</label><label><input type="checkbox" name="manualContentType" value="comedy"> Comedy</label><label><input type="checkbox" name="manualContentType" value="romance"> Romance</label><label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label><label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label><label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label><label><input type="checkbox" name="manualContentType" value="high-school"> High School</label><label><input type="checkbox" name="manualContentType" value="nigerian"> Nigerian Movies</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="manualTmdbId">Reference ID (Optional)</label><input type="text" id="manualTmdbId" placeholder="Enter TMDB ID if known"></div>
@@ -170,13 +148,38 @@
                 <div id="manualAddMessage" class="message"></div>
             </div>
 
-            <div id="deleteContentPage" class="page-container">
-                <h2>Delete Content</h2>
-                <form id="deleteMovieForm"><div class="form-group"><label for="deleteContentIdentifier">Search by Content Name or TMDB ID</label><input type="text" id="deleteContentIdentifier" required></div><button type="button" id="searchDeleteBtn">Search Content<span class="spinner"></span></button></form>
-                <div id="deleteSearchResults" style="margin-top: 20px;"></div>
+            <div id="manageContentPage" class="page-container">
+                <h2>Search & Manage Content</h2>
+                <form id="manageContentForm"><div class="form-group"><label for="manageContentIdentifier">Search by Content Name or TMDB ID</label><input type="text" id="manageContentIdentifier" required></div><button type="button" id="searchManageBtn">Search Content<span class="spinner"></span></button></form>
+                <div id="manageSearchResults" style="margin-top: 20px;"></div>
                 <button type="button" id="confirmDeleteBtn" style="display: none; background-color: var(--danger-color);">Delete Selected Content<span class="spinner"></span></button>
-                <div id="deleteMessage" class="message"></div>
+                <div id="manageMessage" class="message"></div>
             </div>
+
+            <div id="editContentPage" class="page-container">
+                <h2>Edit Content</h2>
+                <form id="editContentForm">
+                    <input type="hidden" id="editDocId">
+                    <div class="form-group"><label for="editTitle">Title</label><input type="text" id="editTitle" required></div>
+                    <div class="form-group"><label for="editOverview">Overview</label><textarea id="editOverview" rows="4" required></textarea></div>
+                    <div class="form-group"><label for="editPosterUrl">Poster Image URL</label><input type="url" id="editPosterUrl" required></div>
+                    <div class="form-group"><label for="editVjName">VJ Name</label><input type="text" id="editVjName" required></div>
+                    <div class="form-group"><label for="editPrimaryContentType">Primary Content Type</label><select id="editPrimaryContentType" class="primary-content-type-selector" required><option value="media">Movie</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group media-categories-group">
+                        <label>Categories</label>
+                        <div class="checkbox-group" id="editContentTypeCheckboxes">
+                            <label><input type="checkbox" name="editContentType" value="movie">Latest Movies</label><label><input type="checkbox" name="editContentType" value="animation"> Animation</label><label><input type="checkbox" name="editContentType" value="popular"> Popular</label><label><input type="checkbox" name="editContentType" value="indian"> Indian</label><label><input type="checkbox" name="editContentType" value="horror"> Horror</label><label><input type="checkbox" name="editContentType" value="comedy"> Comedy</label><label><input type="checkbox" name="editContentType" value="romance"> Romance</label><label><input type="checkbox" name="editContentType" value="adventure"> Adventure</label><label><input type="checkbox" name="editContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label><label><input type="checkbox" name="editContentType" value="action-thriller"> Action & Thriller</label><label><input type="checkbox" name="editContentType" value="high-school"> High School</label><label><input type="checkbox" name="editContentType" value="nigerian"> Nigerian Movies</label>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="editTmdbId">Reference ID (Optional)</label><input type="text" id="editTmdbId" placeholder="Enter TMDB ID if known"></div>
+                    <div class="form-group video-url-group"><label for="editVideoSourceUrl">Video Source URL</label><input type="url" id="editVideoSourceUrl"></div>
+                    <div class="form-group series-data-group" style="display: none;"><label for="editSeriesData">Series Data (JSON)</label><textarea id="editSeriesData" rows="8"></textarea></div>
+                    <button type="submit" id="updateContentBtn">Update Content<span class="spinner"></span></button>
+                    <button type="button" id="cancelEditBtn" style="background-color: gray; margin-top: 10px;">Cancel Edit</button>
+                </form>
+                <div id="editMessage" class="message"></div>
+            </div>
+
 
             <div id="bannerPage" class="page-container">
                 <div class="banner-nav-tabs">
@@ -234,30 +237,24 @@
             };
 
             // --- Initialize Firebase Apps ---
-            // Primary app for auth and all write operations
             const app = firebase.initializeApp(primaryFirebaseConfig);
             const db = firebase.firestore(app);
             const auth = firebase.auth(app);
-
-            // Secondary apps for duplicate checking ONLY
             const secondaryApp1 = firebase.initializeApp(secondary1FirebaseConfig, 'reyikingtv1');
             const db1 = firebase.firestore(secondaryApp1);
-
             const secondaryApp2 = firebase.initializeApp(secondary2FirebaseConfig, 'my-movies-admin');
             const db2 = firebase.firestore(secondaryApp2);
-
-            // Array of all DBs to check for duplicates
-            const dbsToCheck = [
-                { name: primaryFirebaseConfig.projectId, instance: db },
-                { name: secondary1FirebaseConfig.projectId, instance: db1 },
-                { name: secondary2FirebaseConfig.projectId, instance: db2 }
-            ];
+            const dbsToCheck = [ { name: primaryFirebaseConfig.projectId, instance: db }, { name: secondary1FirebaseConfig.projectId, instance: db1 }, { name: secondary2FirebaseConfig.projectId, instance: db2 } ];
             
             // --- DOM Element References ---
             const loginScreen = document.getElementById('loginScreen'), adminPanel = document.getElementById('adminPanel'), mainMenu = document.getElementById('mainMenu'), menuToggleBtn = document.getElementById('menuToggleBtn'), pageTitle = document.getElementById('pageTitle'), logoutBtn = document.getElementById('logoutBtn'), loginMessage = document.getElementById('loginMessage');
             const addMovieForm = document.getElementById('addMovieForm'), addContentBtn = document.getElementById('addContentBtn'), addMessage = document.getElementById('addMessage');
             const manualAddForm = document.getElementById('manualAddForm'), manualAddBtn = document.getElementById('manualAddContentBtn'), manualAddMessage = document.getElementById('manualAddMessage');
-            const searchDeleteBtn = document.getElementById('searchDeleteBtn'), deleteSearchResults = document.getElementById('deleteSearchResults'), confirmDeleteBtn = document.getElementById('confirmDeleteBtn'), deleteMessage = document.getElementById('deleteMessage');
+            // Manage (Search/Edit/Delete)
+            const searchManageBtn = document.getElementById('searchManageBtn'), manageSearchResults = document.getElementById('manageSearchResults'), confirmDeleteBtn = document.getElementById('confirmDeleteBtn'), manageMessage = document.getElementById('manageMessage');
+            // Edit Form
+            const editContentForm = document.getElementById('editContentForm'), updateContentBtn = document.getElementById('updateContentBtn'), editMessage = document.getElementById('editMessage'), cancelEditBtn = document.getElementById('cancelEditBtn');
+            // Banner
             const bannerNavTabs = document.querySelector('.banner-nav-tabs'), addEditBannerForm = document.getElementById('addEditBannerForm'), bannerFormTitle = document.getElementById('bannerFormTitle'), bannerDocId = document.getElementById('bannerDocId'), saveBannerBtn = document.getElementById('saveBannerBtn'), cancelEditBannerBtn = document.getElementById('cancelEditBannerBtn'), addBannerMessage = document.getElementById('addBannerMessage');
             const allBannersContainer = document.getElementById('allBannersContainer'), viewBannersMessage = document.getElementById('viewBannersMessage');
             let selectedMoviesForDeletion = new Set();
@@ -266,46 +263,36 @@
             function setLoading(button, isLoading) { if(button) { button.classList.toggle('loading', isLoading); button.disabled = isLoading; } }
             function displayMessage(element, msg, type) { if (element) { element.textContent = msg; element.className = `message ${type}`; element.style.display = 'block'; setTimeout(() => { element.style.display = 'none'; }, 8000); } }
             
-            /**
-             * Checks for duplicate content across all configured Firebase projects.
-             * @param {object} payload - The content payload, must contain 'tmdbId' or 'title'.
-             * @returns {Promise<object>} A promise that resolves to { found: boolean, project: string|null }.
-             */
-            async function checkForDuplicates(payload) {
+            async function checkForDuplicates(payload, excludeDocId = null) {
                 const checkByTmdbId = payload.tmdbId && String(payload.tmdbId).trim() !== '';
                 const valueToCheck = checkByTmdbId ? Number(payload.tmdbId) : payload.title;
                 const fieldToCheck = checkByTmdbId ? 'tmdbId' : 'title';
 
                 console.log(`Checking for duplicates with ${fieldToCheck}: ${valueToCheck}`);
-
-                const checkPromises = dbsToCheck.map(dbInfo => 
-                    dbInfo.instance.collection('movies').where(fieldToCheck, '==', valueToCheck).get()
-                );
-
-                try {
-                    const snapshots = await Promise.all(checkPromises);
-                    for (let i = 0; i < snapshots.length; i++) {
-                        if (!snapshots[i].empty) {
-                            console.log(`Duplicate found in ${dbsToCheck[i].name}`);
-                            return { found: true, project: dbsToCheck[i].name };
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error during duplicate check:", error);
-                    // To be safe, prevent addition if any database check fails
-                    return { found: true, project: `an external project (check failed: ${error.code})` };
-                }
                 
+                for (const dbInfo of dbsToCheck) {
+                    try {
+                        const query = dbInfo.instance.collection('movies').where(fieldToCheck, '==', valueToCheck);
+                        const snapshot = await query.get();
+                        for (const doc of snapshot.docs) {
+                            // If we are editing, exclude the document itself from the duplicate check
+                            if (excludeDocId && dbInfo.name === primaryFirebaseConfig.projectId && doc.id === excludeDocId) {
+                                continue;
+                            }
+                            console.log(`Duplicate found in ${dbInfo.name}`);
+                            return { found: true, project: dbInfo.name };
+                        }
+                    } catch (error) {
+                         console.error(`Error checking duplicates in ${dbInfo.name}:`, error);
+                         // Decide if a failed check should prevent addition. For safety, it does.
+                         return { found: true, project: `an external project (check failed: ${error.code})` };
+                    }
+                }
                 return { found: false, project: null };
             }
 
             // --- Auth and Navigation ---
-            auth.onAuthStateChanged(user => {
-                loginScreen.style.display = user ? 'none' : 'flex';
-                adminPanel.style.display = user ? 'flex' : 'none';
-                menuToggleBtn.style.display = user ? 'flex' : 'none';
-                if(user) { navigateToPage('addContentPage'); }
-            });
+            auth.onAuthStateChanged(user => { loginScreen.style.display = user ? 'none' : 'flex'; adminPanel.style.display = user ? 'flex' : 'none'; menuToggleBtn.style.display = user ? 'flex' : 'none'; if(user) { navigateToPage('addContentPage'); } });
             document.getElementById('loginForm').addEventListener('submit', async e => { e.preventDefault(); const btn = e.target.querySelector('button'); setLoading(btn, true); try { await auth.signInWithEmailAndPassword(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value); } catch (error) { displayMessage(loginMessage, 'Invalid credentials.', 'error'); } finally { setLoading(btn, false); } });
             logoutBtn.addEventListener('click', () => auth.signOut());
             menuToggleBtn.addEventListener('click', () => mainMenu.classList.toggle('open'));
@@ -319,6 +306,7 @@
                 }
                 document.querySelectorAll('.menu-link').forEach(link => { const isActive = link.dataset.page === pageId; link.classList.toggle('active', isActive); if (isActive) pageTitle.textContent = link.textContent.trim(); });
                 if (window.innerWidth < 768) mainMenu.classList.remove('open');
+                window.scrollTo(0, 0); // Scroll to top on page change
             }
             document.querySelectorAll('.menu-link').forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); navigateToPage(e.currentTarget.dataset.page); }); });
 
@@ -334,11 +322,14 @@
                     if(videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
                     if(seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
                 }
-                primarySelector.addEventListener('change', toggleFields);
-                toggleFields();
+                if(primarySelector) {
+                    primarySelector.addEventListener('change', toggleFields);
+                    toggleFields(); // Initial call
+                }
             }
             setupMasterContentTypeToggle(document.getElementById('addMovieForm'));
             setupMasterContentTypeToggle(document.getElementById('manualAddForm'));
+            setupMasterContentTypeToggle(document.getElementById('editContentForm')); // Setup for the new edit form
 
             // --- TMDB Add Form Logic ---
             addMovieForm.addEventListener('submit', async e => {
@@ -350,39 +341,12 @@
                 const vjName = document.getElementById('vjName').value.trim();
                 const tmdbApiKey = document.getElementById('tmdbApiKey').value;
                 const apiType = isTV ? 'tv' : 'movie';
-                const tmdbData = await (async (id, key) => {
-                    const isId = /^\d+$/.test(id);
-                    const url = isId ? `https://api.themoviedb.org/3/${apiType}/${id}?api_key=${key}` : `https://api.themoviedb.org/3/search/${apiType}?api_key=${key}&query=${encodeURIComponent(id)}`;
-                    try { const r = await fetch(url); if (!r.ok) return null; const d = await r.json(); return isId ? d : (d.results?.[0] || null); } catch (err) { return null; }
-                })(identifier, tmdbApiKey);
-
-                if (!tmdbData || !tmdbData.id) {
-                    displayMessage(addMessage, 'Could not find content on TMDB.', 'error'); setLoading(addContentBtn, false); return;
-                }
-                
+                const tmdbData = await (async (id, key) => { const isId = /^\d+$/.test(id); const url = isId ? `https://api.themoviedb.org/3/${apiType}/${id}?api_key=${key}` : `https://api.themoviedb.org/3/search/${apiType}?api_key=${key}&query=${encodeURIComponent(id)}`; try { const r = await fetch(url); if (!r.ok) return null; const d = await r.json(); return isId ? d : (d.results?.[0] || null); } catch (err) { return null; } })(identifier, tmdbApiKey);
+                if (!tmdbData || !tmdbData.id) { displayMessage(addMessage, 'Could not find content on TMDB.', 'error'); setLoading(addContentBtn, false); return; }
                 const finalTitle = tmdbData.title || tmdbData.name;
                 const payload = { title: finalTitle, tmdbId: tmdbData.id, posterUrl: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : '', overview: tmdbData.overview || "N/A", vjName, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
-
-                if (isTV) {
-                    payload.contentType = 'tv'; payload.type = 'tv';
-                    try { const seriesDataValue = document.getElementById('seriesData').value; if(!seriesDataValue) throw new Error("Series Data cannot be empty for TV series."); payload.seriesInfo = JSON.parse(seriesDataValue); } catch (err) { displayMessage(addMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); setLoading(addContentBtn, false); return; }
-                } else {
-                    const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input:checked')).map(cb => cb.value);
-                    if(selectedTypes.length === 0) { displayMessage(addMessage, 'Please select at least one category.', 'error'); setLoading(addContentBtn, false); return; }
-                    payload.contentType = 'movie'; payload.type = selectedTypes; payload.videoUrl = document.getElementById('videoSourceUrl').value;
-                }
-                
-                try {
-                    const duplicateCheck = await checkForDuplicates(payload);
-                    if (duplicateCheck.found) {
-                        displayMessage(addMessage, `Duplicate found in project: ${duplicateCheck.project}. Addition denied.`, 'error');
-                    } else {
-                        await db.collection('movies').add(payload); // Add to primary DB
-                        displayMessage(addMessage, 'Content added successfully!', 'success');
-                        addMovieForm.reset();
-                    }
-                } catch (error) { displayMessage(addMessage, `Error: ${error.message}`, 'error'); } 
-                finally { setLoading(addContentBtn, false); }
+                if (isTV) { payload.contentType = 'tv'; payload.type = 'tv'; try { const seriesDataValue = document.getElementById('seriesData').value; if(!seriesDataValue) throw new Error("Series Data cannot be empty for TV series."); payload.seriesInfo = JSON.parse(seriesDataValue); } catch (err) { displayMessage(addMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); setLoading(addContentBtn, false); return; } } else { const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input:checked')).map(cb => cb.value); if(selectedTypes.length === 0) { displayMessage(addMessage, 'Please select at least one category.', 'error'); setLoading(addContentBtn, false); return; } payload.contentType = 'movie'; payload.type = selectedTypes; payload.videoUrl = document.getElementById('videoSourceUrl').value; }
+                try { const duplicateCheck = await checkForDuplicates(payload); if (duplicateCheck.found) { displayMessage(addMessage, `Duplicate found in project: ${duplicateCheck.project}. Addition denied.`, 'error'); } else { await db.collection('movies').add(payload); displayMessage(addMessage, 'Content added successfully!', 'success'); addMovieForm.reset(); } } catch (error) { displayMessage(addMessage, `Error: ${error.message}`, 'error'); } finally { setLoading(addContentBtn, false); }
             });
             
             // --- Manual Add Form Logic ---
@@ -392,33 +356,90 @@
                 const primaryType = document.getElementById('manualPrimaryContentType').value;
                 const isTV = primaryType === 'tv';
                 let payload = { title: document.getElementById('manualTitle').value.trim(), overview: document.getElementById('manualOverview').value, posterUrl: document.getElementById('manualPosterUrl').value, vjName: document.getElementById('manualVjName').value, tmdbId: document.getElementById('manualTmdbId').value.trim() || null, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
+                if (isTV) { payload.contentType = 'tv'; payload.type = 'tv'; try { const seriesDataValue = document.getElementById('manualSeriesData').value; if(!seriesDataValue) throw new Error("Series Data cannot be empty."); payload.seriesInfo = JSON.parse(seriesDataValue); } catch (err) { displayMessage(manualAddMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); setLoading(manualAddBtn, false); return; } } else { const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input:checked')).map(cb => cb.value); if (selectedTypes.length === 0) { displayMessage(manualAddMessage, 'Please select at least one category.', 'error'); setLoading(manualAddBtn, false); return; } payload.contentType = 'movie'; payload.type = selectedTypes; payload.videoUrl = document.getElementById('manualVideoSourceUrl').value; }
+                try { const duplicateCheck = await checkForDuplicates(payload); if (duplicateCheck.found) { displayMessage(manualAddMessage, `Duplicate found in project: ${duplicateCheck.project}. Addition denied.`, 'error'); } else { await db.collection('movies').add(payload); displayMessage(manualAddMessage, 'Content added successfully!', 'success'); manualAddForm.reset(); } } catch (error) { displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); } finally { setLoading(manualAddBtn, false); }
+            });
+
+            // --- Manage (Search, Edit, Delete) Logic ---
+            searchManageBtn.addEventListener('click', async () => { setLoading(searchManageBtn, true); manageSearchResults.innerHTML = ''; selectedMoviesForDeletion.clear(); confirmDeleteBtn.style.display = 'none'; const term = document.getElementById('manageContentIdentifier').value.trim(); if (!term) { displayMessage(manageMessage, 'Enter a name or ID.', 'error'); setLoading(searchManageBtn, false); return; } try { const isId = /^\d+$/.test(term); let docs = []; if(isId) { (await db.collection('movies').where('tmdbId', '==', Number(term)).get()).forEach(doc => docs.push(doc)); } else { const l = term.toLowerCase(); (await db.collection('movies').get()).forEach(doc => { if((doc.data().title||'').toLowerCase().includes(l)) docs.push(doc); });} if(docs.length===0) displayMessage(manageMessage, 'No content found.', 'info'); else docs.forEach(doc => {const i=doc.data(); manageSearchResults.innerHTML+=`<div class="result-item"><span><strong>${i.title}</strong> (ID: ${i.tmdbId || 'N/A'})</span><div class="result-item-actions"><button class="action-btn edit" data-id="${doc.id}">Edit</button><button class="action-btn select-delete" data-id="${doc.id}">Select</button></div></div>`;}); } catch (err) { displayMessage(manageMessage, `Error: ${err.message}`, 'error'); } finally { setLoading(searchManageBtn, false); } });
+            
+            manageSearchResults.addEventListener('click', e => {
+                if(e.target.matches('.select-delete')){ const btn=e.target, id=btn.dataset.id; if(selectedMoviesForDeletion.has(id)){selectedMoviesForDeletion.delete(id);btn.classList.remove('selected');btn.textContent='Select';}else{selectedMoviesForDeletion.add(id);btn.classList.add('selected');btn.textContent='Selected';} confirmDeleteBtn.style.display=selectedMoviesForDeletion.size>0?'block':'none'; confirmDeleteBtn.textContent=`Delete Selected (${selectedMoviesForDeletion.size})`;}
+                if (e.target.matches('.action-btn.edit')) { const docId = e.target.dataset.id; loadContentForEditing(docId); }
+            });
+            
+            confirmDeleteBtn.addEventListener('click', async () => { if(confirm(`Delete ${selectedMoviesForDeletion.size} item(s)? This action cannot be undone.`)){ setLoading(confirmDeleteBtn, true); const batch = db.batch(); selectedMoviesForDeletion.forEach(id => batch.delete(db.collection('movies').doc(id))); try { await batch.commit(); displayMessage(manageMessage, `Deleted ${selectedMoviesForDeletion.size} items.`, 'success'); manageSearchResults.innerHTML=''; confirmDeleteBtn.style.display='none'; selectedMoviesForDeletion.clear(); } catch(err){displayMessage(manageMessage, `Error: ${err.message}`, 'error');} finally {setLoading(confirmDeleteBtn, false);}}});
+
+            // --- Edit Content Logic ---
+            async function loadContentForEditing(id) {
+                try {
+                    const docRef = db.collection('movies').doc(id);
+                    const doc = await docRef.get();
+                    if (!doc.exists) { displayMessage(manageMessage, 'Content not found or already deleted.', 'error'); return; }
+                    const data = doc.data();
+                    
+                    editContentForm.reset(); // Clear previous data
+                    document.getElementById('editDocId').value = doc.id;
+                    document.getElementById('editTitle').value = data.title || '';
+                    document.getElementById('editOverview').value = data.overview || '';
+                    document.getElementById('editPosterUrl').value = data.posterUrl || '';
+                    document.getElementById('editVjName').value = data.vjName || '';
+                    document.getElementById('editTmdbId').value = data.tmdbId || '';
+
+                    const primaryTypeSelector = document.getElementById('editPrimaryContentType');
+                    primaryTypeSelector.value = data.contentType === 'tv' ? 'tv' : 'media';
+                    
+                    // Manually trigger change to ensure fields hide/show correctly
+                    primaryTypeSelector.dispatchEvent(new Event('change')); 
+
+                    if(data.contentType === 'movie' && Array.isArray(data.type)) {
+                        document.querySelectorAll('#editContentTypeCheckboxes input').forEach(cb => {
+                            cb.checked = data.type.includes(cb.value);
+                        });
+                        document.getElementById('editVideoSourceUrl').value = data.videoUrl || '';
+                    } else if (data.contentType === 'tv') {
+                        document.getElementById('editSeriesData').value = data.seriesInfo ? JSON.stringify(data.seriesInfo, null, 2) : '';
+                    }
+
+                    navigateToPage('editContentPage');
+                } catch (err) {
+                    displayMessage(manageMessage, `Error loading content: ${err.message}`, 'error');
+                }
+            }
+
+            editContentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                setLoading(updateContentBtn, true);
+                const docId = document.getElementById('editDocId').value;
+                if (!docId) { displayMessage(editMessage, 'No document ID found. Cannot update.', 'error'); setLoading(updateContentBtn, false); return; }
+
+                const primaryType = document.getElementById('editPrimaryContentType').value;
+                const isTV = primaryType === 'tv';
+                let payload = { title: document.getElementById('editTitle').value.trim(), overview: document.getElementById('editOverview').value, posterUrl: document.getElementById('editPosterUrl').value, vjName: document.getElementById('editVjName').value, tmdbId: document.getElementById('editTmdbId').value.trim() || null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
 
                 if (isTV) {
                     payload.contentType = 'tv'; payload.type = 'tv';
-                    try { const seriesDataValue = document.getElementById('manualSeriesData').value; if(!seriesDataValue) throw new Error("Series Data cannot be empty."); payload.seriesInfo = JSON.parse(seriesDataValue); } catch (err) { displayMessage(manualAddMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); setLoading(manualAddBtn, false); return; }
+                    try { const seriesDataValue = document.getElementById('editSeriesData').value; if(!seriesDataValue) throw new Error("Series Data cannot be empty."); payload.seriesInfo = JSON.parse(seriesDataValue); } catch (err) { displayMessage(editMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); setLoading(updateContentBtn, false); return; }
                 } else {
-                    const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input:checked')).map(cb => cb.value);
-                    if (selectedTypes.length === 0) { displayMessage(manualAddMessage, 'Please select at least one category.', 'error'); setLoading(manualAddBtn, false); return; }
-                    payload.contentType = 'movie'; payload.type = selectedTypes; payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
+                    const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input:checked')).map(cb => cb.value);
+                    if (selectedTypes.length === 0) { displayMessage(editMessage, 'Please select at least one category.', 'error'); setLoading(updateContentBtn, false); return; }
+                    payload.contentType = 'movie'; payload.type = selectedTypes; payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
                 }
                 
                 try {
-                    const duplicateCheck = await checkForDuplicates(payload);
-                    if (duplicateCheck.found) {
-                        displayMessage(manualAddMessage, `Duplicate found in project: ${duplicateCheck.project}. Addition denied.`, 'error');
-                    } else {
-                        await db.collection('movies').add(payload); // Add to primary DB
-                        displayMessage(manualAddMessage, 'Content added successfully!', 'success');
-                        manualAddForm.reset();
-                    }
-                } catch (error) { displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); } 
-                finally { setLoading(manualAddBtn, false); }
+                    await db.collection('movies').doc(docId).update(payload);
+                    displayMessage(editMessage, 'Content updated successfully!', 'success');
+                    setTimeout(() => {
+                        navigateToPage('manageContentPage');
+                        searchManageBtn.click(); // Optionally re-run the search
+                    }, 2000);
+                } catch (error) { displayMessage(editMessage, `Update Error: ${error.message}`, 'error'); } 
+                finally { setLoading(updateContentBtn, false); }
             });
 
-            // --- Delete and Banner logic (operates on primary DB only) ---
-            searchDeleteBtn.addEventListener('click', async () => { setLoading(searchDeleteBtn, true); deleteSearchResults.innerHTML = ''; selectedMoviesForDeletion.clear(); confirmDeleteBtn.style.display = 'none'; const term = document.getElementById('deleteContentIdentifier').value.trim(); if (!term) { displayMessage(deleteMessage, 'Enter a name or ID.', 'error'); setLoading(searchDeleteBtn, false); return; } try { const isId = /^\d+$/.test(term); let docs = []; if(isId) { (await db.collection('movies').where('tmdbId', '==', Number(term)).get()).forEach(doc => docs.push(doc)); } else { const l = term.toLowerCase(); (await db.collection('movies').get()).forEach(doc => { if((doc.data().title||'').toLowerCase().includes(l)) docs.push(doc); });} if(docs.length===0) displayMessage(deleteMessage, 'No content found.', 'info'); else docs.forEach(doc => {const i=doc.data(); deleteSearchResults.innerHTML+=`<div class="result-item"><span><strong>${i.title}</strong> (ID: ${i.tmdbId || 'N/A'})</span><div class="result-item-actions"><button class="action-btn select-delete" data-id="${doc.id}">Select</button></div></div>`;}); } catch (err) { displayMessage(deleteMessage, `Error: ${err.message}`, 'error'); } finally { setLoading(searchDeleteBtn, false); } });
-            deleteSearchResults.addEventListener('click', e => { if(e.target.matches('.select-delete')){ const btn=e.target, id=btn.dataset.id; if(selectedMoviesForDeletion.has(id)){selectedMoviesForDeletion.delete(id);btn.classList.remove('selected');btn.textContent='Select';}else{selectedMoviesForDeletion.add(id);btn.classList.add('selected');btn.textContent='Selected';} confirmDeleteBtn.style.display=selectedMoviesForDeletion.size>0?'block':'none'; confirmDeleteBtn.textContent=`Delete Selected (${selectedMoviesForDeletion.size})`;}});
-            confirmDeleteBtn.addEventListener('click', async () => { if(confirm(`Delete ${selectedMoviesForDeletion.size} item(s)? This action cannot be undone.`)){ setLoading(confirmDeleteBtn, true); const batch = db.batch(); selectedMoviesForDeletion.forEach(id => batch.delete(db.collection('movies').doc(id))); try { await batch.commit(); displayMessage(deleteMessage, `Deleted ${selectedMoviesForDeletion.size} items.`, 'success'); deleteSearchResults.innerHTML=''; confirmDeleteBtn.style.display='none'; selectedMoviesForDeletion.clear(); } catch(err){displayMessage(deleteMessage, `Error: ${err.message}`, 'error');} finally {setLoading(confirmDeleteBtn, false);}}});
+            cancelEditBtn.addEventListener('click', () => { navigateToPage('manageContentPage'); });
+
+            // --- Banner logic ---
             async function displayAllBanners() { allBannersContainer.innerHTML = '<div class="message info" style="display:block;">Loading banners...</div>'; try { const snapshot = await db.collection('banners').orderBy('updatedAt', 'desc').get(); if (snapshot.empty) { allBannersContainer.innerHTML = ''; displayMessage(viewBannersMessage, 'No banners found. Add one from the "Add/Edit Banner" tab.', 'info'); return; } allBannersContainer.innerHTML = ''; snapshot.forEach(doc => { const banner = doc.data(); const card = `<div class="banner-card"><img src="${banner.imageUrl}" alt="${banner.title}" onerror="this.style.display='none';"><div class="banner-card-content"><h3>${banner.title}</h3><p>${(banner.description || 'No description available.').substring(0, 100)}</p><div class="banner-card-actions"><button class="action-btn edit" data-id="${doc.id}">Edit</button><button class="action-btn delete" data-id="${doc.id}">Delete</button></div></div></div>`; allBannersContainer.insertAdjacentHTML('beforeend', card); }); } catch (err) { allBannersContainer.innerHTML = ''; displayMessage(viewBannersMessage, `Error: ${err.message}`, 'error'); } }
             bannerNavTabs.addEventListener('click', e => { if (e.target.matches('.banner-tab-link')) { const tabId = e.target.dataset.tab; document.querySelectorAll('.banner-tab-link').forEach(t => t.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.banner-tab-content').forEach(c => c.classList.remove('active')); document.getElementById(tabId).classList.add('active'); if (tabId === 'viewBannersTab') { displayAllBanners(); } } });
             allBannersContainer.addEventListener('click', async e => { const target = e.target; if (target.matches('.action-btn.delete')) { const docId = target.dataset.id; if (confirm('Are you sure you want to delete this banner permanently?')) { setLoading(target, true); try { await db.collection('banners').doc(docId).delete(); displayMessage(viewBannersMessage, 'Banner deleted successfully!', 'success'); await displayAllBanners(); } catch (err) { displayMessage(viewBannersMessage, `Error deleting banner: ${err.message}`, 'error'); setLoading(target, false); } } } if (target.matches('.action-btn.edit')) { await loadBannerForEditing(target.dataset.id); } });
