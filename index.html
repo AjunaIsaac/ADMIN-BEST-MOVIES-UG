@@ -110,13 +110,22 @@
                 <h2>Add Content from TMDB</h2>
                 <form id="addMovieForm">
                     <div class="form-group"><label for="tmdbApiKey">TMDB API Key</label><input type="text" id="tmdbApiKey" value="7707eccc54e32b83ac790b5352c67ed3" readonly></div>
-                    <div class="form-group"><label for="primaryContentType">Primary Content Type</label><select id="primaryContentType" class="primary-content-type-selector" required><option value="media">Movie</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group"><label for="primaryContentType">Primary Content Type</label><select id="primaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
                     <div class="form-group media-categories-group">
                         <label>Categories (Select all that apply)</label>
                         <div class="checkbox-group" id="contentTypeCheckboxes">
-                            <label><input type="checkbox" name="contentType" value="movie"> Latest movies</label><label><input type="checkbox" name="contentType" value="animation"> Animation</label><label><input type="checkbox" name="contentType" value="popular
-                            "> Requested Movies
-                            </label><label><input type="checkbox" name="contentType" value="indian"> Indian</label><label><input type="checkbox" name="contentType" value="horror"> Horror</label><label><input type="checkbox" name="contentType" value="comedy"> Comedy</label><label><input type="checkbox" name="contentType" value="romance"> Romance</label><label><input type="checkbox" name="contentType" value="adventure"> Adventure</label><label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label><label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label><label><input type="checkbox" name="contentType" value="high-school"> High School</label><label><input type="checkbox" name="contentType" value="nigerian"> Nigerian Movies</label>
+                            <label><input type="checkbox" name="contentType" value="movie"> Latest movies</label>
+                            <label><input type="checkbox" name="contentType" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="contentType" value="popular"> Requested Movies</label>
+                            <label><input type="checkbox" name="contentType" value="indian"> Indian</label>
+                            <label><input type="checkbox" name="contentType" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="contentType" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="contentType" value="romance"> Romance</label>
+                            <label><input type="checkbox" name="contentType" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
+                            <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
+                            <label><input type="checkbox" name="contentType" value="high-school"> High School</label>
+                            <label><input type="checkbox" name="contentType" value="nigerian"> Nigerian Movies</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="contentIdentifier">Content Name or TMDB ID</label><input type="text" id="contentIdentifier" placeholder="e.g., The Matrix or TMDB ID 603" required></div>
@@ -135,11 +144,22 @@
                     <div class="form-group"><label for="manualOverview">Overview</label><textarea id="manualOverview" rows="4" required></textarea></div>
                     <div class="form-group"><label for="manualPosterUrl">Poster Image URL</label><input type="url" id="manualPosterUrl" required></div>
                     <div class="form-group"><label for="manualVjName">VJ Name</label><input type="text" id="manualVjName" required></div>
-                    <div class="form-group"><label for="manualPrimaryContentType">Primary Content Type</label><select id="manualPrimaryContentType" class="primary-content-type-selector" required><option value="media">Movie</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group"><label for="manualPrimaryContentType">Primary Content Type</label><select id="manualPrimaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
                     <div class="form-group media-categories-group">
                         <label>Categories</label>
                         <div class="checkbox-group" id="manualContentTypeCheckboxes">
-                            <label><input type="checkbox" name="manualContentType" value="movie">Latest Movies</label><label><input type="checkbox" name="manualContentType" value="animation"> Animation</label><label><input type="checkbox" name="manualContentType" value="popular"> Popular</label><label><input type="checkbox" name="manualContentType" value="indian"> Indian</label><label><input type="checkbox" name="manualContentType" value="horror"> Horror</label><label><input type="checkbox" name="manualContentType" value="comedy"> Comedy</label><label><input type="checkbox" name="manualContentType" value="romance"> Romance</label><label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label><label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label><label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label><label><input type="checkbox" name="manualContentType" value="high-school"> High School</label><label><input type="checkbox" name="manualContentType" value="nigerian"> Nigerian Movies</label>
+                            <label><input type="checkbox" name="manualContentType" value="movie">Latest Movies</label>
+                            <label><input type="checkbox" name="manualContentType" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="manualContentType" value="popular"> Popular</label>
+                            <label><input type="checkbox" name="manualContentType" value="indian"> Indian</label>
+                            <label><input type="checkbox" name="manualContentType" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="manualContentType" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="manualContentType" value="romance"> Romance</label>
+                            <label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
+                            <label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label>
+                            <label><input type="checkbox" name="manualContentType" value="high-school"> High School</label>
+                            <label><input type="checkbox" name="manualContentType" value="nigerian"> Nigerian Movies</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="manualTmdbId">Reference ID (Optional)</label><input type="text" id="manualTmdbId" placeholder="Enter TMDB ID if known"></div>
@@ -166,13 +186,22 @@
                     <div class="form-group"><label for="editOverview">Overview</label><textarea id="editOverview" rows="4" required></textarea></div>
                     <div class="form-group"><label for="editPosterUrl">Poster Image URL</label><input type="url" id="editPosterUrl" required></div>
                     <div class="form-group"><label for="editVjName">VJ Name</label><input type="text" id="editVjName" required></div>
-                    <div class="form-group"><label for="editPrimaryContentType">Primary Content Type</label><select id="editPrimaryContentType" class="primary-content-type-selector" required><option value="media">Movie</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group"><label for="editPrimaryContentType">Primary Content Type</label><select id="editPrimaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
                     <div class="form-group media-categories-group">
                         <label>Categories</label>
                         <div class="checkbox-group" id="editContentTypeCheckboxes">
-                            <label><input type="checkbox" name="editContentType" value="movie">Latest Movies</label><label><input type="checkbox" name="editContentType" value="animation"> Animation</label><label><input type="checkbox" name="editC
-                            ontentType" value="popular"> Requested Movies
-                            </label><label><input type="checkbox" name="editContentType" value="indian"> Indian</label><label><input type="checkbox" name="editContentType" value="horror"> Horror</label><label><input type="checkbox" name="editContentType" value="comedy"> Comedy</label><label><input type="checkbox" name="editContentType" value="romance"> Romance</label><label><input type="checkbox" name="editContentType" value="adventure"> Adventure</label><label><input type="checkbox" name="editContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label><label><input type="checkbox" name="editContentType" value="action-thriller"> Action & Thriller</label><label><input type="checkbox" name="editContentType" value="high-school"> High School</label><label><input type="checkbox" name="editContentType" value="nigerian"> Nigerian Movies</label>
+                            <label><input type="checkbox" name="editContentType" value="movie">Latest Movies</label>
+                            <label><input type="checkbox" name="editContentType" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="editContentType" value="popular"> Requested Movies</label>
+                            <label><input type="checkbox" name="editContentType" value="indian"> Indian</label>
+                            <label><input type="checkbox" name="editContentType" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="editContentType" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="editContentType" value="romance"> Romance</label>
+                            <label><input type="checkbox" name="editContentType" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="editContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
+                            <label><input type="checkbox" name="editContentType" value="action-thriller"> Action & Thriller</label>
+                            <label><input type="checkbox" name="editContentType" value="high-school"> High School</label>
+                            <label><input type="checkbox" name="editContentType" value="nigerian"> Nigerian Movies</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="editTmdbId">Reference ID (Optional)</label><input type="text" id="editTmdbId" placeholder="Enter TMDB ID if known"></div>
@@ -254,11 +283,8 @@
             const loginScreen = document.getElementById('loginScreen'), adminPanel = document.getElementById('adminPanel'), mainMenu = document.getElementById('mainMenu'), menuToggleBtn = document.getElementById('menuToggleBtn'), pageTitle = document.getElementById('pageTitle'), logoutBtn = document.getElementById('logoutBtn'), loginMessage = document.getElementById('loginMessage');
             const addMovieForm = document.getElementById('addMovieForm'), addContentBtn = document.getElementById('addContentBtn'), addMessage = document.getElementById('addMessage');
             const manualAddForm = document.getElementById('manualAddForm'), manualAddBtn = document.getElementById('manualAddContentBtn'), manualAddMessage = document.getElementById('manualAddMessage');
-            // Manage (Search/Edit/Delete)
             const searchManageBtn = document.getElementById('searchManageBtn'), manageSearchResults = document.getElementById('manageSearchResults'), confirmDeleteBtn = document.getElementById('confirmDeleteBtn'), manageMessage = document.getElementById('manageMessage');
-            // Edit Form
             const editContentForm = document.getElementById('editContentForm'), updateContentBtn = document.getElementById('updateContentBtn'), editMessage = document.getElementById('editMessage'), cancelEditBtn = document.getElementById('cancelEditBtn');
-            // Banner
             const bannerNavTabs = document.querySelector('.banner-nav-tabs'), addEditBannerForm = document.getElementById('addEditBannerForm'), bannerFormTitle = document.getElementById('bannerFormTitle'), bannerDocId = document.getElementById('bannerDocId'), saveBannerBtn = document.getElementById('saveBannerBtn'), cancelEditBannerBtn = document.getElementById('cancelEditBannerBtn'), addBannerMessage = document.getElementById('addBannerMessage');
             const allBannersContainer = document.getElementById('allBannersContainer'), viewBannersMessage = document.getElementById('viewBannersMessage');
             let selectedMoviesForDeletion = new Set();
@@ -272,23 +298,18 @@
                 const valueToCheck = checkByTmdbId ? Number(payload.tmdbId) : payload.title;
                 const fieldToCheck = checkByTmdbId ? 'tmdbId' : 'title';
 
-                console.log(`Checking for duplicates with ${fieldToCheck}: ${valueToCheck}`);
-                
                 for (const dbInfo of dbsToCheck) {
                     try {
                         const query = dbInfo.instance.collection('movies').where(fieldToCheck, '==', valueToCheck);
                         const snapshot = await query.get();
                         for (const doc of snapshot.docs) {
-                            // If we are editing, exclude the document itself from the duplicate check
                             if (excludeDocId && dbInfo.name === primaryFirebaseConfig.projectId && doc.id === excludeDocId) {
                                 continue;
                             }
-                            console.log(`Duplicate found in ${dbInfo.name}`);
                             return { found: true, project: dbInfo.name };
                         }
                     } catch (error) {
                          console.error(`Error checking duplicates in ${dbInfo.name}:`, error);
-                         // Decide if a failed check should prevent addition. For safety, it does.
                          return { found: true, project: `an external project (check failed: ${error.code})` };
                     }
                 }
@@ -310,7 +331,7 @@
                 }
                 document.querySelectorAll('.menu-link').forEach(link => { const isActive = link.dataset.page === pageId; link.classList.toggle('active', isActive); if (isActive) pageTitle.textContent = link.textContent.trim(); });
                 if (window.innerWidth < 768) mainMenu.classList.remove('open');
-                window.scrollTo(0, 0); // Scroll to top on page change
+                window.scrollTo(0, 0);
             }
             document.querySelectorAll('.menu-link').forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); navigateToPage(e.currentTarget.dataset.page); }); });
 
@@ -328,12 +349,12 @@
                 }
                 if(primarySelector) {
                     primarySelector.addEventListener('change', toggleFields);
-                    toggleFields(); // Initial call
+                    toggleFields();
                 }
             }
             setupMasterContentTypeToggle(document.getElementById('addMovieForm'));
             setupMasterContentTypeToggle(document.getElementById('manualAddForm'));
-            setupMasterContentTypeToggle(document.getElementById('editContentForm')); // Setup for the new edit form
+            setupMasterContentTypeToggle(document.getElementById('editContentForm'));
 
             // --- TMDB Add Form Logic ---
             addMovieForm.addEventListener('submit', async e => {
@@ -382,7 +403,7 @@
                     if (!doc.exists) { displayMessage(manageMessage, 'Content not found or already deleted.', 'error'); return; }
                     const data = doc.data();
                     
-                    editContentForm.reset(); // Clear previous data
+                    editContentForm.reset();
                     document.getElementById('editDocId').value = doc.id;
                     document.getElementById('editTitle').value = data.title || '';
                     document.getElementById('editOverview').value = data.overview || '';
@@ -391,9 +412,7 @@
                     document.getElementById('editTmdbId').value = data.tmdbId || '';
 
                     const primaryTypeSelector = document.getElementById('editPrimaryContentType');
-                    primaryTypeSelector.value = data.contentType === 'tv' ? 'tv' : 'media';
-                    
-                    // Manually trigger change to ensure fields hide/show correctly
+                    primaryTypeSelector.value = data.contentType === 'tv' ? 'tv' : 'movie';
                     primaryTypeSelector.dispatchEvent(new Event('change')); 
 
                     if(data.contentType === 'movie' && Array.isArray(data.type)) {
@@ -435,7 +454,7 @@
                     displayMessage(editMessage, 'Content updated successfully!', 'success');
                     setTimeout(() => {
                         navigateToPage('manageContentPage');
-                        searchManageBtn.click(); // Optionally re-run the search
+                        searchManageBtn.click();
                     }, 2000);
                 } catch (error) { displayMessage(editMessage, `Update Error: ${error.message}`, 'error'); } 
                 finally { setLoading(updateContentBtn, false); }
