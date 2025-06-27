@@ -74,6 +74,61 @@
         .banner-card-actions { display: flex; gap: 10px; margin-top: auto; border-top: 1px solid #333; padding-top: 10px; }
         .banner-card-actions .action-btn { width: 100% !important; flex: 1; }
         .banner-card-actions .action-btn.delete { background-color: var(--danger-color) !important; color: white !important; }
+
+        /* Duplicate Modal Styles */
+        .duplicate-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1500;
+            display: none; /* Hidden by default */
+        }
+        .duplicate-modal-content {
+            background-color: var(--secondary-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+        }
+        .duplicate-modal-content h3 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+        .duplicate-modal-content p {
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+        .duplicate-modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .duplicate-modal-actions button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 15px;
+            font-size: 16px;
+            margin-top: 0; /* Override default button margin */
+        }
+        .duplicate-modal-actions .edit-btn {
+            background: var(--warn-color);
+        }
+        .duplicate-modal-actions .override-btn {
+            background: var(--danger-color); /* Use danger for override as it overwrites */
+        }
+        .duplicate-modal-actions .cancel-btn {
+            background: gray;
+        }
     </style>
 </head>
 <body>
@@ -234,6 +289,18 @@
             </div>
         </div>
     </div>
+
+    <div id="duplicateModal" class="duplicate-modal-overlay">
+        <div class="duplicate-modal-content">
+            <h3>Duplicate Content Found!</h3>
+            <p id="duplicateMessageText"></p>
+            <div class="duplicate-modal-actions">
+                <button id="editDuplicateBtn" class="action-btn edit-btn">Edit Existing</button>
+                <button id="overrideDuplicateBtn" class="action-btn override-btn">Override</button>
+                <button id="cancelDuplicateBtn" class="action-btn cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -287,7 +354,17 @@
             const editContentForm = document.getElementById('editContentForm'), updateContentBtn = document.getElementById('updateContentBtn'), editMessage = document.getElementById('editMessage'), cancelEditBtn = document.getElementById('cancelEditBtn');
             const bannerNavTabs = document.querySelector('.banner-nav-tabs'), addEditBannerForm = document.getElementById('addEditBannerForm'), bannerFormTitle = document.getElementById('bannerFormTitle'), bannerDocId = document.getElementById('bannerDocId'), saveBannerBtn = document.getElementById('saveBannerBtn'), cancelEditBannerBtn = document.getElementById('cancelEditBannerBtn'), addBannerMessage = document.getElementById('addBannerMessage');
             const allBannersContainer = document.getElementById('allBannersContainer'), viewBannersMessage = document.getElementById('viewBannersMessage');
+            
+            // Duplicate Modal Elements
+            const duplicateModal = document.getElementById('duplicateModal');
+            const duplicateMessageText = document.getElementById('duplicateMessageText');
+            const editDuplicateBtn = document.getElementById('editDuplicateBtn');
+            const overrideDuplicateBtn = document.getElementById('overrideDuplicateBtn');
+            const cancelDuplicateBtn = document.getElementById('cancelDuplicateBtn');
+
             let selectedMoviesForDeletion = new Set();
+            let pendingDuplicatePayload = null;
+            let existingDuplicateDocId = null;
 
             // --- Helper Functions ---
             function setLoading(button, isLoading) { if(button) { button.classList.toggle('loading', isLoading); button.disabled = isLoading; } }
@@ -303,17 +380,32 @@
                         const query = dbInfo.instance.collection('movies').where(fieldToCheck, '==', valueToCheck);
                         const snapshot = await query.get();
                         for (const doc of snapshot.docs) {
+                            // If an excludeDocId is provided (e.g., during an edit), skip if it's the same document
                             if (excludeDocId && dbInfo.name === primaryFirebaseConfig.projectId && doc.id === excludeDocId) {
                                 continue;
                             }
-                            return { found: true, project: dbInfo.name };
+                            return { found: true, project: dbInfo.name, docId: doc.id };
                         }
                     } catch (error) {
                          console.error(`Error checking duplicates in ${dbInfo.name}:`, error);
-                         return { found: true, project: `an external project (check failed: ${error.code})` };
+                         // If there's an error accessing a DB, it's safer to assume a potential duplicate
+                         return { found: true, project: `an external project (check failed: ${error.code})`, docId: null };
                     }
                 }
-                return { found: false, project: null };
+                return { found: false, project: null, docId: null };
+            }
+
+            function showDuplicateModal(message, docId, originalPayload) {
+                duplicateMessageText.textContent = message;
+                duplicateModal.style.display = 'flex';
+                existingDuplicateDocId = docId;
+                pendingDuplicatePayload = originalPayload; // Store the payload
+            }
+
+            function hideDuplicateModal() {
+                duplicateModal.style.display = 'none';
+                existingDuplicateDocId = null;
+                pendingDuplicatePayload = null;
             }
 
             // --- Auth and Navigation ---
@@ -369,9 +461,48 @@
                 const tmdbData = await (async (id, key) => { const isId = /^\d+$/.test(id); const url = isId ? `https://api.themoviedb.org/3/${apiType}/${id}?api_key=${key}` : `https://api.themoviedb.org/3/search/${apiType}?api_key=${key}&query=${encodeURIComponent(id)}`; try { const r = await fetch(url); if (!r.ok) return null; const d = await r.json(); return isId ? d : (d.results?.[0] || null); } catch (err) { return null; } })(identifier, tmdbApiKey);
                 if (!tmdbData || !tmdbData.id) { displayMessage(addMessage, 'Could not find content on TMDB.', 'error'); setLoading(addContentBtn, false); return; }
                 const finalTitle = tmdbData.title || tmdbData.name;
-                const payload = { title: finalTitle, tmdbId: tmdbData.id, posterUrl: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : '', overview: tmdbData.overview || "N/A", vjName, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
-                if (isTV) { payload.contentType = 'tv'; payload.type = 'tv'; try { const seriesDataValue = document.getElementById('seriesData').value; if(!seriesDataValue) throw new Error("Series Data cannot be empty for TV series."); payload.seriesInfo = JSON.parse(seriesDataValue); } catch (err) { displayMessage(addMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); setLoading(addContentBtn, false); return; } } else { const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input:checked')).map(cb => cb.value); if(selectedTypes.length === 0) { displayMessage(addMessage, 'Please select at least one category.', 'error'); setLoading(addContentBtn, false); return; } payload.contentType = 'movie'; payload.type = selectedTypes; payload.videoUrl = document.getElementById('videoSourceUrl').value; }
-                try { const duplicateCheck = await checkForDuplicates(payload); if (duplicateCheck.found) { displayMessage(addMessage, `Duplicate found in project: ${duplicateCheck.project}. Addition denied.`, 'error'); } else { await db.collection('movies').add(payload); displayMessage(addMessage, 'Content added successfully!', 'success'); addMovieForm.reset(); } } catch (error) { displayMessage(addMessage, `Error: ${error.message}`, 'error'); } finally { setLoading(addContentBtn, false); }
+                
+                let payload = { title: finalTitle, tmdbId: tmdbData.id, posterUrl: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : '', overview: tmdbData.overview || "N/A", vjName, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
+                
+                if (isTV) { 
+                    payload.contentType = 'tv'; 
+                    payload.type = 'tv'; 
+                    try { 
+                        const seriesDataValue = document.getElementById('seriesData').value; 
+                        if(!seriesDataValue) throw new Error("Series Data cannot be empty for TV series."); 
+                        payload.seriesInfo = JSON.parse(seriesDataValue); 
+                    } catch (err) { 
+                        displayMessage(addMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); 
+                        setLoading(addContentBtn, false); 
+                        return; 
+                    } 
+                } else { 
+                    const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input:checked')).map(cb => cb.value); 
+                    if(selectedTypes.length === 0) { 
+                        displayMessage(addMessage, 'Please select at least one category.', 'error'); 
+                        setLoading(addContentBtn, false); 
+                        return; 
+                    } 
+                    payload.contentType = 'movie'; 
+                    payload.type = selectedTypes; 
+                    payload.videoUrl = document.getElementById('videoSourceUrl').value; 
+                }
+
+                try { 
+                    const duplicateCheck = await checkForDuplicates(payload); 
+                    if (duplicateCheck.found) { 
+                        showDuplicateModal(`Content already exists in project: ${duplicateCheck.project}. What would you like to do?`, duplicateCheck.docId, payload);
+                        displayMessage(addMessage, `Duplicate found in project: ${duplicateCheck.project}. Choose an option.`, 'info');
+                    } else { 
+                        await db.collection('movies').add(payload); 
+                        displayMessage(addMessage, 'Content added successfully!', 'success'); 
+                        addMovieForm.reset(); 
+                    } 
+                } catch (error) { 
+                    displayMessage(addMessage, `Error: ${error.message}`, 'error'); 
+                } finally { 
+                    setLoading(addContentBtn, false); 
+                }
             });
             
             // --- Manual Add Form Logic ---
@@ -380,10 +511,108 @@
                 setLoading(manualAddBtn, true);
                 const primaryType = document.getElementById('manualPrimaryContentType').value;
                 const isTV = primaryType === 'tv';
-                let payload = { title: document.getElementById('manualTitle').value.trim(), overview: document.getElementById('manualOverview').value, posterUrl: document.getElementById('manualPosterUrl').value, vjName: document.getElementById('manualVjName').value, tmdbId: document.getElementById('manualTmdbId').value.trim() || null, createdAt: firebase.firestore.FieldValue.serverTimestamp(), addedBy: auth.currentUser.email };
-                if (isTV) { payload.contentType = 'tv'; payload.type = 'tv'; try { const seriesDataValue = document.getElementById('manualSeriesData').value; if(!seriesDataValue) throw new Error("Series Data cannot be empty."); payload.seriesInfo = JSON.parse(seriesDataValue); } catch (err) { displayMessage(manualAddMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); setLoading(manualAddBtn, false); return; } } else { const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input:checked')).map(cb => cb.value); if (selectedTypes.length === 0) { displayMessage(manualAddMessage, 'Please select at least one category.', 'error'); setLoading(manualAddBtn, false); return; } payload.contentType = 'movie'; payload.type = selectedTypes; payload.videoUrl = document.getElementById('manualVideoSourceUrl').value; }
-                try { const duplicateCheck = await checkForDuplicates(payload); if (duplicateCheck.found) { displayMessage(manualAddMessage, `Duplicate found in project: ${duplicateCheck.project}. Addition denied.`, 'error'); } else { await db.collection('movies').add(payload); displayMessage(manualAddMessage, 'Content added successfully!', 'success'); manualAddForm.reset(); } } catch (error) { displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); } finally { setLoading(manualAddBtn, false); }
+                
+                let payload = { 
+                    title: document.getElementById('manualTitle').value.trim(), 
+                    overview: document.getElementById('manualOverview').value, 
+                    posterUrl: document.getElementById('manualPosterUrl').value, 
+                    vjName: document.getElementById('manualVjName').value, 
+                    tmdbId: document.getElementById('manualTmdbId').value.trim() || null, 
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                    addedBy: auth.currentUser.email 
+                };
+                
+                if (isTV) { 
+                    payload.contentType = 'tv'; 
+                    payload.type = 'tv'; 
+                    try { 
+                        const seriesDataValue = document.getElementById('manualSeriesData').value; 
+                        if(!seriesDataValue) throw new Error("Series Data cannot be empty."); 
+                        payload.seriesInfo = JSON.parse(seriesDataValue); 
+                    } catch (err) { 
+                        displayMessage(manualAddMessage, `Invalid JSON in Series Data: ${err.message}`, 'error'); 
+                        setLoading(manualAddBtn, false); 
+                        return; 
+                    } 
+                } else { 
+                    const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input:checked')).map(cb => cb.value); 
+                    if (selectedTypes.length === 0) { 
+                        displayMessage(manualAddMessage, 'Please select at least one category.', 'error'); 
+                        setLoading(manualAddBtn, false); 
+                        return; 
+                    } 
+                    payload.contentType = 'movie'; 
+                    payload.type = selectedTypes; 
+                    payload.videoUrl = document.getElementById('manualVideoSourceUrl').value; 
+                }
+
+                try { 
+                    const duplicateCheck = await checkForDuplicates(payload); 
+                    if (duplicateCheck.found) { 
+                        showDuplicateModal(`Content already exists in project: ${duplicateCheck.project}. What would you like to do?`, duplicateCheck.docId, payload);
+                        displayMessage(manualAddMessage, `Duplicate found in project: ${duplicateCheck.project}. Choose an option.`, 'info');
+                    } else { 
+                        await db.collection('movies').add(payload); 
+                        displayMessage(manualAddMessage, 'Content added successfully!', 'success'); 
+                        manualAddForm.reset(); 
+                    } 
+                } catch (error) { 
+                    displayMessage(manualAddMessage, `Error: ${error.message}`, 'error'); 
+                } finally { 
+                    setLoading(manualAddBtn, false); 
+                }
             });
+
+            // --- Duplicate Modal Actions ---
+            editDuplicateBtn.addEventListener('click', () => {
+                if (existingDuplicateDocId) {
+                    hideDuplicateModal();
+                    // Load the existing content for editing
+                    loadContentForEditing(existingDuplicateDocId);
+                    displayMessage(editMessage, 'Loaded duplicate for editing.', 'info');
+                } else {
+                    displayMessage(addMessage, 'Cannot edit: Duplicate document ID not found.', 'error');
+                    hideDuplicateModal();
+                }
+            });
+
+            overrideDuplicateBtn.addEventListener('click', async () => {
+                if (existingDuplicateDocId && pendingDuplicatePayload) {
+                    setLoading(overrideDuplicateBtn, true);
+                    try {
+                        // Override the existing document with the new payload
+                        const overridePayload = { 
+                            ...pendingDuplicatePayload, 
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+                        };
+                        // Remove createdAt and addedBy from override payload if they exist, 
+                        // as they should refer to the original creation.
+                        delete overridePayload.createdAt; 
+                        delete overridePayload.addedBy;
+
+                        await db.collection('movies').doc(existingDuplicateDocId).update(overridePayload);
+                        displayMessage(addMessage, 'Content overridden successfully!', 'success');
+                        // Clear forms after override
+                        addMovieForm.reset();
+                        manualAddForm.reset();
+                    } catch (error) {
+                        displayMessage(addMessage, `Override Error: ${error.message}`, 'error');
+                    } finally {
+                        setLoading(overrideDuplicateBtn, false);
+                        hideDuplicateModal();
+                    }
+                } else {
+                    displayMessage(addMessage, 'Cannot override: No duplicate found or payload missing.', 'error');
+                    hideDuplicateModal();
+                }
+            });
+
+            cancelDuplicateBtn.addEventListener('click', () => {
+                hideDuplicateModal();
+                displayMessage(addMessage, 'Content addition cancelled.', 'info');
+                displayMessage(manualAddMessage, 'Content addition cancelled.', 'info');
+            });
+
 
             // --- Manage (Search, Edit, Delete) Logic ---
             searchManageBtn.addEventListener('click', async () => { setLoading(searchManageBtn, true); manageSearchResults.innerHTML = ''; selectedMoviesForDeletion.clear(); confirmDeleteBtn.style.display = 'none'; const term = document.getElementById('manageContentIdentifier').value.trim(); if (!term) { displayMessage(manageMessage, 'Enter a name or ID.', 'error'); setLoading(searchManageBtn, false); return; } try { const isId = /^\d+$/.test(term); let docs = []; if(isId) { (await db.collection('movies').where('tmdbId', '==', Number(term)).get()).forEach(doc => docs.push(doc)); } else { const l = term.toLowerCase(); (await db.collection('movies').get()).forEach(doc => { if((doc.data().title||'').toLowerCase().includes(l)) docs.push(doc); });} if(docs.length===0) displayMessage(manageMessage, 'No content found.', 'info'); else docs.forEach(doc => {const i=doc.data(); manageSearchResults.innerHTML+=`<div class="result-item"><span><strong>${i.title}</strong> (ID: ${i.tmdbId || 'N/A'})</span><div class="result-item-actions"><button class="action-btn edit" data-id="${doc.id}">Edit</button><button class="action-btn select-delete" data-id="${doc.id}">Select</button></div></div>`;}); } catch (err) { displayMessage(manageMessage, `Error: ${err.message}`, 'error'); } finally { setLoading(searchManageBtn, false); } });
@@ -450,11 +679,19 @@
                 }
                 
                 try {
+                    // Check for duplicates *excluding* the current document being edited
+                    const duplicateCheck = await checkForDuplicates(payload, docId);
+                    if (duplicateCheck.found) {
+                        displayMessage(editMessage, `Another content with this title/TMDB ID already exists in project: ${duplicateCheck.project}. Update denied.`, 'error');
+                        setLoading(updateContentBtn, false);
+                        return;
+                    }
+
                     await db.collection('movies').doc(docId).update(payload);
                     displayMessage(editMessage, 'Content updated successfully!', 'success');
                     setTimeout(() => {
                         navigateToPage('manageContentPage');
-                        searchManageBtn.click();
+                        searchManageBtn.click(); // Re-run search to see updated content
                     }, 2000);
                 } catch (error) { displayMessage(editMessage, `Update Error: ${error.message}`, 'error'); } 
                 finally { setLoading(updateContentBtn, false); }
