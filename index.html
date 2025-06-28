@@ -20,13 +20,13 @@
             --warn-color: #f39c12;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Arial, sans-serif; background-color: var(--primary-bg); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; flex-direction: column; } /* Added flex-direction for mobile */
+        body { font-family: Arial, sans-serif; background-color: var(--primary-bg); color: var(--text-color); display: flex; min-height: 100vh; overflow-x: hidden; flex-direction: column; } /* Adjusted to min-height and overflow-x hidden */
 
         /* Main Menu / Sidebar */
         #mainMenu {
-            position: fixed;
+            position: fixed; /* Keep fixed */
             top: 0;
-            left: -260px;
+            left: -260px; /* Default closed state */
             width: 250px;
             height: 100%;
             background-color: var(--secondary-bg);
@@ -36,13 +36,13 @@
             border-right: 2px solid var(--accent-color);
             box-shadow: 5px 0 15px rgba(0,0,0,0.2);
         }
-        #mainMenu.open { left: 0; }
+        #mainMenu.open { left: 0; } /* Open state */
         #mainMenu .menu-header { color: var(--accent-color); padding: 10px 20px; font-size: 1.5em; text-align: center; border-bottom: 1px solid #333; margin-bottom: 20px; }
         #mainMenu a { padding: 15px 20px; text-decoration: none; font-size: 18px; color: var(--text-color); display: flex; align-items: center; gap: 15px; transition: background-color 0.2s, color 0.2s; cursor: pointer; }
         #mainMenu a:hover { background-color: var(--primary-bg); }
         #mainMenu a.active { background-color: var(--accent-color); color: var(--primary-bg); font-weight: bold; }
 
-        /* Menu Toggle Button (for mobile) */
+        /* Menu Toggle Button */
         #menuToggleBtn {
             position: fixed;
             top: 15px; /* Adjusted for better visibility */
@@ -50,17 +50,17 @@
             background: var(--secondary-bg);
             color: var(--accent-color);
             border: 1px solid var(--accent-color);
-            border-radius: 5px; /* More standard corners */
-            width: 50px; /* Slightly larger touch target */
-            height: 50px; /* Slightly larger touch target */
+            border-radius: 5px;
+            width: 50px;
+            height: 50px;
             cursor: pointer;
             z-index: 1200;
             font-size: 24px;
-            display: flex; /* Always display but hide with media query for desktop */
+            display: flex;
             align-items: center;
             justify-content: center;
             transition: background-color 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Add a subtle shadow */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
         #menuToggleBtn:hover { background-color: var(--primary-bg); }
 
@@ -69,9 +69,10 @@
             flex-grow: 1;
             padding: 20px;
             overflow-y: auto;
-            height: 100vh;
+            min-height: 100vh; /* Ensure it takes full height */
             transition: margin-left 0.3s ease-in-out;
-            width: 100%; /* Ensure it takes full width initially */
+            width: 100%;
+            margin-left: 0; /* Default for closed menu/mobile */
         }
 
         /* Login Container */
@@ -80,7 +81,7 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-            width: 90%; /* Responsive width */
+            width: 90%;
             max-width: 400px;
             margin: 50px auto;
             text-align: center;
@@ -90,11 +91,11 @@
         .page-container {
             display: none;
             background-color: var(--secondary-bg);
-            padding: 20px; /* Slightly reduced padding for mobile */
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
             width: 100%;
-            max-width: 800px; /* Max width remains for larger screens */
+            max-width: 800px;
             margin: 20px auto;
         }
         .page-container.active { display: block; }
@@ -104,22 +105,22 @@
         /* Admin Header (Top bar) */
         .admin-header {
             display: flex;
-            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding: 10px 0; /* Add some vertical padding */
-            gap: 10px; /* Space between items */
+            padding: 10px 0;
+            gap: 10px;
         }
 
         /* Logged in user email display */
         #adminEmailDisplay {
-            font-size: 0.9em; /* Slightly smaller for mobile */
+            font-size: 0.9em;
             color: #aaa;
             font-weight: normal;
-            text-align: center; /* Center on small screens */
-            width: 100%; /* Take full width on small screens */
-            order: 3; /* Order it below title and logout on small screens */
+            text-align: center;
+            width: 100%;
+            order: 3;
         }
 
         /* Logout Button */
@@ -127,8 +128,8 @@
             background: var(--danger-color);
             width: auto;
             padding: 10px 15px;
-            font-size: 14px; /* Smaller font for mobile */
-            order: 2; /* Order it after the title on small screens */
+            font-size: 14px;
+            order: 2;
         }
 
         /* Form elements */
@@ -150,84 +151,84 @@
         .message.success { background-color: var(--success-color); }
         .message.error { background-color: var(--danger-color); }
         .message.info { background-color: var(--info-color); }
-        .result-item { background-color: var(--primary-bg); padding: 10px; margin-bottom: 5px; border-radius: 5px; display: flex; flex-direction: column; /* Stack on mobile */ align-items: flex-start; /* Align items to start */ justify-content: space-between; gap: 10px; /* Space between stacked items */ }
-        .result-item span { text-align: left; width: 100%; } /* Ensure text takes full width */
-        .result-item-actions { display: flex; flex-wrap: wrap; /* Allow buttons to wrap */ gap: 8px; width: 100%; /* Take full width */ justify-content: flex-start; /* Align buttons to start */ }
-        .action-btn { background-color: var(--accent-color) !important; color: var(--primary-bg) !important; padding: 8px 12px !important; border-radius: 5px !important; width: auto !important; font-size: 14px !important; margin-top: 0 !important; flex-grow: 1; /* Allow buttons to grow */ min-width: 80px; /* Minimum width for buttons */ }
+        .result-item { background-color: var(--primary-bg); padding: 10px; margin-bottom: 5px; border-radius: 5px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 10px; }
+        .result-item span { text-align: left; width: 100%; }
+        .result-item-actions { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; justify-content: flex-start; }
+        .action-btn { background-color: var(--accent-color) !important; color: var(--primary-bg) !important; padding: 8px 12px !important; border-radius: 5px !important; width: auto !important; font-size: 14px !important; margin-top: 0 !important; flex-grow: 1; min-width: 80px; }
         .action-btn.edit { background-color: var(--warn-color) !important; color: white !important; }
         .action-btn.delete { background-color: var(--danger-color) !important; color: white !important; }
         .action-btn.select-delete.selected { background-color: var(--success-color) !important; color: white !important; }
-        .banner-nav-tabs { display: flex; flex-wrap: wrap; /* Allow tabs to wrap */ border-bottom: 1px solid var(--accent-color); margin-bottom: 20px; }
-        .banner-tab-link { padding: 10px 15px; /* Reduced padding */ cursor: pointer; color: #aaa; border: none; background: none; font-size: 15px; /* Slightly smaller font */ flex-grow: 1; /* Allow tabs to grow and fill space */ text-align: center; /* Center text in tabs */ }
+        .banner-nav-tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--accent-color); margin-bottom: 20px; }
+        .banner-tab-link { padding: 10px 15px; cursor: pointer; color: #aaa; border: none; background: none; font-size: 15px; flex-grow: 1; text-align: center; }
         .banner-tab-link.active { color: var(--accent-color); border-bottom: 2px solid var(--accent-color); font-weight: bold; }
         .banner-tab-content { display: none; }
         .banner-tab-content.active { display: block; }
-        #allBannersContainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Min card size reduced for mobile */ gap: 15px; /* Reduced gap */ margin-top: 20px; }
+        #allBannersContainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
         .banner-card { background-color: var(--primary-bg); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
-        .banner-card img { width: 100%; height: 120px; /* Reduced image height */ object-fit: cover; background-color: #000; }
-        .banner-card-content { padding: 10px; /* Reduced padding */ flex-grow: 1; display: flex; flex-direction: column; }
-        .banner-card h3 { font-size: 1em; /* Slightly smaller font */ color: var(--accent-color); margin-bottom: 5px; text-align: left; }
-        .banner-card p { font-size: 0.8em; /* Slightly smaller font */ color: #ccc; margin-bottom: 10px; flex-grow: 1; line-height: 1.4; }
-        .banner-card-actions { display: flex; gap: 8px; /* Reduced gap */ margin-top: auto; border-top: 1px solid #333; padding-top: 8px; /* Reduced padding */ }
+        .banner-card img { width: 100%; height: 120px; object-fit: cover; background-color: #000; }
+        .banner-card-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
+        .banner-card h3 { font-size: 1em; color: var(--accent-color); margin-bottom: 5px; text-align: left; }
+        .banner-card p { font-size: 0.8em; color: #ccc; margin-bottom: 10px; flex-grow: 1; line-height: 1.4; }
+        .banner-card-actions { display: flex; gap: 8px; margin-top: auto; border-top: 1px solid #333; padding-top: 8px; }
         .banner-card-actions .action-btn { width: 100% !important; flex: 1; }
         .banner-card-actions .action-btn.delete { background-color: var(--danger-color) !important; color: white !important; }
 
         /* Styles for User Management Section */
         #userManagementPage .input-group { margin-bottom: 15px; }
         #userManagementPage .input-group label { display: block; margin-bottom: 8px; color: #ccc; font-size: 14px; }
-        #userManagementPage .input-group input, #userManagementPage .input-group select { width: 100%; padding: 10px; /* Slightly less padding */ background: #222; border: 1px solid #444; border-radius: 8px; color: white; font-size: 15px; }
+        #userManagementPage .input-group input, #userManagementPage .input-group select { width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 8px; color: white; font-size: 15px; }
         #userManagementPage .btn-secondary { background: #555; }
-        #userManagementPage hr { border-color: #444; margin: 20px 0; /* Reduced margin */ }
+        #userManagementPage hr { border-color: #444; margin: 20px 0; }
 
         /* --- Media Queries for Responsiveness --- */
         @media (max-width: 768px) {
             body {
-                flex-direction: column; /* Stack body content */
+                flex-direction: column;
             }
 
             #mainMenu {
-                left: -260px; /* Keep it off-screen by default */
+                left: -260px; /* Keep it off-screen by default on small screens */
                 width: 250px;
                 padding-top: 80px; /* Make space for toggle button */
             }
-            #mainMenu.open {
-                left: 0;
-            }
+            /* .open class will apply `left: 0` */
 
             #menuToggleBtn {
-                display: flex; /* Show toggle button on small screens */
+                position: fixed;
+                top: 15px;
+                left: 15px;
             }
 
             .main-content {
-                margin-left: 0; /* No margin on small screens */
-                padding: 15px; /* Slightly less padding */
-                overflow-x: hidden; /* Prevent horizontal scroll */
+                margin-left: 0; /* No margin on small screens when menu is closed */
+                padding: 15px;
+                margin-top: 60px; /* Space for the fixed toggle button */
             }
-            
+
             /* Adjust admin header for small screens */
             .admin-header {
-                flex-direction: column; /* Stack items */
-                align-items: flex-start; /* Align to start */
-                margin-top: 60px; /* Push content down to avoid overlapping toggle */
+                flex-direction: column;
+                align-items: flex-start;
+                margin-top: 0; /* Remove extra top margin as main-content now handles it */
             }
             #pageTitle {
-                width: 100%; /* Take full width */
-                text-align: left; /* Align to left */
-                font-size: 1.8em; /* Slightly smaller for mobile */
+                width: 100%;
+                text-align: left;
+                font-size: 1.8em;
                 margin-bottom: 10px;
-                order: 1; /* Place it first */
+                order: 1;
             }
             #adminEmailDisplay {
                 width: 100%;
-                text-align: left; /* Align to left */
-                font-size: 0.8em; /* Make it smaller */
+                text-align: left;
+                font-size: 0.8em;
                 margin-bottom: 10px;
-                order: 3; /* Place it after the logout button for better flow */
+                order: 3;
             }
             .logout-btn {
-                width: auto; /* Let button size itself */
-                order: 2; /* Place it second */
-                margin-left: auto; /* Push to the right if space allows */
+                width: auto;
+                order: 2;
+                margin-left: auto;
                 margin-top: -40px; /* Pull it up to sit next to the title if space allows */
             }
 
@@ -246,14 +247,14 @@
                 width: 100%;
             }
             .action-btn {
-                width: 100% !important; /* Full width buttons in results */
+                width: 100% !important;
             }
 
             #allBannersContainer {
-                grid-template-columns: 1fr; /* Single column on very small screens */
+                grid-template-columns: 1fr;
             }
             .banner-card img {
-                height: 100px; /* Even smaller image height */
+                height: 100px;
             }
             .banner-card-content {
                 padding: 8px;
@@ -270,39 +271,51 @@
             }
         }
 
-        /* Desktop adjustments */
+        /* Desktop adjustments (min-width: 769px) */
         @media (min-width: 769px) {
             body {
-                flex-direction: row; /* Side-by-side for desktop */
+                flex-direction: row; /* Main content and menu side-by-side */
             }
+
             #mainMenu {
-                position: relative; /* Take it out of fixed positioning */
-                left: 0 !important; /* Ensure it's always visible */
-                flex-shrink: 0; /* Prevent it from shrinking */
-                padding-top: 20px; /* Adjust padding */
-                box-shadow: none; /* Remove shadow */
+                left: 0; /* Default open state on desktop */
+                box-shadow: 5px 0 15px rgba(0,0,0,0.2); /* Re-add shadow for fixed menu */
             }
+
             #menuToggleBtn {
-                display: none; /* Hide toggle button on desktop */
+                top: 15px; /* Stay at top */
+                left: calc(250px + 15px); /* Positioned relative to the open menu, +15px for spacing */
+                transition: left 0.3s ease-in-out; /* Add transition for button too */
             }
+            #mainMenu.open + #menuToggleBtn { /* When menu is open, move toggle button */
+                left: calc(250px + 15px);
+            }
+            #mainMenu:not(.open) + #menuToggleBtn { /* When menu is NOT open, move toggle button back */
+                left: 15px;
+            }
+
+
             .main-content {
-                margin-left: 0px; /* Adjusted to 0 since mainMenu is part of flex flow */
+                margin-left: 250px; /* Space for the open sidebar */
+                padding-top: 20px; /* Reset top padding from mobile */
             }
+
+            /* Admin header for desktop */
             .admin-header {
-                flex-direction: row; /* Keep items in a row */
+                flex-direction: row;
                 align-items: center;
                 margin-top: 0;
             }
             #pageTitle {
-                text-align: center; /* Center on larger screens */
-                flex-grow: 1; /* Allow it to take available space */
+                text-align: center;
+                flex-grow: 1;
                 order: initial;
             }
             #adminEmailDisplay {
-                font-size: 14px; /* Default size for desktop */
-                text-align: right; /* Align to right */
-                width: auto; /* Auto width */
-                margin-left: 20px; /* Space from title */
+                font-size: 14px;
+                text-align: right;
+                width: auto;
+                margin-left: 20px;
                 order: initial;
             }
             .logout-btn {
@@ -311,8 +324,9 @@
                 margin-left: 15px;
                 margin-top: 0;
             }
+            
             .result-item {
-                flex-direction: row; /* Back to row on desktop */
+                flex-direction: row;
                 align-items: center;
             }
             .result-item-actions {
@@ -320,7 +334,7 @@
                 width: auto;
             }
             .action-btn {
-                width: auto !important; /* Auto width for desktop buttons */
+                width: auto !important;
             }
         }
     </style>
@@ -353,7 +367,8 @@
         <div class="main-content" id="mainContentArea">
             <div class="admin-header">
                 <h1 id="pageTitle"></h1>
-                <span id="adminEmailDisplay" style="font-weight: normal;"></span> <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
+                <span id="adminEmailDisplay" style="font-weight: normal;"></span>
+                <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
             </div>
 
             <div id="addContentPage" class="page-container">
@@ -578,6 +593,7 @@
             const adminEmailDisplay = document.getElementById('adminEmailDisplay'); 
             const logoutBtn = document.getElementById('logoutBtn');
             const loginMessage = document.getElementById('loginMessage');
+            const mainContentArea = document.getElementById('mainContentArea'); // Added
 
             // Content Management Elements
             const addMovieForm = document.getElementById('addMovieForm');
@@ -692,12 +708,24 @@
             auth.onAuthStateChanged(user => {
                 loginScreen.style.display = user ? 'none' : 'flex';
                 adminPanel.style.display = user ? 'flex' : 'none';
-                menuToggleBtn.style.display = user ? 'flex' : 'none'; // Ensure button visibility is controlled
+                
                 if(user) {
                     adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+                    // Set initial menu state based on screen size
+                    if (window.innerWidth >= 769) {
+                        mainMenu.classList.add('open'); // Open by default on desktop
+                        mainContentArea.style.marginLeft = '250px';
+                        menuToggleBtn.style.left = '265px'; // Positioned next to opened menu
+                    } else {
+                        mainMenu.classList.remove('open'); // Closed by default on mobile
+                        mainContentArea.style.marginLeft = '0';
+                        menuToggleBtn.style.left = '15px'; // Default mobile position
+                    }
+                    menuToggleBtn.style.display = 'flex'; // Ensure button is always visible when logged in
                     navigateToPage('addContentPage'); // Default page after login
                 } else {
                     adminEmailDisplay.textContent = '';
+                    menuToggleBtn.style.display = 'none'; // Hide toggle button when not logged in
                 }
             });
 
@@ -716,8 +744,18 @@
             });
 
             logoutBtn.addEventListener('click', () => auth.signOut());
-            menuToggleBtn.addEventListener('click', () => mainMenu.classList.toggle('open'));
             
+            menuToggleBtn.addEventListener('click', () => {
+                mainMenu.classList.toggle('open');
+                if (mainMenu.classList.contains('open')) {
+                    mainContentArea.style.marginLeft = '250px';
+                    menuToggleBtn.style.left = '265px'; // Move button with menu
+                } else {
+                    mainContentArea.style.marginLeft = '0';
+                    menuToggleBtn.style.left = '15px'; // Move button back
+                }
+            });
+
             function navigateToPage(pageId) {
                 document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
                 const page = document.getElementById(pageId);
@@ -735,7 +773,12 @@
                     link.classList.toggle('active', isActive);
                     if (isActive) pageTitle.textContent = link.textContent.trim();
                 });
-                if (window.innerWidth < 768) mainMenu.classList.remove('open');
+                // On mobile, automatically close menu after navigating
+                if (window.innerWidth < 769) { // Changed breakpoint
+                    mainMenu.classList.remove('open');
+                    mainContentArea.style.marginLeft = '0'; // Ensure content margin is reset
+                    menuToggleBtn.style.left = '15px'; // Ensure toggle button is reset
+                }
                 window.scrollTo(0, 0);
             }
             document.querySelectorAll('.menu-link').forEach(link => {
@@ -744,6 +787,22 @@
                     navigateToPage(e.currentTarget.dataset.page);
                 });
             });
+
+            // Handle window resize for menu state
+            window.addEventListener('resize', () => {
+                if (auth.currentUser) { // Only adjust if logged in
+                    if (window.innerWidth >= 769) {
+                        mainMenu.classList.add('open');
+                        mainContentArea.style.marginLeft = '250px';
+                        menuToggleBtn.style.left = '265px';
+                    } else {
+                        mainMenu.classList.remove('open');
+                        mainContentArea.style.marginLeft = '0';
+                        menuToggleBtn.style.left = '15px';
+                    }
+                }
+            });
+
 
             function setupMasterContentTypeToggle(formElement) {
                 const primarySelector = formElement.querySelector('.primary-content-type-selector');
