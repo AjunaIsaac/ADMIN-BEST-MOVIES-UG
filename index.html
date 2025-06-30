@@ -563,6 +563,31 @@
                             <label><input type="checkbox" name="manualContentType" value="k_dramas"> K Dramas</label>
                         </div>
                     </div>
+
+                    <div class="form-group genre-selection-group">
+                        <label>Genres (Select all that apply)</label>
+                        <div class="checkbox-group" id="manualGenreCheckboxes">
+                            <label><input type="checkbox" name="manualGenre" value="action"> Action</label>
+                            <label><input type="checkbox" name="manualGenre" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="manualGenre" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="manualGenre" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="manualGenre" value="crime"> Crime</label>
+                            <label><input type="checkbox" name="manualGenre" value="documentary"> Documentary</label>
+                            <label><input type="checkbox" name="manualGenre" value="drama"> Drama</label>
+                            <label><input type="checkbox" name="manualGenre" value="family"> Family</label>
+                            <label><input type="checkbox" name="manualGenre" value="fantasy"> Fantasy</label>
+                            <label><input type="checkbox" name="manualGenre" value="history"> History</label>
+                            <label><input type="checkbox" name="manualGenre" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="manualGenre" value="music"> Music</label>
+                            <label><input type="checkbox" name="manualGenre" value="mystery"> Mystery</label>
+                            <label><input type="checkbox" name="manualGenre" value="romance"> Romance</label>
+                            <label><input type="checkbox" name="manualGenre" value="science-fiction"> Science Fiction</label>
+                            <label><input type="checkbox" name="manualGenre" value="tv-movie"> TV Movie</label>
+                            <label><input type="checkbox" name="manualGenre" value="thriller"> Thriller</label>
+                            <label><input type="checkbox" name="manualGenre" value="war"> War</label>
+                            <label><input type="checkbox" name="manualGenre" value="western"> Western</label>
+                        </div>
+                    </div>
                     <div class="form-group"><label for="manualReferenceId">Unique Text ID (e.g., mercy-for-none)</label><input type="text" id="manualReferenceId" placeholder="Enter a unique text identifier" required></div>
 
                     <div class="form-group video-url-group"><label for="manualVideoSourceUrl">Video Source URL</label><input type="url" id="manualVideoSourceUrl"></div>
@@ -631,6 +656,31 @@
                             <label><input type="checkbox" name="editContentType" value="western_series"> Western Series</label>
                             <label><input type="checkbox" name="editContentType" value="asian_series"> Asian Series</label>
                             <label><input type="checkbox" name="editContentType" value="k_dramas"> K Dramas</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group genre-selection-group">
+                        <label>Genres (Select all that apply)</label>
+                        <div class="checkbox-group" id="editGenreCheckboxes">
+                            <label><input type="checkbox" name="editGenre" value="action"> Action</label>
+                            <label><input type="checkbox" name="editGenre" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="editGenre" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="editGenre" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="editGenre" value="crime"> Crime</label>
+                            <label><input type="checkbox" name="editGenre" value="documentary"> Documentary</label>
+                            <label><input type="checkbox" name="editGenre" value="drama"> Drama</label>
+                            <label><input type="checkbox" name="editGenre" value="family"> Family</label>
+                            <label><input type="checkbox" name="editGenre" value="fantasy"> Fantasy</label>
+                            <label><input type="checkbox" name="editGenre" value="history"> History</label>
+                            <label><input type="checkbox" name="editGenre" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="editGenre" value="music"> Music</label>
+                            <label><input type="checkbox" name="editGenre" value="mystery"> Mystery</label>
+                            <label><input type="checkbox" name="editGenre" value="romance"> Romance</label>
+                            <label><input type="checkbox" name="editGenre" value="science-fiction"> Science Fiction</label>
+                            <label><input type="checkbox" name="editGenre" value="tv-movie"> TV Movie</label>
+                            <label><input type="checkbox" name="editGenre" value="thriller"> Thriller</label>
+                            <label><input type="checkbox" name="editGenre" value="war"> War</label>
+                            <label><input type="checkbox" name="editGenre" value="western"> Western</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="editReferenceId">Reference ID (TMDB or Custom Text)</label><input type="text" id="editReferenceId" placeholder="TMDB ID or your unique text ID"></div>
@@ -702,7 +752,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     
    <script>
-      document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
     // --- Firebase Configurations ---
     const primaryFirebaseConfig = {
         apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
@@ -1000,6 +1050,7 @@
         const mediaCategoriesGroup = formElement.querySelector('.media-categories-group');
         const videoUrlGroup = formElement.querySelector('.video-url-group');
         const seriesDataGroup = formElement.querySelector('.series-data-group');
+        const genreSelectionGroup = formElement.querySelector('.genre-selection-group'); // NEW: Get genre group
 
         // Define movie and TV series categories
         const movieCategories = [
@@ -1018,9 +1069,9 @@
             // Show/hide the entire categories group based on primary type
             if(mediaCategoriesGroup) mediaCategoriesGroup.style.display = 'block'; 
 
-            // Iterate through all checkboxes within the group and set their display style
-            const checkboxes = mediaCategoriesGroup.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
+            // Iterate through all checkboxes within the categories group and set their display style
+            const categoriesCheckboxes = mediaCategoriesGroup.querySelectorAll('input[type="checkbox"]');
+            categoriesCheckboxes.forEach(checkbox => {
                 const categoryValue = checkbox.value;
                 const parentLabel = checkbox.parentElement; // The <label> element wrapping the checkbox
 
@@ -1032,6 +1083,9 @@
                     parentLabel.style.display = movieCategories.includes(categoryValue) ? 'flex' : 'none';
                 }
             });
+
+            // Genre selection group is always visible, as genres apply to both movies and TV.
+            if (genreSelectionGroup) genreSelectionGroup.style.display = 'block'; // Ensure it's always visible
 
             if(videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
             if(seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
@@ -1113,6 +1167,14 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             addedBy: auth.currentUser.email
         };
+
+        // NEW: TMDB fetched genres (if available, TMDB has genres as numbers)
+        // You might need a mapping here if you want string genres for TMDB items.
+        // For simplicity, we'll store TMDB's genre_ids directly or leave empty if not applicable.
+        // TMDB typically returns genre_ids, which are numeric. If you want readable strings,
+        // you'd need to fetch TMDB's genre list and map them. For now, it will be numeric IDs.
+        payload.genres = tmdbData.genre_ids || [];
+
 
         if (isTV) {
             payload.contentType = 'tv';
@@ -1200,7 +1262,15 @@
             }
         }
         // If referenceIdInput is empty, tmdbId remains null, slug from manualTitle (default)
-         
+        
+        // NEW: Get selected genres for manual add
+        const selectedGenres = Array.from(document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]:checked')).map(cb => cb.value);
+        if(selectedGenres.length === 0) { // Optional: Require at least one genre
+            displayMessage(manualAddMessage, 'Please select at least one genre.', 'error');
+            setLoading(manualAddBtn, false);
+            return;
+        }
+
         let payload = {
             title: manualTitle,
             slug: slug, // This will be the custom slug if referenceIdInput was text
@@ -1209,6 +1279,7 @@
             backdropUrl: manualBackdropUrl, // Add backdrop URL to payload
             vjName: manualVjName,
             tmdbId: tmdbId, // This will be the numeric TMDB ID or null
+            genres: selectedGenres, // NEW: Add selected genres to payload
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             addedBy: auth.currentUser.email
         };
@@ -1254,6 +1325,8 @@
                 await db.collection('movies').add(payload);
                 displayMessage(manualAddMessage, 'Content added successfully!', 'success');
                 manualAddForm.reset();
+                // After successful add, reset genre checkboxes
+                document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]').forEach(cb => cb.checked = false);
             }
         } catch (error) {
             console.error("Error adding document manually:", error);
@@ -1413,7 +1486,7 @@
             primaryTypeSelector.value = data.contentType === 'tv' ? 'tv' : 'movie';
             primaryTypeSelector.dispatchEvent(new Event('change')); // Trigger visibility logic
 
-            // Uncheck all checkboxes first
+            // Uncheck all category checkboxes first
             document.querySelectorAll('#editContentTypeCheckboxes input').forEach(cb => {
                 cb.checked = false; 
             });
@@ -1422,6 +1495,18 @@
             if (Array.isArray(data.type)) {
                 data.type.forEach(typeValue => {
                     const checkbox = document.querySelector(`#editContentTypeCheckboxes input[value="${typeValue}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+
+            // NEW: Uncheck all genre checkboxes first
+            document.querySelectorAll('#editGenreCheckboxes input[name="editGenre"]').forEach(cb => {
+                cb.checked = false;
+            });
+            // NEW: Set checked status for genres based on `data.genres`
+            if (Array.isArray(data.genres)) {
+                data.genres.forEach(genreValue => {
+                    const checkbox = document.querySelector(`#editGenreCheckboxes input[value="${genreValue}"]`);
                     if (checkbox) checkbox.checked = true;
                 });
             }
@@ -1476,7 +1561,15 @@
             }
         }
         // If referenceIdInput is empty, tmdbId is null, slug from editTitle (default)
-         
+            
+        // NEW: Get selected genres from the edit form
+        const selectedGenres = Array.from(document.querySelectorAll('#editGenreCheckboxes input[name="editGenre"]:checked')).map(cb => cb.value);
+        if(selectedGenres.length === 0) { // Optional: Require at least one genre for edit
+            displayMessage(editMessage, 'Please select at least one genre.', 'error');
+            setLoading(updateContentBtn, false);
+            return;
+        }
+
         let payload = {
             title: editTitle,
             slug: slug,
@@ -1485,6 +1578,7 @@
             backdropUrl: editBackdropUrl, // Add backdrop URL to payload
             vjName: editVjName,
             tmdbId: tmdbId,
+            genres: selectedGenres, // NEW: Add selected genres to payload
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
@@ -1494,29 +1588,29 @@
             // For TV, 'type' will store the selected TV categories
             const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => cb.value);
             if (selectedTypes.length === 0) {
-                 displayMessage(editMessage, 'Please select at least one category for TV series.', 'error');
-                 setLoading(updateContentBtn, false);
-                 return;
+                     displayMessage(editMessage, 'Please select at least one category for TV series.', 'error');
+                     setLoading(updateContentBtn, false);
+                     return;
             }
             payload.type = selectedTypes;
             try {
-                 const seriesDataValue = document.getElementById('editSeriesData').value;
+                     const seriesDataValue = document.getElementById('editSeriesData').value;
                 if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
                 payload.seriesInfo = JSON.parse(seriesDataValue);
                 payload.videoUrl = firebase.firestore.FieldValue.delete(); // Ensure videoUrl is removed for TV
             } catch (err) {
-                 displayMessage(editMessage, err.message, 'error');
-                 setLoading(updateContentBtn, false);
-                 return;
+                     displayMessage(editMessage, err.message, 'error');
+                     setLoading(updateContentBtn, false);
+                     return;
             }
         } else { 
             payload.contentType = 'movie';
             // For movies, 'type' will store the selected movie categories
             const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => cb.value);
             if (selectedTypes.length === 0) {
-                 displayMessage(editMessage, 'Please select at least one category for movies.', 'error');
-                 setLoading(updateContentBtn, false);
-                 return;
+                     displayMessage(editMessage, 'Please select at least one category for movies.', 'error');
+                     setLoading(updateContentBtn, false);
+                     return;
             }
             payload.type = selectedTypes;
             payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
