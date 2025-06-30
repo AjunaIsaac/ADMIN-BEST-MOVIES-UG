@@ -516,6 +516,11 @@
                             <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
                             <label><input type="checkbox" name="contentType" value="high-school"> High School</label>
                             <label><input type="checkbox" name="contentType" value="nigerian"> Nigerian Movies</label>
+                            <label><input type="checkbox" name="contentType" value="tv"> Latest TV Shows</label>
+                            <label><input type="checkbox" name="contentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label><input type="checkbox" name="contentType" value="western_series"> Western Series</label>
+                            <label><input type="checkbox" name="contentType" value="asian_series"> Asian Series</label>
+                            <label><input type="checkbox" name="contentType" value="k_dramas"> K Dramas</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="contentIdentifier">Content Name or TMDB ID</label><input type="text" id="contentIdentifier" placeholder="e.g., The Matrix or TMDB ID 603" required></div>
@@ -533,6 +538,7 @@
                     <div class="form-group"><label for="manualTitle">Title</label><input type="text" id="manualTitle" required></div>
                     <div class="form-group"><label for="manualOverview">Overview</label><textarea id="manualOverview" rows="4" required></textarea></div>
                     <div class="form-group"><label for="manualPosterUrl">Poster Image URL</label><input type="url" id="manualPosterUrl" required></div>
+                    <div class="form-group"><label for="manualBackdropUrl">Backdrop Image URL</label><input type="url" id="manualBackdropUrl"></div>
                     <div class="form-group"><label for="manualVjName">VJ Name</label><input type="text" id="manualVjName" required></div>
                     <div class="form-group"><label for="manualPrimaryContentType">Primary Content Type</label><select id="manualPrimaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
                     <div class="form-group media-categories-group">
@@ -550,6 +556,11 @@
                             <label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label>
                             <label><input type="checkbox" name="manualContentType" value="high-school"> High School</label>
                             <label><input type="checkbox" name="manualContentType" value="nigerian"> Nigerian Movies</label>
+                            <label><input type="checkbox" name="manualContentType" value="tv"> Latest TV Shows</label>
+                            <label><input type="checkbox" name="manualContentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label><input type="checkbox" name="manualContentType" value="western_series"> Western Series</label>
+                            <label><input type="checkbox" name="manualContentType" value="asian_series"> Asian Series</label>
+                            <label><input type="checkbox" name="manualContentType" value="k_dramas"> K Dramas</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="manualReferenceId">Unique Text ID (e.g., mercy-for-none)</label><input type="text" id="manualReferenceId" placeholder="Enter a unique text identifier" required></div>
@@ -597,6 +608,7 @@
                     <div class="form-group"><label for="editTitle">Title</label><input type="text" id="editTitle" required></div>
                     <div class="form-group"><label for="editOverview">Overview</label><textarea id="editOverview" rows="4" required></textarea></div>
                     <div class="form-group"><label for="editPosterUrl">Poster Image URL</label><input type="url" id="editPosterUrl" required></div>
+                    <div class="form-group"><label for="editBackdropUrl">Backdrop Image URL</label><input type="url" id="editBackdropUrl"></div>
                     <div class="form-group"><label for="editVjName">VJ Name</label><input type="text" id="editVjName" required></div>
                     <div class="form-group"><label for="editPrimaryContentType">Primary Content Type</label><select id="editPrimaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
                     <div class="form-group media-categories-group">
@@ -614,6 +626,11 @@
                             <label><input type="checkbox" name="editContentType" value="action-thriller"> Action & Thriller</label>
                             <label><input type="checkbox" name="editContentType" value="high-school"> High School</label>
                             <label><input type="checkbox" name="editContentType" value="nigerian"> Nigerian Movies</label>
+                            <label><input type="checkbox" name="editContentType" value="tv"> Latest TV Shows</label>
+                            <label><input type="checkbox" name="editContentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label><input type="checkbox" name="editContentType" value="western_series"> Western Series</label>
+                            <label><input type="checkbox" name="editContentType" value="asian_series"> Asian Series</label>
+                            <label><input type="checkbox" name="editContentType" value="k_dramas"> K Dramas</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="editReferenceId">Reference ID (TMDB or Custom Text)</label><input type="text" id="editReferenceId" placeholder="TMDB ID or your unique text ID"></div>
@@ -656,13 +673,11 @@
             <div id="userManagementPage" class="page-container">
                 <h2>User Management Panel</h2>
                 
-                <div id="user-search-section">
-                    <div class="input-group">
-                        <label for="user-search-email">Search User by Email</label>
-                        <input type="email" id="user-search-email" placeholder="user@example.com" />
-                    </div>
-                    <button class="btn" id="user-search-btn">Search User</button>
+                <div class="input-group">
+                    <label for="user-search-email">Search User by Email</label>
+                    <input type="email" id="user-search-email" placeholder="user@example.com" />
                 </div>
+                <button class="btn" id="user-search-btn">Search User</button>
 
                 <div id="user-message-area" class="message hidden"></div>
                 <hr class="hidden" id="user-form-divider" />
@@ -985,21 +1000,53 @@
         const mediaCategoriesGroup = formElement.querySelector('.media-categories-group');
         const videoUrlGroup = formElement.querySelector('.video-url-group');
         const seriesDataGroup = formElement.querySelector('.series-data-group');
+
+        // Define movie and TV series categories
+        const movieCategories = [
+            'movie', 'animation', 'popular', 'indian', 'horror', 'comedy', 'romance', 
+            'adventure', 'scifi-fantasy', 'action-thriller', 'high-school', 'nigerian'
+        ];
+        const tvCategories = [
+            'tv', // Added 'tv' for Latest TV Shows category selection
+            'upcoming_shows', 'western_series', 'asian_series', 'k_dramas'
+        ];
+
         function toggleFields() {
             const primaryType = primarySelector.value;
             const isTV = primaryType === 'tv';
-            if(mediaCategoriesGroup) mediaCategoriesGroup.style.display = isTV ? 'none' : 'block';
+
+            // Show/hide the entire categories group based on primary type
+            if(mediaCategoriesGroup) mediaCategoriesGroup.style.display = 'block'; 
+
+            // Iterate through all checkboxes within the group and set their display style
+            const checkboxes = mediaCategoriesGroup.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const categoryValue = checkbox.value;
+                const parentLabel = checkbox.parentElement; // The <label> element wrapping the checkbox
+
+                if (isTV) {
+                    // If TV series is selected, show only TV-specific categories
+                    parentLabel.style.display = tvCategories.includes(categoryValue) ? 'flex' : 'none';
+                } else {
+                    // If Movie is selected, show only movie-specific categories
+                    parentLabel.style.display = movieCategories.includes(categoryValue) ? 'flex' : 'none';
+                }
+            });
+
             if(videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
             if(seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
         }
+
         if(primarySelector) {
             primarySelector.addEventListener('change', toggleFields);
+            // Call immediately to set initial state based on default selected option
             toggleFields(); 
         }
     }
     setupMasterContentTypeToggle(document.getElementById('addMovieForm'));
     setupMasterContentTypeToggle(document.getElementById('manualAddForm'));
     setupMasterContentTypeToggle(document.getElementById('editContentForm'));
+
 
     // --- TMDB Add Form Logic ---
     addMovieForm.addEventListener('submit', async e => {
@@ -1020,6 +1067,7 @@
 
         const tmdbData = await (async (id, key) => {
             const isId = /^\d+$/.test(id);
+            // Fetch both general data and then configuration for image base URL
             const url = isId ? `https://api.themoviedb.org/3/${apiType}/${id}?api_key=${key}` : `https://api.themoviedb.org/3/search/${apiType}?api_key=${key}&query=${encodeURIComponent(id)}`;
             try {
                 const r = await fetch(url);
@@ -1028,7 +1076,19 @@
                     return null;
                 }
                 const d = await r.json();
-                return isId ? d : (d.results?.[0] || null);
+                const fetchedData = isId ? d : (d.results?.[0] || null);
+
+                if (fetchedData) {
+                    const configUrl = `https://api.themoviedb.org/3/configuration?api_key=${key}`;
+                    const configResponse = await fetch(configUrl);
+                    const configData = await configResponse.json();
+                    const baseImageUrl = configData.images.base_url + configData.images.poster_sizes[3]; // w500 for poster
+                    const baseBackdropUrl = configData.images.base_url + configData.images.backdrop_sizes[2]; // w780 for backdrop
+
+                    fetchedData.fullPosterPath = fetchedData.poster_path ? `${baseImageUrl}${fetchedData.poster_path}` : '';
+                    fetchedData.fullBackdropPath = fetchedData.backdrop_path ? `${baseBackdropUrl}${fetchedData.backdrop_path}` : '';
+                }
+                return fetchedData;
             } catch (err) {
                 console.error("Error fetching from TMDB:", err);
                 return null;
@@ -1046,7 +1106,8 @@
             title: finalTitle,
             tmdbId: tmdbData.id,
             slug: generateSlug(finalTitle), // Slug based on TMDB title
-            posterUrl: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : '',
+            posterUrl: tmdbData.fullPosterPath || '', // Use the full path
+            backdropUrl: tmdbData.fullBackdropPath || '', // Add backdrop URL
             overview: tmdbData.overview || "N/A",
             vjName: vjName,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1055,7 +1116,14 @@
 
         if (isTV) {
             payload.contentType = 'tv';
-            payload.type = 'tv';
+            // For TV, 'type' will store the selected TV categories
+            const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => cb.value);
+            if(selectedTypes.length === 0) {
+                displayMessage(addMessage, 'Please select at least one category for TV series.', 'error');
+                setLoading(addContentBtn, false);
+                return;
+            }
+            payload.type = selectedTypes;
             try {
                 const seriesDataValue = document.getElementById('seriesData').value;
                 if(!seriesDataValue) {
@@ -1070,13 +1138,14 @@
                 return;
             }
         } else { 
-            const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input:checked')).map(cb => cb.value);
+            payload.contentType = 'movie';
+            // For movies, 'type' will store the selected movie categories
+            const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => cb.value);
             if(selectedTypes.length === 0) {
                 displayMessage(addMessage, 'Please select at least one category for movies.', 'error');
                 setLoading(addContentBtn, false);
                 return;
             }
-            payload.contentType = 'movie';
             payload.type = selectedTypes;
             payload.videoUrl = document.getElementById('videoSourceUrl').value;
         }
@@ -1105,11 +1174,12 @@
         
         const manualTitle = document.getElementById('manualTitle').value.trim();
         const manualVjName = document.getElementById('manualVjName').value.trim();
-        // Updated ID to manualReferenceId
         const referenceIdInput = document.getElementById('manualReferenceId').value.trim(); 
+        const manualPosterUrl = document.getElementById('manualPosterUrl').value.trim();
+        const manualBackdropUrl = document.getElementById('manualBackdropUrl').value.trim(); // Get backdrop URL
 
-        if (!manualTitle || !manualVjName) {
-            displayMessage(manualAddMessage, 'Title and VJ Name are required.', 'error');
+        if (!manualTitle || !manualVjName || !manualPosterUrl) { // Poster URL is now required
+            displayMessage(manualAddMessage, 'Title, VJ Name, and Poster Image URL are required.', 'error');
             setLoading(manualAddBtn, false);
             return;
         }
@@ -1135,7 +1205,8 @@
             title: manualTitle,
             slug: slug, // This will be the custom slug if referenceIdInput was text
             overview: document.getElementById('manualOverview').value,
-            posterUrl: document.getElementById('manualPosterUrl').value,
+            posterUrl: manualPosterUrl,
+            backdropUrl: manualBackdropUrl, // Add backdrop URL to payload
             vjName: manualVjName,
             tmdbId: tmdbId, // This will be the numeric TMDB ID or null
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1145,7 +1216,14 @@
         const primaryType = document.getElementById('manualPrimaryContentType').value;
         if (primaryType === 'tv') {
             payload.contentType = 'tv';
-            payload.type = 'tv';
+            // For TV, 'type' will store the selected TV categories
+            const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input[name="manualContentType"]:checked')).map(cb => cb.value);
+            if(selectedTypes.length === 0) {
+                displayMessage(manualAddMessage, 'Please select at least one category for TV series.', 'error');
+                setLoading(manualAddBtn, false);
+                return;
+            }
+            payload.type = selectedTypes;
             try {
                 const seriesDataValue = document.getElementById('manualSeriesData').value;
                 if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
@@ -1156,13 +1234,14 @@
                 return;
             }
         } else {
-            const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input:checked')).map(cb => cb.value);
+            payload.contentType = 'movie';
+            // For movies, 'type' will store the selected movie categories
+            const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input[name="manualContentType"]:checked')).map(cb => cb.value);
             if (selectedTypes.length === 0) {
                 displayMessage(manualAddMessage, 'Please select at least one category for movies.', 'error');
                 setLoading(manualAddBtn, false);
                 return;
             }
-            payload.contentType = 'movie';
             payload.type = selectedTypes;
             payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
         }
@@ -1321,6 +1400,7 @@
             document.getElementById('editTitle').value = data.title || '';
             document.getElementById('editOverview').value = data.overview || '';
             document.getElementById('editPosterUrl').value = data.posterUrl || '';
+            document.getElementById('editBackdropUrl').value = data.backdropUrl || ''; // Populate backdrop URL
             document.getElementById('editVjName').value = data.vjName || '';
             
             // Populate "Reference ID" with tmdbId if present, otherwise with slug if it's not generated from title
@@ -1333,14 +1413,20 @@
             primaryTypeSelector.value = data.contentType === 'tv' ? 'tv' : 'movie';
             primaryTypeSelector.dispatchEvent(new Event('change')); // Trigger visibility logic
 
+            // Uncheck all checkboxes first
             document.querySelectorAll('#editContentTypeCheckboxes input').forEach(cb => {
                 cb.checked = false; 
             });
-            if (data.contentType === 'movie' && Array.isArray(data.type)) {
+
+            // Set checked status based on `data.type`
+            if (Array.isArray(data.type)) {
                 data.type.forEach(typeValue => {
                     const checkbox = document.querySelector(`#editContentTypeCheckboxes input[value="${typeValue}"]`);
                     if (checkbox) checkbox.checked = true;
                 });
+            }
+            
+            if (data.contentType === 'movie') {
                 document.getElementById('editVideoSourceUrl').value = data.videoUrl || '';
             } else if (data.contentType === 'tv') {
                 document.getElementById('editSeriesData').value = data.seriesInfo ? JSON.stringify(data.seriesInfo, null, 2) : '';
@@ -1367,11 +1453,12 @@
         }
         const editTitle = document.getElementById('editTitle').value.trim();
         const editVjName = document.getElementById('editVjName').value.trim();
-        // Updated ID to editReferenceId
         const referenceIdInput = document.getElementById('editReferenceId').value.trim(); 
+        const editPosterUrl = document.getElementById('editPosterUrl').value.trim();
+        const editBackdropUrl = document.getElementById('editBackdropUrl').value.trim(); // Get backdrop URL
 
-        if (!editTitle || !editVjName) {
-            displayMessage(editMessage, 'Title and VJ Name are required.', 'error');
+        if (!editTitle || !editVjName || !editPosterUrl) { // Poster URL is now required
+            displayMessage(editMessage, 'Title, VJ Name, and Poster Image URL are required.', 'error');
             setLoading(updateContentBtn, false);
             return;
         }
@@ -1394,7 +1481,8 @@
             title: editTitle,
             slug: slug,
             overview: document.getElementById('editOverview').value,
-            posterUrl: document.getElementById('editPosterUrl').value,
+            posterUrl: editPosterUrl,
+            backdropUrl: editBackdropUrl, // Add backdrop URL to payload
             vjName: editVjName,
             tmdbId: tmdbId,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1403,7 +1491,14 @@
         const primaryType = document.getElementById('editPrimaryContentType').value;
         if (primaryType === 'tv') {
             payload.contentType = 'tv';
-            payload.type = 'tv';
+            // For TV, 'type' will store the selected TV categories
+            const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => cb.value);
+            if (selectedTypes.length === 0) {
+                 displayMessage(editMessage, 'Please select at least one category for TV series.', 'error');
+                 setLoading(updateContentBtn, false);
+                 return;
+            }
+            payload.type = selectedTypes;
             try {
                  const seriesDataValue = document.getElementById('editSeriesData').value;
                 if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
@@ -1415,13 +1510,14 @@
                  return;
             }
         } else { 
-            const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input:checked')).map(cb => cb.value);
+            payload.contentType = 'movie';
+            // For movies, 'type' will store the selected movie categories
+            const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => cb.value);
             if (selectedTypes.length === 0) {
                  displayMessage(editMessage, 'Please select at least one category for movies.', 'error');
                  setLoading(updateContentBtn, false);
                  return;
             }
-            payload.contentType = 'movie';
             payload.type = selectedTypes;
             payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
             payload.seriesInfo = firebase.firestore.FieldValue.delete(); // Ensure seriesInfo is removed for movies
@@ -1469,7 +1565,7 @@
                 });
             }
 
-            // Optional: Deduplicate if the same movie exists across multiple dbs and you only want to show one entry
+            // Optional: Deduplicate if the same movie exists across multiple dbs (shouldn't happen with proper ID management, but good for safety)
             // For simplicity, we'll show all found entries for now, with their project name.
             
             if (docsToDisplay.length === 0) {
@@ -1489,7 +1585,7 @@
                 const cardHtml = `
                     <div class="content-card">
                         <input type="checkbox" class="select-card-checkbox" data-id="${item.id}" data-project="${item.project}">
-                        <img src="${imageUrl}" alt="${title}" onerror="this.src='https://placehold.co/500x750/333/eee?text=No+Poster';">
+                        <img src="${imageUrl}" alt="${title}" onerror="this.onerror=null; this.src='/Upload/Logo.png';">
                         <div class="content-card-content">
                             <h3>${title}</h3>
                             <p class="vj-name">VJ: ${vjName}</p>
@@ -1605,7 +1701,7 @@
     async function displayAllBanners() {
         allBannersContainer.innerHTML = '<div class="message info" style="display:block;">Loading banners...</div>';
         try {
-            const snapshot = await db.collection('banners').orderBy('updatedAt', 'desc').get();
+            const snapshot = await db.collection('banners').orderBy('updatedAt', 'desc').limit(10).get();
             if (snapshot.empty) {
                 allBannersContainer.innerHTML = '';
                 displayMessage(viewBannersMessage, 'No banners found. Add one from the "Add/Edit Banner" tab.', 'info');
@@ -1857,7 +1953,6 @@
         }
     });
 });
-
    </script>
 </body>
 </html>
