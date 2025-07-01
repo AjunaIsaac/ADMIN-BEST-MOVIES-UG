@@ -285,6 +285,17 @@
             text-align: center;
         }
 
+        /* Styles for the new "For Sort Page Only" sections */
+        .sort-page-section {
+            margin-top: 30px;
+            border-top: 1px solid #555;
+            padding-top: 20px;
+        }
+        .sort-page-section h3 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            text-align: left;
+        }
 
         /* --- Media Queries for Responsiveness --- */
         @media (max-width: 768px) {
@@ -527,6 +538,21 @@
                     <div class="form-group"><label for="vjName">VJ Name</label><input type="text" id="vjName" required></div>
                     <div class="form-group video-url-group"><label for="videoSourceUrl">Video Source URL</label><input type="url" id="videoSourceUrl" placeholder="e.g., https://example.com/video.mp4"></div>
                     <div class="form-group series-data-group" style="display: none;"><label for="seriesData">Series Data (JSON)</label><textarea id="seriesData" rows="8"></textarea></div>
+                    
+                    <hr class="sort-page-section" />
+                    <div class="sort-page-section">
+                        <h3>For Sort Page Only</h3>
+                        <div class="form-group">
+                            <label>VJs for Sort Page</label>
+                            <div class="checkbox-group" id="sortVjsCheckboxesTMDB">
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Genres for Sort Page</label>
+                            <div class="checkbox-group" id="sortGenresCheckboxesTMDB">
+                                </div>
+                        </div>
+                    </div>
                     <button type="submit" id="addContentBtn">Add Content<span class="spinner"></span></button>
                 </form>
                 <div id="addMessage" class="message"></div>
@@ -592,6 +618,21 @@
 
                     <div class="form-group video-url-group"><label for="manualVideoSourceUrl">Video Source URL</label><input type="url" id="manualVideoSourceUrl"></div>
                     <div class="form-group series-data-group" style="display: none;"><label for="manualSeriesData">Series Data (JSON)</label><textarea id="manualSeriesData" rows="8"></textarea></div>
+
+                    <hr class="sort-page-section" />
+                    <div class="sort-page-section">
+                        <h3>For Sort Page Only</h3>
+                        <div class="form-group">
+                            <label>VJs for Sort Page</label>
+                            <div class="checkbox-group" id="sortVjsCheckboxesManual">
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Genres for Sort Page</label>
+                            <div class="checkbox-group" id="sortGenresCheckboxesManual">
+                                </div>
+                        </div>
+                    </div>
                     <button type="submit" id="manualAddContentBtn">Add Manually<span class="spinner"></span></button>
                 </form>
                 <div id="manualAddMessage" class="message"></div>
@@ -687,6 +728,21 @@
 
                     <div class="form-group video-url-group"><label for="editVideoSourceUrl">Video Source URL</label><input type="url" id="editVideoSourceUrl"></div>
                     <div class="form-group series-data-group" style="display: none;"><label for="editSeriesData">Series Data (JSON)</label><textarea id="editSeriesData" rows="8"></textarea></div>
+
+                    <hr class="sort-page-section" />
+                    <div class="sort-page-section">
+                        <h3>For Sort Page Only</h3>
+                        <div class="form-group">
+                            <label>VJs for Sort Page</label>
+                            <div class="checkbox-group" id="sortVjsCheckboxesEdit">
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Genres for Sort Page</label>
+                            <div class="checkbox-group" id="sortGenresCheckboxesEdit">
+                                </div>
+                        </div>
+                    </div>
                     <button type="submit" id="updateContentBtn">Update Content<span class="spinner"></span></button>
                     <button type="button" id="cancelEditBtn" style="background-color: gray; margin-top: 10px;">Cancel Edit</button>
                 </form>
@@ -856,6 +912,47 @@
     const deleteSelectedAllContentBtn = document.getElementById('deleteSelectedAllContentBtn');
     const selectedAllContentCount = document.getElementById('selectedAllContentCount');
     let selectedAllContentForDeletion = new Set();
+
+    // NEW: VJ and Genre Lists for Sort Page
+    const VJ_LIST = [
+        "Vj Junior", "Vj Emmy", "VJ Nelly", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo",
+        "Vj Kevin", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox",
+        "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy",
+        "Vj Baros", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T"
+    ];
+    const GENRE_LIST = [
+        "Action", "Horror", "Series", "Adventure", "Love Story", "Comedy", "Crime", "Family", "Sci FI", "Romance",
+        "Kungu Fu", "Drama", "Sport", "Thriller", "Animation", "Documentary", "Fantasy", "History", "Music", "Mystery",
+        "War", "Western"
+    ];
+
+    // Function to populate checkbox groups
+    function populateCheckboxes(containerId, namePrefix, list, selectedValues = []) {
+        const container = document.getElementById(containerId);
+        if (!container) return; // Ensure container exists
+        container.innerHTML = ''; // Clear existing checkboxes
+
+        list.forEach(item => {
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = namePrefix;
+            checkbox.value = item;
+            checkbox.checked = selectedValues.includes(item); // Pre-select if in selectedValues
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(` ${item}`));
+            container.appendChild(label);
+        });
+    }
+
+    // Populate all sort page checkbox groups on DOMContentLoaded
+    populateCheckboxes('sortVjsCheckboxesTMDB', 'sortVjsTMDB', VJ_LIST);
+    populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', GENRE_LIST);
+    populateCheckboxes('sortVjsCheckboxesManual', 'sortVjsManual', VJ_LIST);
+    populateCheckboxes('sortGenresCheckboxesManual', 'sortGenresManual', GENRE_LIST);
+    populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST);
+    populateCheckboxes('sortGenresCheckboxesEdit', 'sortGenresEdit', GENRE_LIST);
 
 
     // --- Helper Functions ---
@@ -1050,7 +1147,7 @@
         const mediaCategoriesGroup = formElement.querySelector('.media-categories-group');
         const videoUrlGroup = formElement.querySelector('.video-url-group');
         const seriesDataGroup = formElement.querySelector('.series-data-group');
-        const genreSelectionGroup = formElement.querySelector('.genre-selection-group'); // NEW: Get genre group
+        const genreSelectionGroup = formElement.querySelector('.genre-selection-group'); // Get genre group
 
         // Define movie and TV series categories
         const movieCategories = [
@@ -1168,13 +1265,12 @@
             addedBy: auth.currentUser.email
         };
 
-        // NEW: TMDB fetched genres (if available, TMDB has genres as numbers)
+        // TMDB fetched genres (if available, TMDB has genres as numbers)
         // You might need a mapping here if you want string genres for TMDB items.
         // For simplicity, we'll store TMDB's genre_ids directly or leave empty if not applicable.
         // TMDB typically returns genre_ids, which are numeric. If you want readable strings,
         // you'd need to fetch TMDB's genre list and map them. For now, it will be numeric IDs.
         payload.genres = tmdbData.genre_ids || [];
-
 
         if (isTV) {
             payload.contentType = 'tv';
@@ -1212,6 +1308,10 @@
             payload.videoUrl = document.getElementById('videoSourceUrl').value;
         }
 
+        // NEW: Collect values for sort_vjs and sort_genres
+        payload.sort_vjs = Array.from(document.querySelectorAll('#sortVjsCheckboxesTMDB input[name="sortVjsTMDB"]:checked')).map(cb => cb.value);
+        payload.sort_genres = Array.from(document.querySelectorAll('#sortGenresCheckboxesTMDB input[name="sortGenresTMDB"]:checked')).map(cb => cb.value);
+
         try {
             const duplicateCheck = await checkForDuplicates(payload);
             if (duplicateCheck.found) {
@@ -1220,6 +1320,9 @@
                 await db.collection('movies').add(payload);
                 displayMessage(addMessage, 'Content added successfully!', 'success');
                 addMovieForm.reset();
+                // Reset new sort checkboxes
+                document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
             }
         } catch (error) {
             console.error("Error adding document:", error);
@@ -1263,7 +1366,7 @@
         }
         // If referenceIdInput is empty, tmdbId remains null, slug from manualTitle (default)
         
-        // NEW: Get selected genres for manual add
+        // Get selected genres for manual add
         const selectedGenres = Array.from(document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]:checked')).map(cb => cb.value);
         if(selectedGenres.length === 0) { // Optional: Require at least one genre
             displayMessage(manualAddMessage, 'Please select at least one genre.', 'error');
@@ -1279,7 +1382,7 @@
             backdropUrl: manualBackdropUrl, // Add backdrop URL to payload
             vjName: manualVjName,
             tmdbId: tmdbId, // This will be the numeric TMDB ID or null
-            genres: selectedGenres, // NEW: Add selected genres to payload
+            genres: selectedGenres, // Add selected genres to payload
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             addedBy: auth.currentUser.email
         };
@@ -1317,6 +1420,10 @@
             payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
         }
 
+        // NEW: Collect values for sort_vjs and sort_genres for manual add
+        payload.sort_vjs = Array.from(document.querySelectorAll('#sortVjsCheckboxesManual input[name="sortVjsManual"]:checked')).map(cb => cb.value);
+        payload.sort_genres = Array.from(document.querySelectorAll('#sortGenresCheckboxesManual input[name="sortGenresManual"]:checked')).map(cb => cb.value);
+
         try {
             const duplicateCheck = await checkForDuplicates(payload);
             if (duplicateCheck.found) {
@@ -1325,8 +1432,10 @@
                 await db.collection('movies').add(payload);
                 displayMessage(manualAddMessage, 'Content added successfully!', 'success');
                 manualAddForm.reset();
-                // After successful add, reset genre checkboxes
+                // After successful add, reset genre and new sort checkboxes
                 document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#sortVjsCheckboxesManual input').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#sortGenresCheckboxesManual input').forEach(cb => cb.checked = false);
             }
         } catch (error) {
             console.error("Error adding document manually:", error);
@@ -1499,17 +1608,21 @@
                 });
             }
 
-            // NEW: Uncheck all genre checkboxes first
+            // Uncheck all genre checkboxes first
             document.querySelectorAll('#editGenreCheckboxes input[name="editGenre"]').forEach(cb => {
                 cb.checked = false;
             });
-            // NEW: Set checked status for genres based on `data.genres`
+            // Set checked status for genres based on `data.genres`
             if (Array.isArray(data.genres)) {
                 data.genres.forEach(genreValue => {
                     const checkbox = document.querySelector(`#editGenreCheckboxes input[value="${genreValue}"]`);
                     if (checkbox) checkbox.checked = true;
                 });
             }
+            
+            // NEW: Populate sort_vjs and sort_genres checkboxes
+            populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST, data.sort_vjs || []);
+            populateCheckboxes('sortGenresCheckboxesEdit', 'sortGenresEdit', GENRE_LIST, data.sort_genres || []);
             
             if (data.contentType === 'movie') {
                 document.getElementById('editVideoSourceUrl').value = data.videoUrl || '';
@@ -1562,7 +1675,7 @@
         }
         // If referenceIdInput is empty, tmdbId is null, slug from editTitle (default)
             
-        // NEW: Get selected genres from the edit form
+        // Get selected genres from the edit form
         const selectedGenres = Array.from(document.querySelectorAll('#editGenreCheckboxes input[name="editGenre"]:checked')).map(cb => cb.value);
         if(selectedGenres.length === 0) { // Optional: Require at least one genre for edit
             displayMessage(editMessage, 'Please select at least one genre.', 'error');
@@ -1578,7 +1691,7 @@
             backdropUrl: editBackdropUrl, // Add backdrop URL to payload
             vjName: editVjName,
             tmdbId: tmdbId,
-            genres: selectedGenres, // NEW: Add selected genres to payload
+            genres: selectedGenres, // Add selected genres to payload
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
@@ -1617,6 +1730,10 @@
             payload.seriesInfo = firebase.firestore.FieldValue.delete(); // Ensure seriesInfo is removed for movies
         }
         
+        // NEW: Collect values for sort_vjs and sort_genres from the edit form
+        payload.sort_vjs = Array.from(document.querySelectorAll('#sortVjsCheckboxesEdit input[name="sortVjsEdit"]:checked')).map(cb => cb.value);
+        payload.sort_genres = Array.from(document.querySelectorAll('#sortGenresCheckboxesEdit input[name="sortGenresEdit"]:checked')).map(cb => cb.value);
+
         try {
             // Pass the docId AND the project ID for exclusion during duplicate check
             const duplicateCheck = await checkForDuplicates(payload, docId, targetProjectId); 
