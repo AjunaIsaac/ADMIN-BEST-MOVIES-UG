@@ -491,14 +491,17 @@
 
     <div id="adminPanel" style="display: none; width: 100%;">
         <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
-        <nav id="mainMenu">
-            <div class="menu-header">Admin Menu</div>
-            <a class="menu-link" data-page="addContentPage"><i class="fas fa-magic"></i> Add from TMDB</a>
-            <a class="menu-link" data-page="manualAddPage"><i class="fas fa-edit"></i> Manual Add</a>
-            <a class="menu-link" data-page="manageContentPage"><i class="fas fa-search"></i> Search & Edit/Delete</a>
-            <a class="menu-link" data-page="allContentPage"><i class="fas fa-film"></i> All Content</a> <a class="menu-link" data-page="bannerPage"><i class="fas fa-images"></i> Manage Banners</a>
-            <a class="menu-link" data-page="userManagementPage"><i class="fas fa-users-cog"></i> User Management</a>
-        </nav>
+<nav id="mainMenu">
+    <div class="menu-header">Admin Menu</div>
+    <a class="menu-link" data-page="addContentPage"><i class="fas fa-magic"></i> Add from TMDB</a>
+    <a class="menu-link" data-page="manualAddPage"><i class="fas fa-edit"></i> Manual Add</a>
+    <a class="menu-link" data-page="manageContentPage"><i class="fas fa-search"></i> Search & Edit/Delete</a>
+    <a class="menu-link" data-page="allContentPage"><i class="fas fa-film"></i> All Content</a> 
+    <a class="menu-link" data-page="bannerPage"><i class="fas fa-images"></i> Manage Banners</a>
+    <a class="menu-link" data-page="userManagementPage"><i class="fas fa-users-cog"></i> User Management</a>
+    <a class="https://cyber.follow256.com" href="https://cyber.follow256.com"><i class="fas fa-server"></i> My SERVER</a>
+</nav>
+
 
         <div class="main-content" id="mainContentArea">
             <div class="admin-header">
@@ -655,11 +658,26 @@
             <div id="allContentPage" class="page-container">
                 <h2>All Available Content</h2>
                 <div class="form-group">
-                    <label for="allContentFilter">Filter by Primary Type:</label>
+                    <label for="allContentFilter">Filter by Category:</label>
                     <select id="allContentFilter">
                         <option value="all">All</option>
-                        <option value="movie">Movies</option>
-                        <option value="tv">TV Series</option>
+                        <option value="movie">Latest Movies</option>
+                        <option value="animation">Animation</option>
+                        <option value="popular">Requested Movies</option>
+                        <option value="indian">Indian</option>
+                        <option value="horror">Horror</option>
+                        <option value="comedy">Comedy</option>
+                        <option value="romance">Romance</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="scifi-fantasy">Sci-fi & Fantasy</option>
+                        <option value="action-thriller">Action & Thriller</option>
+                        <option value="high-school">High School</option>
+                        <option value="nigerian">Nigerian Movies</option>
+                        <option value="tv">Latest TV Shows</option>
+                        <option value="upcoming_shows">Upcoming Shows</option>
+                        <option value="western_series">Western Series</option>
+                        <option value="asian_series">Asian Series</option>
+                        <option value="k_dramas">K Dramas</option>
                     </select>
                 </div>
                 <div id="allContentContainer" class="movie-grid"></div>
@@ -1760,15 +1778,35 @@
         selectedAllContentForDeletion.clear();
         updateDeleteSelectedButton(); 
         
-        const filterType = allContentFilter.value;
+        const filterValue = allContentFilter.value;
+        const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
+        
+        // Adjust button text and behavior based on filter
+        if (filterValue === 'all' || filterValue === 'movie' || filterValue === 'tv') {
+            deleteSelectedAllContentBtn.textContent = `Delete Selected Content (${selectedAllContentForDeletion.size})`;
+            deleteSelectedAllContentBtn.classList.remove('remove-from-category-mode'); // Optional: add a class for styling
+            deleteSelectedAllContentBtn.dataset.deleteMode = 'permanent';
+        } else {
+            deleteSelectedAllContentBtn.textContent = `Remove Selected from ${filterText} (${selectedAllContentForDeletion.size})`;
+            deleteSelectedAllContentBtn.classList.add('remove-from-category-mode'); // Optional: add a class for styling
+            deleteSelectedAllContentBtn.dataset.deleteMode = 'category-removal';
+        }
 
         try {
             let docsToDisplay = [];
 
             for (const dbInfo of dbsToCheck) {
                 let query = dbInfo.instance.collection('movies').orderBy('createdAt', 'desc');
-                if (filterType !== 'all') {
-                    query = query.where('contentType', '==', filterType);
+                
+                if (filterValue !== 'all') {
+                    // For 'movie' or 'tv' primary content type filters
+                    if (filterValue === 'movie' || filterValue === 'tv') {
+                        query = query.where('contentType', '==', filterValue);
+                    } 
+                    // For specific categories (e.g., 'animation', 'horror'), query the 'type' array
+                    else {
+                        query = query.where('type', 'array-contains', filterValue);
+                    }
                 }
                 const snapshot = await query.get();
                 snapshot.forEach(doc => {
@@ -1793,6 +1831,10 @@
                 // Display TMDB ID or custom slug
                 const contentId = item.tmdbId || item.slug || 'N/A'; 
 
+                // Determine button text based on filterType
+                const individualButtonText = (filterValue === 'all' || filterValue === 'movie' || filterValue === 'tv') ? 'Delete' : 'Remove from Category';
+                const individualButtonClass = (filterValue === 'all' || filterValue === 'movie' || filterValue === 'tv') ? 'delete' : 'remove-from-category';
+
                 const cardHtml = `
                     <div class="content-card">
                         <input type="checkbox" class="select-card-checkbox" data-id="${item.id}" data-project="${item.project}">
@@ -1804,7 +1846,7 @@
                             <p class="content-project-display">Project: ${item.project}</p>
                             <div class="content-card-actions">
                                 <button class="action-btn edit" data-id="${item.id}" data-project="${item.project}">Edit</button>
-                                <button class="action-btn delete" data-id="${item.id}" data-project="${item.project}">Delete</button>
+                                <button class="action-btn ${individualButtonClass}" data-id="${item.id}" data-project="${item.project}">${individualButtonText}</button>
                             </div>
                         </div>
                     </div>
@@ -1823,9 +1865,41 @@
     function updateDeleteSelectedButton() {
         selectedAllContentCount.textContent = selectedAllContentForDeletion.size;
         deleteSelectedAllContentBtn.style.display = selectedAllContentForDeletion.size > 0 ? 'block' : 'none';
+        
+        // Update the text on the main button as well
+        const filterValue = allContentFilter.value;
+        const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
+        if (filterValue === 'all' || filterValue === 'movie' || filterValue === 'tv') {
+            deleteSelectedAllContentBtn.textContent = `Delete Selected Content (${selectedAllContentForDeletion.size})`;
+        } else {
+            deleteSelectedAllContentBtn.textContent = `Remove Selected from ${filterText} (${selectedAllContentForDeletion.size})`;
+        }
     }
 
     allContentFilter.addEventListener('change', displayAllContent);
+
+    // Function to remove a specific category from a content item
+    async function removeContentFromCategory(docId, project, categoryToRemove) {
+        const targetDb = dbsToCheck.find(d => d.name === project)?.instance;
+        if (!targetDb) {
+            throw new Error(`Database instance not found for project: ${project}`);
+        }
+
+        const docRef = targetDb.collection('movies').doc(docId);
+        const docSnap = await docRef.get();
+
+        if (docSnap.exists) {
+            const currentTypes = docSnap.data().type || [];
+            const updatedTypes = currentTypes.filter(type => type !== categoryToRemove);
+            
+            await docRef.update({
+                type: updatedTypes,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            return true;
+        }
+        return false;
+    }
 
     allContentContainer.addEventListener('click', async e => {
         const target = e.target;
@@ -1843,6 +1917,9 @@
             return;
         }
 
+        const filterValue = allContentFilter.value;
+        const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
+
         if (target.matches('.select-card-checkbox')) {
             const key = `${docId}-${project}`;
             if (target.checked) {
@@ -1853,8 +1930,8 @@
             updateDeleteSelectedButton();
         } else if (target.matches('.action-btn.edit')) {
             loadContentForEditing(docId, project);
-        } else if (target.matches('.action-btn.delete')) {
-            if (confirm(`Are you sure you want to delete this content permanently from ${project}?`)) {
+        } else if (target.matches('.action-btn.delete')) { // This is for permanent delete
+            if (confirm(`Are you sure you want to delete this content permanently from ${project}? This cannot be undone.`)) {
                 setLoading(target, true);
                 try {
                     await targetDb.collection('movies').doc(docId).delete();
@@ -1870,37 +1947,81 @@
                     setLoading(target, false);
                 }
             }
+        } else if (target.matches('.action-btn.remove-from-category')) { // This is for category removal
+            if (confirm(`Are you sure you want to remove this content from the "${filterText}" category in ${project}? It will not be permanently deleted.`)) {
+                setLoading(target, true);
+                try {
+                    const success = await removeContentFromCategory(docId, project, filterValue);
+                    if (success) {
+                        displayMessage(allContentMessage, `Content removed from "${filterText}" category successfully!`, 'success');
+                        const keyToDelete = `${docId}-${project}`; // Remove from current selection as it's no longer in this view
+                        selectedAllContentForDeletion.delete(keyToDelete); 
+                        updateDeleteSelectedButton();
+                        displayAllContent(); // Re-display to update list
+                    } else {
+                        displayMessage(allContentMessage, 'Failed to remove content from category: Document not found.', 'error');
+                    }
+                } catch (err) {
+                    console.error("Error removing from category:", err);
+                    displayMessage(allContentMessage, `Error removing from category: ${err.message}`, 'error');
+                } finally {
+                    setLoading(target, false);
+                }
+            }
         }
     });
 
     deleteSelectedAllContentBtn.addEventListener('click', async () => {
         if (selectedAllContentForDeletion.size === 0) {
-            displayMessage(allContentMessage, 'No content selected for deletion.', 'info');
+            displayMessage(allContentMessage, 'No content selected for action.', 'info');
             return;
         }
         
-        if (confirm(`Are you sure you want to delete ${selectedAllContentForDeletion.size} selected item(s)? This action cannot be undone.`)) {
+        const filterValue = allContentFilter.value;
+        const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
+        const isPermanentDelete = (filterValue === 'all' || filterValue === 'movie' || filterValue === 'tv');
+
+        let confirmationMessage;
+        let successMessage;
+        let errorMessage;
+        let actionPromises = [];
+
+        if (isPermanentDelete) {
+            confirmationMessage = `Are you sure you want to delete ${selectedAllContentForDeletion.size} item(s) permanently? This action cannot be undone.`;
+            successMessage = `Deleted ${selectedAllContentForDeletion.size} items successfully.`;
+            errorMessage = `Error deleting selected content: `;
+        } else {
+            confirmationMessage = `Are you sure you want to remove ${selectedAllContentForDeletion.size} item(s) from the "${filterText}" category? They will not be permanently deleted.`;
+            successMessage = `Removed ${selectedAllContentForDeletion.size} items from "${filterText}" category successfully.`;
+            errorMessage = `Error removing selected content from category: `;
+        }
+
+        if (confirm(confirmationMessage)) {
             setLoading(deleteSelectedAllContentBtn, true);
-            const deletePromises = [];
+            
             selectedAllContentForDeletion.forEach(key => {
                 const [id, project] = key.split('-');
                 const targetDb = dbsToCheck.find(d => d.name === project)?.instance;
                 if (targetDb) {
-                    deletePromises.push(targetDb.collection('movies').doc(id).delete());
+                    if (isPermanentDelete) {
+                        actionPromises.push(targetDb.collection('movies').doc(id).delete());
+                    } else {
+                        actionPromises.push(removeContentFromCategory(id, project, filterValue));
+                    }
                 } else {
                     console.warn(`Could not find database for project: ${project}`);
                 }
             });
 
             try {
-                await Promise.all(deletePromises);
-                displayMessage(allContentMessage, `Deleted ${selectedAllContentForDeletion.size} items successfully.`, 'success');
+                await Promise.all(actionPromises);
+                displayMessage(allContentMessage, successMessage, 'success');
                 selectedAllContentForDeletion.clear(); 
                 updateDeleteSelectedButton();
                 displayAllContent(); 
             } catch (err) {
-                console.error("Error deleting selected content:", err);
-                displayMessage(allContentMessage, `Error deleting selected content: ${err.message}`, 'error');
+                console.error(errorMessage, err);
+                displayMessage(allContentMessage, `${errorMessage}${err.message}`, 'error');
             } finally {
                     setLoading(deleteSelectedAllContentBtn, false);
             }
@@ -2165,5 +2286,6 @@
     });
 });
    </script>
+
 </body>
 </html>
