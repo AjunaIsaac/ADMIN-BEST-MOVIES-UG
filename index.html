@@ -1744,20 +1744,20 @@
                 return cb.value; // Return as is for other values
             });
             if (selectedTypes.length === 0) {
-                     displayMessage(editMessage, 'Please select at least one category for TV series.', 'error');
-                     setLoading(updateContentBtn, false);
-                     return;
+                    displayMessage(editMessage, 'Please select at least one category for TV series.', 'error');
+                    setLoading(updateContentBtn, false);
+                    return;
             }
             payload.type = selectedTypes;
             try {
-                     const seriesDataValue = document.getElementById('editSeriesData').value;
+                const seriesDataValue = document.getElementById('editSeriesData').value;
                 if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
                 payload.seriesInfo = JSON.parse(seriesDataValue);
                 payload.videoUrl = firebase.firestore.FieldValue.delete(); // Ensure videoUrl is removed for TV
             } catch (err) {
-                     displayMessage(editMessage, err.message, 'error');
-                     setLoading(updateContentBtn, false);
-                     return;
+                displayMessage(editMessage, err.message, 'error');
+                setLoading(updateContentBtn, false);
+                return;
             }
         } else { 
             payload.contentType = 'movie';
@@ -1770,9 +1770,9 @@
                 return cb.value; // Return as is for other values
             });
             if (selectedTypes.length === 0) {
-                     displayMessage(editMessage, 'Please select at least one category for movies.', 'error');
-                     setLoading(updateContentBtn, false);
-                     return;
+                    displayMessage(editMessage, 'Please select at least one category for movies.', 'error');
+                    setLoading(updateContentBtn, false);
+                    return;
             }
             payload.type = selectedTypes;
             payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
@@ -2079,7 +2079,7 @@
         allBannersContainer.innerHTML = '<div class="message info" style="display:block;">Loading banners...</div>';
         try {
             const snapshot = await db.collection('banners').orderBy('updatedAt', 'desc').limit(10).get();
-            if (!snapshot.empty) {
+            if (snapshot.empty) {
                 allBannersContainer.innerHTML = '';
                 displayMessage(viewBannersMessage, 'No banners found. Add one from the "Add/Edit Banner" tab.', 'info');
                 return;
