@@ -665,7 +665,7 @@
                     <label for="allContentFilter">Filter by Category:</label>
                     <select id="allContentFilter">
                         <option value="all">All</option>
-           
+            
                         <option value="latest_uploads">Latest Uploads</option>
                         <option value="Latest-Movies">Latest Movies</option>
                         <option value="most_liked">Most Liked</option>
@@ -1317,13 +1317,53 @@
                     setLoading(addContentBtn, false);
                     return;
                 }
-                payload.seriesInfo = JSON.parse(seriesDataValue);
+                const seriesInfo = JSON.parse(seriesDataValue);
+
+                // Validate seriesInfo structure (basic validation)
+                if (!Array.isArray(seriesInfo) || seriesInfo.some(s => !s.season_number || !Array.isArray(s.episodes))) {
+                    throw new Error("Invalid Series Data JSON structure. Expected an array of seasons, each with an 'episodes' array.");
+                }
+                
+                const duplicateCheck = await checkForDuplicates(payload);
+                if (duplicateCheck.found) {
+                    displayMessage(addMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
+                    setLoading(addContentBtn, false);
+                    return;
+                }
+
+                // Save the main series document
+                const docRef = await db.collection('movies').add(payload); 
+                const seriesDocId = docRef.id;
+
+                // Save episodes to a subcollection
+                for (const season of seriesInfo) {
+                    for (const episode of season.episodes) {
+                        await db.collection('movies').doc(seriesDocId).collection('episodes').add({
+                            season_number: season.season_number,
+                            episode_number: episode.episode_number,
+                            title: episode.title || `Episode ${episode.episode_number}`,
+                            videoUrl: episode.videoUrl,
+                            // Add any other episode specific data like overview, air_date, etc.
+                            overview: episode.overview || '',
+                            air_date: episode.air_date ? firebase.firestore.Timestamp.fromDate(new Date(episode.air_date)) : null,
+                            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+
+                displayMessage(addMessage, 'TV series and episodes added successfully!', 'success');
+                addMovieForm.reset();
+                document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
+
             } catch (err) {
-                displayMessage(addMessage, `Invalid JSON in Series Data: ${err.message}`, 'error');
+                console.error("Error adding TV series or parsing JSON:", err);
+                displayMessage(addMessage, `Error processing TV Series: ${err.message}`, 'error');
+            } finally {
                 setLoading(addContentBtn, false);
-                return;
             }
-        } else { 
+
+        } else {    
             payload.contentType = 'movie';
             // For movies, 'type' will store the selected movie categories
             const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => cb.value);
@@ -1334,29 +1374,25 @@
             }
             payload.type = selectedTypes;
             payload.videoUrl = document.getElementById('videoSourceUrl').value;
-        }
 
-        // NEW: Collect values for sort_vjs and sort_genres
-        payload.sort_vjs = Array.from(document.querySelectorAll('#sortVjsCheckboxesTMDB input[name="sortVjsTMDB"]:checked')).map(cb => cb.value);
-        payload.sort_genres = Array.from(document.querySelectorAll('#sortGenresCheckboxesTMDB input[name="sortGenresTMDB"]:checked')).map(cb => cb.value);
-
-        try {
-            const duplicateCheck = await checkForDuplicates(payload);
-            if (duplicateCheck.found) {
-                displayMessage(addMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
-            } else {
-                await db.collection('movies').add(payload);
-                displayMessage(addMessage, 'Content added successfully!', 'success');
-                addMovieForm.reset();
-                // Reset new sort checkboxes
-                document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
-                document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
+            try {
+                const duplicateCheck = await checkForDuplicates(payload);
+                if (duplicateCheck.found) {
+                    displayMessage(addMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
+                } else {
+                    await db.collection('movies').add(payload);
+                    displayMessage(addMessage, 'Content added successfully!', 'success');
+                    addMovieForm.reset();
+                    // Reset new sort checkboxes
+                    document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
+                    document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
+                }
+            } catch (error) {
+                console.error("Error adding document:", error);
+                displayMessage(addMessage, `Error: ${error.message}`, 'error');
+            } finally {
+                setLoading(addContentBtn, false);
             }
-        } catch (error) {
-            console.error("Error adding document:", error);
-            displayMessage(addMessage, `Error: ${error.message}`, 'error');
-        } finally {
-            setLoading(addContentBtn, false);
         }
     });
     
@@ -1429,12 +1465,61 @@
             try {
                 const seriesDataValue = document.getElementById('manualSeriesData').value;
                 if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
-                payload.seriesInfo = JSON.parse(seriesDataValue);
+                const seriesInfo = JSON.parse(seriesDataValue);
+
+                   // Validate seriesInfo structure (basic validation)
+                if (!Array.isArray(seriesInfo) || seriesInfo.some(s => !s.season_number || !Array.isArray(s.episodes))) {
+                    throw new Error("Invalid Series Data JSON structure. Expected an array of seasons, each with an 'episodes' array.");
+                }
+
+                // Check for duplicates before saving anything
+                const duplicateCheck = await checkForDuplicates(payload);
+                if (duplicateCheck.found) {
+                    displayMessage(manualAddMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
+                    setLoading(manualAddBtn, false);
+                    return;
+                }
+
+                // Save the main series document
+                let seriesDocRef;
+                if (payload.slug) {
+                    // Use slug as document ID if available
+                    seriesDocRef = db.collection('movies').doc(payload.slug);
+                    await seriesDocRef.set(payload);
+                } else {
+                    // Let Firestore generate an ID
+                    seriesDocRef = await db.collection('movies').add(payload);
+                }
+                const seriesDocId = seriesDocRef.id;
+
+                // Save episodes to a subcollection
+                for (const season of seriesInfo) {
+                    for (const episode of season.episodes) {
+                        await db.collection('movies').doc(seriesDocId).collection('episodes').add({
+                            season_number: season.season_number,
+                            episode_number: episode.episode_number,
+                            title: episode.title || `Episode ${episode.episode_number}`,
+                            videoUrl: episode.videoUrl,
+                            overview: episode.overview || '',
+                            air_date: episode.air_date ? firebase.firestore.Timestamp.fromDate(new Date(episode.air_date)) : null,
+                            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+
+                displayMessage(manualAddMessage, 'TV series and episodes added successfully!', 'success');
+                manualAddForm.reset();
+                document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#sortVjsCheckboxesManual input').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#sortGenresCheckboxesManual input').forEach(cb => cb.checked = false);
+
             } catch (err) {
-                displayMessage(manualAddMessage, err.message, 'error');
+                console.error("Error adding TV series manually or parsing JSON:", err);
+                displayMessage(manualAddMessage, `Error processing TV Series: ${err.message}`, 'error');
+            } finally {
                 setLoading(manualAddBtn, false);
-                return;
             }
+
         } else {
             payload.contentType = 'movie';
             // For movies, 'type' will store the selected movie categories
@@ -1446,30 +1531,26 @@
             }
             payload.type = selectedTypes;
             payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
-        }
 
-        // NEW: Collect values for sort_vjs and sort_genres for manual add
-        payload.sort_vjs = Array.from(document.querySelectorAll('#sortVjsCheckboxesManual input[name="sortVjsManual"]:checked')).map(cb => cb.value);
-        payload.sort_genres = Array.from(document.querySelectorAll('#sortGenresCheckboxesManual input[name="sortGenresManual"]:checked')).map(cb => cb.value);
-
-        try {
-            const duplicateCheck = await checkForDuplicates(payload);
-            if (duplicateCheck.found) {
-                displayMessage(manualAddMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
-            } else {
-                await db.collection('movies').add(payload);
-                displayMessage(manualAddMessage, 'Content added successfully!', 'success');
-                manualAddForm.reset();
-                // After successful add, reset genre and new sort checkboxes
-                document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]').forEach(cb => cb.checked = false);
-                document.querySelectorAll('#sortVjsCheckboxesManual input').forEach(cb => cb.checked = false);
-                document.querySelectorAll('#sortGenresCheckboxesManual input').forEach(cb => cb.checked = false);
+            try {
+                const duplicateCheck = await checkForDuplicates(payload);
+                if (duplicateCheck.found) {
+                    displayMessage(manualAddMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
+                } else {
+                    await db.collection('movies').add(payload);
+                    displayMessage(manualAddMessage, 'Content added successfully!', 'success');
+                    manualAddForm.reset();
+                    // After successful add, reset genre and new sort checkboxes
+                    document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]').forEach(cb => cb.checked = false);
+                    document.querySelectorAll('#sortVjsCheckboxesManual input').forEach(cb => cb.checked = false);
+                    document.querySelectorAll('#sortGenresCheckboxesManual input').forEach(cb => cb.checked = false);
+                }
+            } catch (error) {
+                console.error("Error adding document manually:", error);
+                displayMessage(manualAddMessage, `Error: ${error.message}`, 'error');
+            } finally {
+                setLoading(manualAddBtn, false);
             }
-        } catch (error) {
-            console.error("Error adding document manually:", error);
-            displayMessage(manualAddMessage, `Error: ${error.message}`, 'error');
-        } finally {
-            setLoading(manualAddBtn, false);
         }
     });
 
@@ -1595,15 +1676,16 @@
         try {
             const targetDb = dbsToCheck.find(d => d.name === project)?.instance || db; // Use primary db as fallback
             const docRef = targetDb.collection('movies').doc(id);
-            const doc = await docRef.get();
-            if (!doc.exists) {
+            const docSnap = await docRef.get();
+            
+            if (!docSnap.exists) {
                 displayMessage(manageMessage, 'Content not found or already deleted.', 'error');
                 return;
             }
-            const data = doc.data();
+            const data = docSnap.data();
             
             editContentForm.reset();
-            document.getElementById('editDocId').value = doc.id;
+            document.getElementById('editDocId').value = docSnap.id;
             // Store the project ID where the document was found for update
             document.getElementById('editContentForm').dataset.projectId = project; 
 
@@ -1662,8 +1744,37 @@
             
             if (data.contentType === 'movie') {
                 document.getElementById('editVideoSourceUrl').value = data.videoUrl || '';
+                // Clear series data if it was previously a TV series
+                document.getElementById('editSeriesData').value = ''; 
             } else if (data.contentType === 'tv') {
-                document.getElementById('editSeriesData').value = data.seriesInfo ? JSON.stringify(data.seriesInfo, null, 2) : '';
+                // Fetch episodes for TV series
+                const episodesSnapshot = await targetDb.collection('movies').doc(id).collection('episodes').get();
+                const seasonsData = {};
+
+                episodesSnapshot.forEach(episodeDoc => {
+                    const episodeData = episodeDoc.data();
+                    const seasonNum = episodeData.season_number;
+                    if (!seasonsData[seasonNum]) {
+                        seasonsData[seasonNum] = { season_number: seasonNum, episodes: [] };
+                    }
+                    seasonsData[seasonNum].episodes.push({
+                        episode_number: episodeData.episode_number,
+                        title: episodeData.title || `Episode ${episodeData.episode_number}`,
+                        videoUrl: episodeData.videoUrl,
+                        overview: episodeData.overview || '',
+                        air_date: episodeData.air_date ? episodeData.air_date.toDate().toISOString().slice(0, 10) : ''
+                    });
+                });
+
+                // Convert to array and sort by season and then episode number
+                const formattedSeriesInfo = Object.values(seasonsData).sort((a, b) => a.season_number - b.season_number);
+                formattedSeriesInfo.forEach(season => {
+                    season.episodes.sort((a, b) => a.episode_number - b.episode_number);
+                });
+
+                document.getElementById('editSeriesData').value = JSON.stringify(formattedSeriesInfo, null, 2);
+                // Clear video URL if it was previously a movie
+                document.getElementById('editVideoSourceUrl').value = ''; 
             }
 
             navigateToPage('editContentPage');
@@ -1687,7 +1798,7 @@
         }
         const editTitle = document.getElementById('editTitle').value.trim();
         const editVjName = document.getElementById('editVjName').value.trim();
-        const referenceIdInput = document.getElementById('editReferenceId').value.trim(); 
+        const referenceIdInput = document.getElementById('editReferenceId').value.trim();  
         const editPosterUrl = document.getElementById('editPosterUrl').value.trim();
         const editBackdropUrl = document.getElementById('editBackdropUrl').value.trim(); // Get backdrop URL
 
@@ -1748,17 +1859,66 @@
                     return;
             }
             payload.type = selectedTypes;
+            
             try {
                 const seriesDataValue = document.getElementById('editSeriesData').value;
                 if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
-                payload.seriesInfo = JSON.parse(seriesDataValue);
-                payload.videoUrl = firebase.firestore.FieldValue.delete(); // Ensure videoUrl is removed for TV
+                const seriesInfo = JSON.parse(seriesDataValue);
+
+                // Validate seriesInfo structure (basic validation)
+                if (!Array.isArray(seriesInfo) || seriesInfo.some(s => !s.season_number || !Array.isArray(s.episodes))) {
+                    throw new Error("Invalid Series Data JSON structure. Expected an array of seasons, each with an 'episodes' array.");
+                }
+                
+                // Remove videoUrl and seriesInfo field (if it exists) from main document
+                payload.videoUrl = firebase.firestore.FieldValue.delete(); 
+                if (payload.seriesInfo) {
+                    payload.seriesInfo = firebase.firestore.FieldValue.delete();
+                }
+
+                const duplicateCheck = await checkForDuplicates(payload, docId, targetProjectId);  
+                if (duplicateCheck.found) {
+                    displayMessage(editMessage, `Update failed. Another entry exists with this ${duplicateCheck.field} in project: ${duplicateCheck.project}.`, 'error');
+                    setLoading(updateContentBtn, false);
+                    return;
+                }
+
+                // Update main series document
+                await targetDb.collection('movies').doc(docId).update(payload);
+
+                // Delete existing episodes subcollection and re-add them
+                const episodesCollectionRef = targetDb.collection('movies').doc(docId).collection('episodes');
+                const existingEpisodesSnapshot = await episodesCollectionRef.get();
+                const deleteEpisodePromises = [];
+                existingEpisodesSnapshot.forEach(episodeDoc => {
+                    deleteEpisodePromises.push(episodesCollectionRef.doc(episodeDoc.id).delete());
+                });
+                await Promise.all(deleteEpisodePromises);
+
+                // Add new episodes
+                for (const season of seriesInfo) {
+                    for (const episode of season.episodes) {
+                        await episodesCollectionRef.add({
+                            season_number: episode.season_number || season.season_number, // Prefer episode's own season_number if present
+                            episode_number: episode.episode_number,
+                            title: episode.title || `Episode ${episode.episode_number}`,
+                            videoUrl: episode.videoUrl,
+                            overview: episode.overview || '',
+                            air_date: episode.air_date ? firebase.firestore.Timestamp.fromDate(new Date(episode.air_date)) : null,
+                            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+
+                displayMessage(editMessage, 'TV series and episodes updated successfully!', 'success');
+                setTimeout(() => navigateToPage('allContentPage'), 2000);
+
             } catch (err) {
-                displayMessage(editMessage, err.message, 'error');
-                setLoading(updateContentBtn, false);
-                return;
+                    displayMessage(editMessage, `Error updating TV Series: ${err.message}`, 'error');
+                    setLoading(updateContentBtn, false);
+                    return;
             }
-        } else { 
+        } else {    
             payload.contentType = 'movie';
             // For movies, 'type' will store the selected movie categories
             const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => {
@@ -1776,6 +1936,17 @@
             payload.type = selectedTypes;
             payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
             payload.seriesInfo = firebase.firestore.FieldValue.delete(); // Ensure seriesInfo is removed for movies
+
+            const duplicateCheck = await checkForDuplicates(payload, docId, targetProjectId);  
+            if (duplicateCheck.found) {
+                displayMessage(editMessage, `Update failed. Another entry exists with this ${duplicateCheck.field} in project: ${duplicateCheck.project}.`, 'error');
+                setLoading(updateContentBtn, false);
+                return;
+            }
+
+            await targetDb.collection('movies').doc(docId).update(payload);
+            displayMessage(editMessage, 'Content updated successfully!', 'success');
+            setTimeout(() => navigateToPage('allContentPage'), 2000);
         }
         
         // NEW: Collect values for sort_vjs and sort_genres from the edit form
@@ -1783,15 +1954,7 @@
         payload.sort_genres = Array.from(document.querySelectorAll('#sortGenresCheckboxesEdit input[name="sortGenresEdit"]:checked')).map(cb => cb.value);
 
         try {
-            // Pass the docId AND the project ID for exclusion during duplicate check
-            const duplicateCheck = await checkForDuplicates(payload, docId, targetProjectId); 
-            if (duplicateCheck.found) {
-                displayMessage(editMessage, `Update failed. Another entry exists with this ${duplicateCheck.field} in project: ${duplicateCheck.project}.`, 'error');
-            } else {
-                await targetDb.collection('movies').doc(docId).update(payload); // Update in the specific DB
-                displayMessage(editMessage, 'Content updated successfully!', 'success');
-                setTimeout(() => navigateToPage('allContentPage'), 2000);
-            }
+            // This part moves inside the if/else for movie/tv type to ensure correct deletion/handling of fields
         } catch (error) {
             console.error("Update Error:", error);
             displayMessage(editMessage, `Update Error: ${error.message}`, 'error');
@@ -2067,7 +2230,7 @@
                 console.error(errorMessage, err);
                 displayMessage(allContentMessage, `${errorMessage}${err.message}`, 'error');
             } finally {
-                    setLoading(deleteSelectedAllContentBtn, false);
+                setLoading(deleteSelectedAllContentBtn, false);
             }
         }
     });
