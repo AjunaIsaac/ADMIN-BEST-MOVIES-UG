@@ -963,7 +963,8 @@
             checkbox.type = 'checkbox';
             checkbox.name = namePrefix;
             checkbox.value = item;
-            checkbox.checked = selectedValues.includes(item); // Pre-select if in selectedValues
+            // Ensure selectedValues is treated as an array even if it's null/undefined
+            checkbox.checked = Array.isArray(selectedValues) && selectedValues.includes(item); 
 
             label.appendChild(checkbox);
             label.appendChild(document.createTextNode(` ${item}`));
@@ -976,8 +977,9 @@
     populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', GENRE_LIST);
     populateCheckboxes('sortVjsCheckboxesManual', 'sortVjsManual', VJ_LIST);
     populateCheckboxes('sortGenresCheckboxesManual', 'sortGenresManual', GENRE_LIST);
-    populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST);
-    populateCheckboxes('sortGenresCheckboxesEdit', 'sortGenresEdit', GENRE_LIST);
+    // These will be populated by loadContentForEditing when needed
+    // populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST); 
+    // populateCheckboxes('sortGenresCheckboxesEdit', 'sortGenresEdit', GENRE_LIST);
 
 
     // --- Helper Functions ---
@@ -1175,9 +1177,6 @@
         const genreSelectionGroup = formElement.querySelector('.genre-selection-group'); // Get genre group
 
         // Define movie and TV series categories
-        // Renamed 'movie' to 'latest_movies' for consistency with request
-        // Renamed 'tv' to 'latest_tv_shows' for consistency with request
-        // Renamed 'popular' to 'latest_uploads'
         const movieCategories = [
             'latest_movies', 'latest_uploads', 'Latest-Movies', 'most_liked', 'animation', 'indian', 'horror', 'comedy', 'romance', 
             'adventure', 'scifi-fantasy', 'action-thriller', 'high-school', 'nigerian'
@@ -1246,7 +1245,6 @@
 
         const tmdbData = await (async (id, key) => {
             const isId = /^\d+$/.test(id);
-            // Fetch both general data and then configuration for image base URL
             const url = isId ? `https://api.themoviedb.org/3/${apiType}/${id}?api_key=${key}` : `https://api.themoviedb.org/3/search/${apiType}?api_key=${key}&query=${encodeURIComponent(id)}`;
             try {
                 const r = await fetch(url);
@@ -1290,14 +1288,15 @@
             overview: tmdbData.overview || "N/A",
             vjName: vjName,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            addedBy: auth.currentUser.email
+            addedBy: auth.currentUser.email,
+            // --- Collect sort_vjs and sort_genres ---
+            sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesTMDB input[name="sortVjsTMDB"]:checked')).map(cb => cb.value),
+            sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesTMDB input[name="sortGenresTMDB"]:checked')).map(cb => cb.value)
         };
 
         // TMDB fetched genres (if available, TMDB has genres as numbers)
         // You might need a mapping here if you want string genres for TMDB items.
         // For simplicity, we'll store TMDB's genre_ids directly or leave empty if not applicable.
-        // TMDB typically returns genre_ids, which are numeric. If you want readable strings,
-        // you'd need to fetch TMDB's genre list and map them. For now, it will be numeric IDs.
         payload.genres = tmdbData.genre_ids || [];
 
         if (isTV) {
@@ -1353,6 +1352,7 @@
 
                 displayMessage(addMessage, 'TV series and episodes added successfully!', 'success');
                 addMovieForm.reset();
+                // Reset new sort checkboxes after successful add
                 document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
                 document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
 
@@ -1383,7 +1383,7 @@
                     await db.collection('movies').add(payload);
                     displayMessage(addMessage, 'Content added successfully!', 'success');
                     addMovieForm.reset();
-                    // Reset new sort checkboxes
+                    // Reset new sort checkboxes after successful add
                     document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
                     document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
                 }
@@ -1396,7 +1396,7 @@
         }
     });
     
-    // --- Manual Add Form Logic (UPDATED) ---
+    // --- Manual Add Form Logic ---
     manualAddForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         setLoading(manualAddBtn, true);
@@ -1405,34 +1405,30 @@
         const manualVjName = document.getElementById('manualVjName').value.trim();
         const referenceIdInput = document.getElementById('manualReferenceId').value.trim(); 
         const manualPosterUrl = document.getElementById('manualPosterUrl').value.trim();
-        const manualBackdropUrl = document.getElementById('manualBackdropUrl').value.trim(); // Get backdrop URL
+        const manualBackdropUrl = document.getElementById('manualBackdropUrl').value.trim();
 
-        if (!manualTitle || !manualVjName || !manualPosterUrl) { // Poster URL is now required
+        if (!manualTitle || !manualVjName || !manualPosterUrl) {
             displayMessage(manualAddMessage, 'Title, VJ Name, and Poster Image URL are required.', 'error');
             setLoading(manualAddBtn, false);
             return;
         }
 
         let tmdbId = null;
-        let slug = generateSlug(manualTitle); // Default slug from title
+        let slug = generateSlug(manualTitle);
 
         if (referenceIdInput) {
-            // If referenceIdInput is provided, determine its type
             if (/^\d+$/.test(referenceIdInput)) {
-                tmdbId = Number(referenceIdInput); // It's a numeric TMDB ID
-                // slug remains generated from manualTitle for TMDB content
+                tmdbId = Number(referenceIdInput);
                 displayMessage(manualAddMessage, `Warning: You entered a numeric ID. This will be saved as a TMDB ID, not a custom slug. Slug will be '${slug}'.`, 'warn');
             } else {
-                // It's a custom text ID, so tmdbId is null, and slug is from this custom ID
                 tmdbId = null;
                 slug = generateSlug(referenceIdInput);
             }
         }
-        // If referenceIdInput is empty, tmdbId remains null, slug from manualTitle (default)
         
         // Get selected genres for manual add
         const selectedGenres = Array.from(document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]:checked')).map(cb => cb.value);
-        if(selectedGenres.length === 0) { // Optional: Require at least one genre
+        if(selectedGenres.length === 0) { 
             displayMessage(manualAddMessage, 'Please select at least one genre.', 'error');
             setLoading(manualAddBtn, false);
             return;
@@ -1443,12 +1439,15 @@
             slug: slug, // This will be the custom slug if referenceIdInput was text
             overview: document.getElementById('manualOverview').value,
             posterUrl: manualPosterUrl,
-            backdropUrl: manualBackdropUrl, // Add backdrop URL to payload
+            backdropUrl: manualBackdropUrl,
             vjName: manualVjName,
             tmdbId: tmdbId, // This will be the numeric TMDB ID or null
             genres: selectedGenres, // Add selected genres to payload
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            addedBy: auth.currentUser.email
+            addedBy: auth.currentUser.email,
+            // --- Collect sort_vjs and sort_genres ---
+            sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesManual input[name="sortVjsManual"]:checked')).map(cb => cb.value),
+            sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesManual input[name="sortGenresManual"]:checked')).map(cb => cb.value)
         };
 
         const primaryType = document.getElementById('manualPrimaryContentType').value;
@@ -1510,6 +1509,7 @@
                 displayMessage(manualAddMessage, 'TV series and episodes added successfully!', 'success');
                 manualAddForm.reset();
                 document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]').forEach(cb => cb.checked = false);
+                // Reset new sort checkboxes after successful add
                 document.querySelectorAll('#sortVjsCheckboxesManual input').forEach(cb => cb.checked = false);
                 document.querySelectorAll('#sortGenresCheckboxesManual input').forEach(cb => cb.checked = false);
 
@@ -1554,7 +1554,7 @@
         }
     });
 
-    // --- Manage & Edit Content Logic (UPDATED) ---
+    // --- Manage & Edit Content Logic ---
     searchManageBtn.addEventListener('click', async () => {
         setLoading(searchManageBtn, true);
         manageSearchResults.innerHTML = '';
@@ -1671,7 +1671,7 @@
         }
     });
 
-    // --- Edit Content Logic (UPDATED) ---
+    // --- Edit Content Logic ---
     async function loadContentForEditing(id, project) {
         try {
             const targetDb = dbsToCheck.find(d => d.name === project)?.instance || db; // Use primary db as fallback
@@ -1696,13 +1696,11 @@
             document.getElementById('editVjName').value = data.vjName || '';
             
             // Map the `movie` and `tv` values back to `latest_movies` and `latest_tv_shows` for display if needed
-            // The actual stored `contentType` is still 'movie' or 'tv'.
             const primaryTypeSelector = document.getElementById('editPrimaryContentType');
             primaryTypeSelector.value = data.contentType === 'tv' ? 'tv' : 'movie';
             primaryTypeSelector.dispatchEvent(new Event('change')); // Trigger visibility logic
 
             // Populate "Reference ID" with tmdbId if present, otherwise with slug if it's not generated from title
-            // If data.slug matches generateSlug(data.title), it means slug was from title, so don't show it as a custom ID.
             const isSlugFromTitle = generateSlug(data.title || '') === data.slug;
             document.getElementById('editReferenceId').value = data.tmdbId || (!isSlugFromTitle && data.slug ? data.slug : '');
 
@@ -1738,9 +1736,9 @@
                 });
             }
             
-            // NEW: Populate sort_vjs and sort_genres checkboxes
-            populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST, data.sort_vjs || []);
-            populateCheckboxes('sortGenresCheckboxesEdit', 'sortGenresEdit', GENRE_LIST, data.sort_genres || []);
+            // NEW: Populate sort_vjs and sort_genres checkboxes from fetched data
+            populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST, data.sort_vjs);
+            populateCheckboxes('sortGenresCheckboxesEdit', 'sortGenresEdit', GENRE_LIST, data.sort_genres);
             
             if (data.contentType === 'movie') {
                 document.getElementById('editVideoSourceUrl').value = data.videoUrl || '';
@@ -1809,22 +1807,20 @@
         }
 
         let tmdbId = null;
-        let slug = generateSlug(editTitle); // Default slug from title
+        let slug = generateSlug(editTitle);
 
         if(referenceIdInput) {
             if(/^\d+$/.test(referenceIdInput)) {
                 tmdbId = Number(referenceIdInput);
-                // slug remains generated from editTitle for TMDB content
             } else {
-                tmdbId = null; // It's a custom entry
-                slug = generateSlug(referenceIdInput); // For custom content, slug is based on the reference ID field
+                tmdbId = null;
+                slug = generateSlug(referenceIdInput);
             }
         }
-        // If referenceIdInput is empty, tmdbId is null, slug from editTitle (default)
             
         // Get selected genres from the edit form
         const selectedGenres = Array.from(document.querySelectorAll('#editGenreCheckboxes input[name="editGenre"]:checked')).map(cb => cb.value);
-        if(selectedGenres.length === 0) { // Optional: Require at least one genre for edit
+        if(selectedGenres.length === 0) { 
             displayMessage(editMessage, 'Please select at least one genre.', 'error');
             setLoading(updateContentBtn, false);
             return;
@@ -1835,11 +1831,14 @@
             slug: slug,
             overview: document.getElementById('editOverview').value,
             posterUrl: editPosterUrl,
-            backdropUrl: editBackdropUrl, // Add backdrop URL to payload
+            backdropUrl: editBackdropUrl,
             vjName: editVjName,
             tmdbId: tmdbId,
             genres: selectedGenres, // Add selected genres to payload
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            // --- Collect updated sort_vjs and sort_genres ---
+            sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesEdit input[name="sortVjsEdit"]:checked')).map(cb => cb.value),
+            sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesEdit input[name="sortGenresEdit"]:checked')).map(cb => cb.value)
         };
 
         const primaryType = document.getElementById('editPrimaryContentType').value;
@@ -1872,7 +1871,7 @@
                 
                 // Remove videoUrl and seriesInfo field (if it exists) from main document
                 payload.videoUrl = firebase.firestore.FieldValue.delete(); 
-                if (payload.seriesInfo) {
+                if (payload.seriesInfo) { // Check if seriesInfo exists before trying to delete it
                     payload.seriesInfo = firebase.firestore.FieldValue.delete();
                 }
 
@@ -1949,12 +1948,8 @@
             setTimeout(() => navigateToPage('allContentPage'), 2000);
         }
         
-        // NEW: Collect values for sort_vjs and sort_genres from the edit form
-        payload.sort_vjs = Array.from(document.querySelectorAll('#sortVjsCheckboxesEdit input[name="sortVjsEdit"]:checked')).map(cb => cb.value);
-        payload.sort_genres = Array.from(document.querySelectorAll('#sortGenresCheckboxesEdit input[name="sortGenresEdit"]:checked')).map(cb => cb.value);
-
         try {
-            // This part moves inside the if/else for movie/tv type to ensure correct deletion/handling of fields
+            // All updates happen within the if/else blocks now.
         } catch (error) {
             console.error("Update Error:", error);
             displayMessage(editMessage, `Update Error: ${error.message}`, 'error');
@@ -2492,6 +2487,7 @@
         }
     });
 });
+
     </script>
 
 </body>
