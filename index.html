@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel (Multi-Project)</title>
+    <title>Stream Zone Movies Admin Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
@@ -735,7 +735,7 @@
                             <label><input type="checkbox" name="editGenre" value="crime"> Crime</label>
                             <label><input type="checkbox" name="editGenre" value="documentary"> Documentary</label>
                             <label><input type="checkbox" name="editGenre" value="drama"> Drama</label>
-                            <label><input type="checkbox" name="editGenre" value="family"> Family</label>
+                            <label><input type="checkbox" name="genre" value="family"> Family</label>
                             <label><input type="checkbox" name="editGenre" value="fantasy"> Fantasy</label>
                             <label><input type="checkbox" name="editGenre" value="history"> History</label>
                             <label><input type="checkbox" name="editGenre" value="horror"> Horror</label>
@@ -834,8 +834,8 @@
     
    <script>
     document.addEventListener('DOMContentLoaded', () => {
-    // --- Firebase Configurations ---
-    const primaryFirebaseConfig = {
+    // --- Firebase Configuration ---
+    const firebaseConfig = {
         apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
         authDomain: "stream-zone-movies-a83c1.firebaseapp.com",
         projectId: "stream-zone-movies-a83c1",
@@ -844,37 +844,10 @@
         appId: "1:148342664213:web:56df2549cc480df7cf721c"
     };
 
-    const secondary1FirebaseConfig = {
-        apiKey: "AIzaSyCQhwMc1uYLmjLMmBWk5QpT3XcLsuzBIEQ",
-        authDomain: "reyikingtv1.firebaseapp.com",
-        projectId: "reyikingtv1",
-        storageBucket: "reyikingtv1.firebaseapp.com",
-        messagingSenderId: "617666017039",
-        appId: "1:617666017039:web:5fa4ce795d9a0da0cfb07a"
-    };
-
-    const secondary2FirebaseConfig = {
-        apiKey: "AIzaSyCgbaRR6ezvswehl1Q21ICHgBtXZ9bcLwA",
-        authDomain: "my-movies-admin.firebaseapp.com",
-        projectId: "my-movies-admin",
-        storageBucket: "my-movies-admin.appspot.com",
-        messagingSenderId: "492775126123",
-        appId: "1:492775126123:web:7ad51095ff15f61ed12d2e"
-    };
-
-    // --- Initialize Firebase Apps ---
-    const app = firebase.initializeApp(primaryFirebaseConfig);
+    // --- Initialize Firebase App ---
+    const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore(app);
     const auth = firebase.auth(app);
-    const secondaryApp1 = firebase.initializeApp(secondary1FirebaseConfig, 'reyikingtv1');
-    const db1 = firebase.firestore(secondaryApp1);
-    const secondaryApp2 = firebase.initializeApp(secondary2FirebaseConfig, 'my-movies-admin');
-    const db2 = firebase.firestore(secondaryApp2);
-    const dbsToCheck = [ 
-        { name: primaryFirebaseConfig.projectId, instance: db }, 
-        { name: secondary1FirebaseConfig.projectId, instance: db1 }, 
-        { name: secondary2FirebaseConfig.projectId, instance: db2 } 
-    ];
     
     // --- DOM Element References ---
     const loginScreen = document.getElementById('loginScreen');
@@ -943,7 +916,7 @@
         "Vj Junior","Vj TONNY", "Vj Emmy", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo",
         "Vj Kevin", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox",
         "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy",
-        "Vj Baros", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T"
+        "Vj Baros", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T","Vj RONAGE"
     ];
     const GENRE_LIST = [
         "Action", "Horror", "Series", "Adventure", "Love Story", "Comedy", "Crime", "Family", "Sci FI", "Romance",
@@ -1010,35 +983,29 @@
             .replace(/\-\-+/g, '-');
     }
 
-    async function checkForDuplicates(payload, excludeDocId = null, currentProject = primaryFirebaseConfig.projectId) {
+    async function checkForDuplicates(payload, excludeDocId = null) {
         // Check for duplicate TMDB ID if it exists and is a number
         if (payload.tmdbId && typeof payload.tmdbId === 'number') {
-            for (const dbInfo of dbsToCheck) {
-                const q = dbInfo.instance.collection('movies').where('tmdbId', '==', payload.tmdbId);
-                const snapshot = await q.get();
-                for (const doc of snapshot.docs) {
-                    // Exclude self if checking within the same project's database
-                    if (!(dbInfo.name === currentProject && doc.id === excludeDocId)) {
-                        return { found: true, project: dbInfo.name, field: 'TMDB ID' };
-                    }
+            const q = db.collection('movies').where('tmdbId', '==', payload.tmdbId);
+            const snapshot = await q.get();
+            for (const doc of snapshot.docs) {
+                if (doc.id !== excludeDocId) {
+                    return { found: true, field: 'TMDB ID' };
                 }
             }
         }
 
         // Check for duplicate slug
         if (payload.slug) {
-            for (const dbInfo of dbsToCheck) {
-                const q = dbInfo.instance.collection('movies').where('slug', '==', payload.slug);
-                const snapshot = await q.get();
-                for (const doc of snapshot.docs) {
-                    // Exclude self if checking within the same project's database
-                    if (!(dbInfo.name === currentProject && doc.id === excludeDocId)) {
-                        return { found: true, project: dbInfo.name, field: 'Unique Text ID (slug)' };
-                    }
+            const q = db.collection('movies').where('slug', '==', payload.slug);
+            const snapshot = await q.get();
+            for (const doc of snapshot.docs) {
+                if (doc.id !== excludeDocId) {
+                    return { found: true, field: 'Unique Text ID (slug)' };
                 }
             }
         }
-        return { found: false, project: null, field: null };
+        return { found: false, field: null };
     }
 
     // User Management specific helper functions
@@ -1325,7 +1292,7 @@
                 
                 const duplicateCheck = await checkForDuplicates(payload);
                 if (duplicateCheck.found) {
-                    displayMessage(addMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
+                    displayMessage(addMessage, `Duplicate found by ${duplicateCheck.field}. Addition denied.`, 'error');
                     setLoading(addContentBtn, false);
                     return;
                 }
@@ -1378,7 +1345,7 @@
             try {
                 const duplicateCheck = await checkForDuplicates(payload);
                 if (duplicateCheck.found) {
-                    displayMessage(addMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
+                    displayMessage(addMessage, `Duplicate found by ${duplicateCheck.field}. Addition denied.`, 'error');
                 } else {
                     await db.collection('movies').add(payload);
                     displayMessage(addMessage, 'Content added successfully!', 'success');
@@ -1474,7 +1441,7 @@
                 // Check for duplicates before saving anything
                 const duplicateCheck = await checkForDuplicates(payload);
                 if (duplicateCheck.found) {
-                    displayMessage(manualAddMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
+                    displayMessage(manualAddMessage, `Duplicate found by ${duplicateCheck.field}. Addition denied.`, 'error');
                     setLoading(manualAddBtn, false);
                     return;
                 }
@@ -1535,7 +1502,7 @@
             try {
                 const duplicateCheck = await checkForDuplicates(payload);
                 if (duplicateCheck.found) {
-                    displayMessage(manualAddMessage, `Duplicate found by ${duplicateCheck.field} in project: ${duplicateCheck.project}. Addition denied.`, 'error');
+                    displayMessage(manualAddMessage, `Duplicate found by ${duplicateCheck.field}. Addition denied.`, 'error');
                 } else {
                     await db.collection('movies').add(payload);
                     displayMessage(manualAddMessage, 'Content added successfully!', 'success');
@@ -1571,43 +1538,38 @@
             let docs = [];
             const lowerCaseTerm = term.toLowerCase();
             
-            // Search across all dbs
-            for (const dbInfo of dbsToCheck) {
-                const snapshot = await dbInfo.instance.collection('movies').get(); // Get all to filter by both tmdbId and title
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    // Check if TMDB ID matches (numeric search)
-                    if (data.tmdbId && /^\d+$/.test(term) && data.tmdbId === Number(term)) {
-                        docs.push({ id: doc.id, ...data, project: dbInfo.name });
-                    } 
-                    // Check if title or slug includes the term (case-insensitive)
-                    else if (
-                        (data.title && data.title.toLowerCase().includes(lowerCaseTerm)) || 
-                        (data.slug && data.slug.toLowerCase().includes(lowerCaseTerm))
-                    ) {
-                        docs.push({ id: doc.id, ...data, project: dbInfo.name });
-                    }
-                });
-            }
+            // Search only in the primary db
+            const snapshot = await db.collection('movies').get(); 
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                // Check if TMDB ID matches (numeric search)
+                if (data.tmdbId && /^\d+$/.test(term) && data.tmdbId === Number(term)) {
+                    docs.push({ id: doc.id, ...data });
+                } 
+                // Check if title or slug includes the term (case-insensitive)
+                else if (
+                    (data.title && data.title.toLowerCase().includes(lowerCaseTerm)) || 
+                    (data.slug && data.slug.toLowerCase().includes(lowerCaseTerm))
+                ) {
+                    docs.push({ id: doc.id, ...data });
+                }
+            });
 
-            // Remove duplicates if a doc exists in multiple dbs (shouldn't happen with proper ID management, but good for safety)
-            const uniqueDocs = Array.from(new Map(docs.map(item => [item.id + item.project, item])).values());
-            
-            if(uniqueDocs.length === 0) {
+            if(docs.length === 0) {
                 displayMessage(manageMessage, 'No content found matching your search.', 'info');
             } else {
-                uniqueDocs.forEach(item => {
+                docs.forEach(item => {
                     manageSearchResults.innerHTML += `
                         <div class="result-item">
-                            <span><strong>${item.title}</strong> (ID: ${item.tmdbId || item.slug || 'N/A'}) - Type: ${item.contentType || 'N/A'} (Project: ${item.project})</span>
+                            <span><strong>${item.title}</strong> (ID: ${item.tmdbId || item.slug || 'N/A'}) - Type: ${item.contentType || 'N/A'}</span>
                             <div class="result-item-actions">
-                                <button class="action-btn edit" data-id="${item.id}" data-project="${item.project}">Edit</button>
-                                <button class="action-btn select-delete" data-id="${item.id}" data-project="${item.project}">Select</button>
+                                <button class="action-btn edit" data-id="${item.id}">Edit</button>
+                                <button class="action-btn select-delete" data-id="${item.id}">Select</button>
                             </div>
                         </div>
                     `;
                 });
-                displayMessage(manageMessage, `Found ${uniqueDocs.length} item(s).`, 'success');
+                displayMessage(manageMessage, `Found ${docs.length} item(s).`, 'success');
             }
         } catch (err) {
             console.error("Error searching content:", err);
@@ -1621,14 +1583,12 @@
         if(e.target.matches('.select-delete')){
             const btn = e.target;
             const id = btn.dataset.id;
-            const project = btn.dataset.project;
-            const key = `${id}-${project}`; // Use a composite key for selection
-            if(selectedMoviesForDeletion.has(key)){
-                selectedMoviesForDeletion.delete(key);
+            if(selectedMoviesForDeletion.has(id)){
+                selectedMoviesForDeletion.delete(id);
                 btn.classList.remove('selected');
                 btn.textContent = 'Select';
             } else {
-                selectedMoviesForDeletion.add(key);
+                selectedMoviesForDeletion.add(id);
                 btn.classList.add('selected');
                 btn.textContent = 'Selected';
             }
@@ -1637,8 +1597,7 @@
         }
         if (e.target.matches('.action-btn.edit')) {
             const docId = e.target.dataset.id;
-            const project = e.target.dataset.project;
-            loadContentForEditing(docId, project);
+            loadContentForEditing(docId);
         }
     });
     
@@ -1646,14 +1605,8 @@
         if(confirm(`Are you sure you want to delete ${selectedMoviesForDeletion.size} item(s)? This action cannot be undone.`)){
             setLoading(confirmDeleteBtn, true);
             const deletePromises = [];
-            selectedMoviesForDeletion.forEach(key => {
-                const [id, project] = key.split('-');
-                const targetDb = dbsToCheck.find(d => d.name === project)?.instance;
-                if (targetDb) {
-                    deletePromises.push(targetDb.collection('movies').doc(id).delete());
-                } else {
-                    console.warn(`Could not find database for project: ${project}`);
-                }
+            selectedMoviesForDeletion.forEach(id => {
+                deletePromises.push(db.collection('movies').doc(id).delete());
             });
 
             try {
@@ -1672,10 +1625,9 @@
     });
 
     // --- Edit Content Logic ---
-    async function loadContentForEditing(id, project) {
+    async function loadContentForEditing(id) {
         try {
-            const targetDb = dbsToCheck.find(d => d.name === project)?.instance || db; // Use primary db as fallback
-            const docRef = targetDb.collection('movies').doc(id);
+            const docRef = db.collection('movies').doc(id);
             const docSnap = await docRef.get();
             
             if (!docSnap.exists) {
@@ -1686,8 +1638,7 @@
             
             editContentForm.reset();
             document.getElementById('editDocId').value = docSnap.id;
-            // Store the project ID where the document was found for update
-            document.getElementById('editContentForm').dataset.projectId = project; 
+            // No need for projectId dataset as we are only using one project
 
             document.getElementById('editTitle').value = data.title || '';
             document.getElementById('editOverview').value = data.overview || '';
@@ -1746,7 +1697,7 @@
                 document.getElementById('editSeriesData').value = ''; 
             } else if (data.contentType === 'tv') {
                 // Fetch episodes for TV series
-                const episodesSnapshot = await targetDb.collection('movies').doc(id).collection('episodes').get();
+                const episodesSnapshot = await db.collection('movies').doc(id).collection('episodes').get();
                 const seasonsData = {};
 
                 episodesSnapshot.forEach(episodeDoc => {
@@ -1786,8 +1737,6 @@
         e.preventDefault();
         setLoading(updateContentBtn, true);
         const docId = document.getElementById('editDocId').value;
-        const targetProjectId = e.target.dataset.projectId; // Get the project ID where the doc was found
-        const targetDb = dbsToCheck.find(d => d.name === targetProjectId)?.instance || db; // Use the original DB, fallback to primary
 
         if (!docId) {
             displayMessage(editMessage, 'No document ID found. Cannot update.', 'error');
@@ -1875,18 +1824,18 @@
                     payload.seriesInfo = firebase.firestore.FieldValue.delete();
                 }
 
-                const duplicateCheck = await checkForDuplicates(payload, docId, targetProjectId);  
+                const duplicateCheck = await checkForDuplicates(payload, docId);  
                 if (duplicateCheck.found) {
-                    displayMessage(editMessage, `Update failed. Another entry exists with this ${duplicateCheck.field} in project: ${duplicateCheck.project}.`, 'error');
+                    displayMessage(editMessage, `Update failed. Another entry exists with this ${duplicateCheck.field}.`, 'error');
                     setLoading(updateContentBtn, false);
                     return;
                 }
 
                 // Update main series document
-                await targetDb.collection('movies').doc(docId).update(payload);
+                await db.collection('movies').doc(docId).update(payload);
 
                 // Delete existing episodes subcollection and re-add them
-                const episodesCollectionRef = targetDb.collection('movies').doc(docId).collection('episodes');
+                const episodesCollectionRef = db.collection('movies').doc(docId).collection('episodes');
                 const existingEpisodesSnapshot = await episodesCollectionRef.get();
                 const deleteEpisodePromises = [];
                 existingEpisodesSnapshot.forEach(episodeDoc => {
@@ -1936,14 +1885,14 @@
             payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
             payload.seriesInfo = firebase.firestore.FieldValue.delete(); // Ensure seriesInfo is removed for movies
 
-            const duplicateCheck = await checkForDuplicates(payload, docId, targetProjectId);  
+            const duplicateCheck = await checkForDuplicates(payload, docId);  
             if (duplicateCheck.found) {
-                displayMessage(editMessage, `Update failed. Another entry exists with this ${duplicateCheck.field} in project: ${duplicateCheck.project}.`, 'error');
+                displayMessage(editMessage, `Update failed. Another entry exists with this ${duplicateCheck.field}.`, 'error');
                 setLoading(updateContentBtn, false);
                 return;
             }
 
-            await targetDb.collection('movies').doc(docId).update(payload);
+            await db.collection('movies').doc(docId).update(payload);
             displayMessage(editMessage, 'Content updated successfully!', 'success');
             setTimeout(() => navigateToPage('allContentPage'), 2000);
         }
@@ -1983,35 +1932,30 @@
         try {
             let docsToDisplay = [];
 
-            for (const dbInfo of dbsToCheck) {
-                let query = dbInfo.instance.collection('movies').orderBy('createdAt', 'desc');
-                
-                if (filterValue !== 'all') {
-                    // For 'latest_movies' or 'latest_tv_shows' primary content type filters
-                    if (filterValue === 'latest_movies') {
-                        query = query.where('contentType', '==', 'movie');
-                    } else if (filterValue === 'latest_tv_shows') {
-                        query = query.where('contentType', '==', 'tv');
-                    }
-                    // For specific categories (e.g., 'animation', 'horror'), query the 'type' array
-                    else {
-                        // Map filterValue back to the actual stored type value if it's a renamed one
-                        let actualFilterValue = filterValue;
-                        if (filterValue === 'latest_movies') actualFilterValue = 'movie';
-                        if (filterValue === 'latest_tv_shows') actualFilterValue = 'tv';
-                        if (filterValue === 'latest_uploads') actualFilterValue = 'popular';
-
-                        query = query.where('type', 'array-contains', actualFilterValue);
-                    }
+            let query = db.collection('movies').orderBy('createdAt', 'desc');
+            
+            if (filterValue !== 'all') {
+                // For 'latest_movies' or 'latest_tv_shows' primary content type filters
+                if (filterValue === 'latest_movies') {
+                    query = query.where('contentType', '==', 'movie');
+                } else if (filterValue === 'latest_tv_shows') {
+                    query = query.where('contentType', '==', 'tv');
                 }
-                const snapshot = await query.get();
-                snapshot.forEach(doc => {
-                    docsToDisplay.push({ id: doc.id, ...doc.data(), project: dbInfo.name });
-                });
-            }
+                // For specific categories (e.g., 'animation', 'horror'), query the 'type' array
+                else {
+                    // Map filterValue back to the actual stored type value if it's a renamed one
+                    let actualFilterValue = filterValue;
+                    if (filterValue === 'latest_movies') actualFilterValue = 'movie';
+                    if (filterValue === 'latest_tv_shows') actualFilterValue = 'tv';
+                    if (filterValue === 'latest_uploads') actualFilterValue = 'popular';
 
-            // Optional: Deduplicate if the same movie exists across multiple dbs (shouldn't happen with proper ID management, but good for safety)
-            // For simplicity, we'll show all found entries for now, with their project name.
+                    query = query.where('type', 'array-contains', actualFilterValue);
+                }
+            }
+            const snapshot = await query.get();
+            snapshot.forEach(doc => {
+                docsToDisplay.push({ id: doc.id, ...doc.data() });
+            });
             
             if (docsToDisplay.length === 0) {
                 allContentContainer.innerHTML = '';
@@ -2033,16 +1977,15 @@
 
                 const cardHtml = `
                     <div class="content-card">
-                        <input type="checkbox" class="select-card-checkbox" data-id="${item.id}" data-project="${item.project}">
+                        <input type="checkbox" class="select-card-checkbox" data-id="${item.id}">
                         <img src="${imageUrl}" alt="${title}" onerror="this.onerror=null; this.src='/Upload/Logo.png';">
                         <div class="content-card-content">
                             <h3>${title}</h3>
                             <p class="vj-name">VJ: ${vjName}</p>
                             <p class="content-id-display">ID: ${contentId}</p>
-                            <p class="content-project-display">Project: ${item.project}</p>
                             <div class="content-card-actions">
-                                <button class="action-btn edit" data-id="${item.id}" data-project="${item.project}">Edit</button>
-                                <button class="action-btn ${individualButtonClass}" data-id="${item.id}" data-project="${item.project}">${individualButtonText}</button>
+                                <button class="action-btn edit" data-id="${item.id}">Edit</button>
+                                <button class="action-btn ${individualButtonClass}" data-id="${item.id}">${individualButtonText}</button>
                             </div>
                         </div>
                     </div>
@@ -2075,13 +2018,8 @@
     allContentFilter.addEventListener('change', displayAllContent);
 
     // Function to remove a specific category from a content item
-    async function removeContentFromCategory(docId, project, categoryToRemove) {
-        const targetDb = dbsToCheck.find(d => d.name === project)?.instance;
-        if (!targetDb) {
-            throw new Error(`Database instance not found for project: ${project}`);
-        }
-
-        const docRef = targetDb.collection('movies').doc(docId);
+    async function removeContentFromCategory(docId, categoryToRemove) {
+        const docRef = db.collection('movies').doc(docId);
         const docSnap = await docRef.get();
 
         if (docSnap.exists) {
@@ -2105,41 +2043,31 @@
 
     allContentContainer.addEventListener('click', async e => {
         const target = e.target;
-        // For checkbox or buttons, get the docId and project from dataset
+        // For checkbox or buttons, get the docId from dataset
         const cardElement = target.closest('.content-card');
         const docId = cardElement?.querySelector('.select-card-checkbox')?.dataset.id || target.dataset.id;
-        const project = cardElement?.querySelector('.select-card-checkbox')?.dataset.project || target.dataset.project;
         
-        if (!docId || !project) return; // Exit if no id or project found
-
-        const targetDb = dbsToCheck.find(d => d.name === project)?.instance;
-        if (!targetDb) {
-            console.error(`Database instance not found for project: ${project}`);
-            displayMessage(allContentMessage, `Error: Database for project '${project}' not found.`, 'error');
-            return;
-        }
+        if (!docId) return; // Exit if no id found
 
         const filterValue = allContentFilter.value;
         const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
 
         if (target.matches('.select-card-checkbox')) {
-            const key = `${docId}-${project}`;
             if (target.checked) {
-                selectedAllContentForDeletion.add(key);
+                selectedAllContentForDeletion.add(docId);
             } else {
-                selectedAllContentForDeletion.delete(key);
+                selectedAllContentForDeletion.delete(docId);
             }
             updateDeleteSelectedButton();
         } else if (target.matches('.action-btn.edit')) {
-            loadContentForEditing(docId, project);
+            loadContentForEditing(docId);
         } else if (target.matches('.action-btn.delete')) { // This is for permanent delete
-            if (confirm(`Are you sure you want to delete this content permanently from ${project}? This cannot be undone.`)) {
+            if (confirm(`Are you sure you want to delete this content permanently? This cannot be undone.`)) {
                 setLoading(target, true);
                 try {
-                    await targetDb.collection('movies').doc(docId).delete();
+                    await db.collection('movies').doc(docId).delete();
                     displayMessage(allContentMessage, 'Content deleted successfully!', 'success');
-                    const keyToDelete = `${docId}-${project}`;
-                    selectedAllContentForDeletion.delete(keyToDelete); 
+                    selectedAllContentForDeletion.delete(docId); 
                     updateDeleteSelectedButton();
                     displayAllContent(); 
                 } catch (err) {
@@ -2150,14 +2078,13 @@
                 }
             }
         } else if (target.matches('.action-btn.remove-from-category')) { // This is for category removal
-            if (confirm(`Are you sure you want to remove this content from the "${filterText}" category in ${project}? It will not be permanently deleted.`)) {
+            if (confirm(`Are you sure you want to remove this content from the "${filterText}" category? It will not be permanently deleted.`)) {
                 setLoading(target, true);
                 try {
-                    const success = await removeContentFromCategory(docId, project, filterValue);
+                    const success = await removeContentFromCategory(docId, filterValue);
                     if (success) {
                         displayMessage(allContentMessage, `Content removed from "${filterText}" category successfully!`, 'success');
-                        const keyToDelete = `${docId}-${project}`; // Remove from current selection as it's no longer in this view
-                        selectedAllContentForDeletion.delete(keyToDelete); 
+                        selectedAllContentForDeletion.delete(docId); 
                         updateDeleteSelectedButton();
                         displayAllContent(); // Re-display to update list
                     } else {
@@ -2201,17 +2128,11 @@
         if (confirm(confirmationMessage)) {
             setLoading(deleteSelectedAllContentBtn, true);
             
-            selectedAllContentForDeletion.forEach(key => {
-                const [id, project] = key.split('-');
-                const targetDb = dbsToCheck.find(d => d.name === project)?.instance;
-                if (targetDb) {
-                    if (isPermanentDelete) {
-                        actionPromises.push(targetDb.collection('movies').doc(id).delete());
-                    } else {
-                        actionPromises.push(removeContentFromCategory(id, project, filterValue));
-                    }
+            selectedAllContentForDeletion.forEach(id => {
+                if (isPermanentDelete) {
+                    actionPromises.push(db.collection('movies').doc(id).delete());
                 } else {
-                    console.warn(`Could not find database for project: ${project}`);
+                    actionPromises.push(removeContentFromCategory(id, filterValue));
                 }
             });
 
