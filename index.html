@@ -95,7 +95,7 @@
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
             width: 100%;
-            max-width: 800px;
+            max-width: 1200px; /* Wider for new notification layout */
             margin: 20px auto;
         }
         .page-container.active { display: block; }
@@ -180,6 +180,26 @@
         #userManagementPage .input-group input, #userManagementPage .input-group select { width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 8px; color: white; font-size: 15px; }
         #userManagementPage .btn-secondary { background: #555; }
         #userManagementPage hr { border-color: #444; margin: 20px 0; }
+
+        /* NEW: Styles for Notification Page */
+        .notification-layout { display: flex; flex-wrap: wrap; gap: 30px; }
+        .notification-form-col, .notification-preview-col { flex: 1; min-width: 300px; }
+        .notification-preview-wrapper {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 12px;
+            height: 100%;
+        }
+        #previewImage {
+            display: none;
+            width: 100%;
+            height: auto;
+            margin-top: 12px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #333;
+        }
 
         /* NEW: Styles for All Content Page */
         .movie-grid {
@@ -491,16 +511,17 @@
 
     <div id="adminPanel" style="display: none; width: 100%;">
         <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
-<nav id="mainMenu">
-    <div class="menu-header">Admin Menu</div>
-    <a class="menu-link" data-page="addContentPage"><i class="fas fa-magic"></i> Add from TMDB</a>
-    <a class="menu-link" data-page="manualAddPage"><i class="fas fa-edit"></i> Manual Add</a>
-    <a class="menu-link" data-page="manageContentPage"><i class="fas fa-search"></i> Search & Edit/Delete</a>
-    <a class="menu-link" data-page="allContentPage"><i class="fas fa-film"></i> All Content</a> 
-    <a class="menu-link" data-page="bannerPage"><i class="fas fa-images"></i> Manage Banners</a>
-    <a class="menu-link" data-page="userManagementPage"><i class="fas fa-users-cog"></i> User Management</a>
-    <a class="https://cyber.follow256.com" href="https://cyber.follow256.com"><i class="fas fa-server"></i> My SERVER</a>
-</nav>
+        <nav id="mainMenu">
+            <div class="menu-header">Admin Menu</div>
+            <a class="menu-link" data-page="addContentPage"><i class="fas fa-magic"></i> Add from TMDB</a>
+            <a class="menu-link" data-page="manualAddPage"><i class="fas fa-edit"></i> Manual Add</a>
+            <a class="menu-link" data-page="manageContentPage"><i class="fas fa-search"></i> Search & Edit/Delete</a>
+            <a class="menu-link" data-page="allContentPage"><i class="fas fa-film"></i> All Content</a>
+            <a class="menu-link" data-page="bannerPage"><i class="fas fa-images"></i> Manage Banners</a>
+            <a class="menu-link" data-page="notificationPage"><i class="fas fa-paper-plane"></i> Send Notifications</a>
+            <a class="menu-link" data-page="userManagementPage"><i class="fas fa-users-cog"></i> User Management</a>
+            <a href="https://cyber.follow256.com" target="_blank"><i class="fas fa-server"></i> My SERVER</a>
+        </nav>
 
 
         <div class="main-content" id="mainContentArea">
@@ -518,8 +539,6 @@
                     <div class="form-group media-categories-group">
                         <label>Categories (Select all that apply)</label>
                         <div class="checkbox-group" id="contentTypeCheckboxes">
-                            
-                            
                             <label><input type="checkbox" name="contentType" value="latest_uploads"> Latest Uploads</label>
                             <label><input type="checkbox" name="contentType" value="Latest-Movies">Latest Movies</label>
                             <label><input type="checkbox" name="contentType" value="most_liked"> Most Liked</label>
@@ -550,12 +569,12 @@
                         <div class="form-group">
                             <label>VJs for Sort Page</label>
                             <div class="checkbox-group" id="sortVjsCheckboxesTMDB">
-                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Genres for Sort Page</label>
                             <div class="checkbox-group" id="sortGenresCheckboxesTMDB">
-                                </div>
+                            </div>
                         </div>
                     </div>
                     <button type="submit" id="addContentBtn">Add Content<span class="spinner"></span></button>
@@ -575,8 +594,6 @@
                     <div class="form-group media-categories-group">
                         <label>Categories</label>
                         <div class="checkbox-group" id="manualContentTypeCheckboxes">
-                            
-                            
                             <label><input type="checkbox" name="manualContentType" value="latest_uploads"> Latest Uploads</label>
                             <label><input type="checkbox" name="manualContentType" value="Latest-Movies">Latest Movies</label>
                             <label><input type="checkbox" name="manualContentType" value="most_liked"> Most Liked</label>
@@ -632,12 +649,12 @@
                         <div class="form-group">
                             <label>VJs for Sort Page</label>
                             <div class="checkbox-group" id="sortVjsCheckboxesManual">
-                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Genres for Sort Page</label>
                             <div class="checkbox-group" id="sortGenresCheckboxesManual">
-                                </div>
+                            </div>
                         </div>
                     </div>
                     <button type="submit" id="manualAddContentBtn">Add Manually<span class="spinner"></span></button>
@@ -665,7 +682,6 @@
                     <label for="allContentFilter">Filter by Category:</label>
                     <select id="allContentFilter">
                         <option value="all">All</option>
-            
                         <option value="latest_uploads">Latest Uploads</option>
                         <option value="Latest-Movies">Latest Movies</option>
                         <option value="most_liked">Most Liked</option>
@@ -703,8 +719,6 @@
                     <div class="form-group media-categories-group">
                         <label>Categories</label>
                         <div class="checkbox-group" id="editContentTypeCheckboxes">
-                            
-                            
                             <label><input type="checkbox" name="editContentType" value="latest_uploads"> Latest Uploads</label>
                             <label><input type="checkbox" name="editContentType" value="Latest-Movies">Latest Movies</label>
                             <label><input type="checkbox" name="editContentType" value="most_liked"> Most Liked</label>
@@ -760,12 +774,12 @@
                         <div class="form-group">
                             <label>VJs for Sort Page</label>
                             <div class="checkbox-group" id="sortVjsCheckboxesEdit">
-                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Genres for Sort Page</label>
                             <div class="checkbox-group" id="sortGenresCheckboxesEdit">
-                                </div>
+                            </div>
                         </div>
                     </div>
                     <button type="submit" id="updateContentBtn">Update Content<span class="spinner"></span></button>
@@ -798,6 +812,38 @@
                     <h2>All Available Banners</h2>
                     <div id="allBannersContainer"></div>
                     <div id="viewBannersMessage" class="message"></div>
+                </div>
+            </div>
+            
+            <div id="notificationPage" class="page-container">
+                <h2>Notification Dashboard</h2>
+                <p style="text-align:center; color: #ccc; margin-top: -15px; margin-bottom: 25px;">Send notifications to all your users instantly.</p>
+                <div class="notification-layout">
+                    <div class="notification-form-col">
+                        <form id="notificationForm">
+                             <div class="form-group"><label for="notifTitle">Title</label><input type="text" id="notifTitle" placeholder="New Movie Alert!" required></div>
+                             <div class="form-group"><label for="notifBody">Body</label><textarea id="notifBody" rows="4" placeholder="Check out the latest blockbuster..." required></textarea></div>
+                             <div class="form-group"><label for="notifImageUrl">Image URL <span style="color: #888; font-weight: normal;">(Optional)</span></label><input type="url" id="notifImageUrl" placeholder="https://example.com/image.jpg"></div>
+                             <div class="form-group"><label for="notifUrl">Page to Open <span style="color: #888; font-weight: normal;">(Optional)</span></label><input type="url" id="notifUrl" placeholder="https://app.streamzonemovies.online/page.html"></div>
+                             <button type="submit" id="sendNotificationBtn">Send Notification <i class="fas fa-paper-plane"></i><span class="spinner"></span></button>
+                        </form>
+                        <div id="notificationMessage" class="message"></div>
+                    </div>
+                    <div class="notification-preview-col">
+                        <div class="notification-preview-wrapper">
+                            <h3 style="text-align: center; color: var(--accent-color); margin-bottom: 15px;">Live Preview</h3>
+                             <div style="display: flex; align-items: center; margin-bottom: 8px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                                 <img src="https://placehold.co/24x24/d1e231/0b0f30?text=S" alt="App Icon" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;">
+                                 <span style="font-size: 13px; font-weight: bold; color: var(--text-color);">Stream Zone Movies</span>
+                                 <span style="font-size: 13px; color: #aaa; margin-left: auto;">now</span>
+                             </div>
+                             <div style="padding-left: 32px; margin-top: 10px;">
+                                 <h4 id="previewTitle" style="font-weight: bold; color: var(--text-color); margin: 0 0 4px 0; font-size: 16px;">Notification Title</h4>
+                                 <p id="previewBody" style="font-size: 14px; color: #ccc; margin: 0;">Notification body will appear here...</p>
+                             </div>
+                             <img id="previewImage" alt="Notification Image">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -910,11 +956,24 @@
     const deleteSelectedAllContentBtn = document.getElementById('deleteSelectedAllContentBtn');
     const selectedAllContentCount = document.getElementById('selectedAllContentCount');
     let selectedAllContentForDeletion = new Set();
+    
+    // --- Notification Panel Elements ---
+    const notificationScriptUrl = 'https://ajunaisaac.byethost22.com/send_notification.php';
+    const notifForm = document.getElementById('notificationForm');
+    const sendNotificationBtn = document.getElementById('sendNotificationBtn');
+    const notificationMessage = document.getElementById('notificationMessage');
+    const notifTitleInput = document.getElementById('notifTitle');
+    const notifBodyInput = document.getElementById('notifBody');
+    const notifImageUrlInput = document.getElementById('notifImageUrl');
+    const notifUrlInput = document.getElementById('notifUrl'); // Added this
+    const previewTitle = document.getElementById('previewTitle');
+    const previewBody = document.getElementById('previewBody');
+    const previewImage = document.getElementById('previewImage');
 
     // NEW: VJ and Genre Lists for Sort Page
     const VJ_LIST = [
-        "Vj Junior","Vj TONNY", "Vj Emmy", "VJ NEIL", "Vj Jovan","Vj SHIELD","Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo",
-        "Vj Kevin","Vj SOUL", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox",
+        "Vj Junior","Vj TONNY", "Vj Emmy", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo",
+        "Vj Kevin", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox",
         "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy",
         "Vj Baros","Vj SON", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T","Vj RONAGE"
     ];
@@ -1114,10 +1173,13 @@
         window.scrollTo(0, 0);
     }
     document.querySelectorAll('.menu-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateToPage(e.currentTarget.dataset.page);
-        });
+        // Exclude external links from this navigation logic
+        if (!link.hasAttribute('href')) {
+             link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateToPage(e.currentTarget.dataset.page);
+            });
+        }
     });
 
     // Handle window resize for menu state
@@ -1433,7 +1495,7 @@
                 if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
                 const seriesInfo = JSON.parse(seriesDataValue);
 
-                   // Validate seriesInfo structure (basic validation)
+                    // Validate seriesInfo structure (basic validation)
                 if (!Array.isArray(seriesInfo) || seriesInfo.some(s => !s.season_number || !Array.isArray(s.episodes))) {
                     throw new Error("Invalid Series Data JSON structure. Expected an array of seasons, each with an 'episodes' array.");
                 }
@@ -1766,7 +1828,7 @@
                 slug = generateSlug(referenceIdInput);
             }
         }
-            
+        
         // Get selected genres from the edit form
         const selectedGenres = Array.from(document.querySelectorAll('#editGenreCheckboxes input[name="editGenre"]:checked')).map(cb => cb.value);
         if(selectedGenres.length === 0) { 
@@ -2407,6 +2469,84 @@
             userCreateBtn.textContent = 'Create New Document';
         }
     });
+    
+    // --- Notification Panel Logic ---
+    if (notifForm) {
+        // Live Preview Logic
+        notifTitleInput.addEventListener('input', () => {
+            previewTitle.textContent = notifTitleInput.value || 'Notification Title';
+        });
+
+        notifBodyInput.addEventListener('input', () => {
+            previewBody.textContent = notifBodyInput.value || 'Notification body will appear here...';
+        });
+
+        notifImageUrlInput.addEventListener('input', () => {
+            const url = notifImageUrlInput.value;
+            if (url) {
+                previewImage.src = url;
+                previewImage.style.display = 'block';
+                previewImage.onerror = () => { // Handle broken image links
+                    previewImage.style.display = 'none';
+                };
+            } else {
+                previewImage.style.display = 'none';
+            }
+        });
+
+        // Form Submission Logic
+        notifForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const title = notifTitleInput.value;
+            const body = notifBodyInput.value;
+            const imageUrl = notifImageUrlInput.value;
+            const url = notifUrlInput.value;
+
+            if (!title || !body) {
+                displayMessage(notificationMessage, 'Please fill in the title and body fields.', 'error');
+                return;
+            }
+
+            setLoading(sendNotificationBtn, true);
+
+            const payload = {
+                title: title,
+                body: body,
+                image_url: imageUrl,
+                url: url
+            };
+
+            try {
+                const response = await fetch(notificationScriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+
+                if (result.success) {
+                    displayMessage(notificationMessage, 'Notification sent successfully!', 'success');
+                    notifForm.reset();
+                    previewTitle.textContent = 'Notification Title';
+                    previewBody.textContent = 'Notification body will appear here...';
+                    previewImage.style.display = 'none';
+                } else {
+                    displayMessage(notificationMessage, 'Failed to send notification: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                displayMessage(notificationMessage, `A network error occurred: ${error.message}. Please check your connection.`, 'error');
+            } finally {
+                setLoading(sendNotificationBtn, false);
+            }
+        });
+    }
+
 });
 
     </script>
