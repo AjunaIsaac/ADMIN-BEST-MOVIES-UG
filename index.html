@@ -540,7 +540,7 @@
                         <label>Categories (Select all that apply)</label>
                         <div class="checkbox-group" id="contentTypeCheckboxes">
                             <label><input type="checkbox" name="contentType" value="latest_uploads"> Latest Uploads</label>
-                            <label><input type="checkbox" name="contentType" value="Latest-Movies">Latest Movies</label>
+                            <label class="movie-only-category"><input type="checkbox" name="contentType" value="Latest-Movies">Latest Movies</label>
                             <label><input type="checkbox" name="contentType" value="most_liked"> Most Liked</label>
                             <label><input type="checkbox" name="contentType" value="animation"> Animation</label>
                             <label><input type="checkbox" name="contentType" value="indian"> Indian</label>
@@ -552,10 +552,11 @@
                             <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
                             <label><input type="checkbox" name="contentType" value="high-school"> High School</label>
                             <label><input type="checkbox" name="contentType" value="nigerian"> Nigerian Movies</label>
-                            <label><input type="checkbox" name="contentType" value="upcoming_shows"> Upcoming Shows</label>
-                            <label><input type="checkbox" name="contentType" value="western_series"> Western Series</label>
-                            <label><input type="checkbox" name="contentType" value="Latest-TV-Series"> Latest Tv Shows</label>
-                            <label><input type="checkbox" name="contentType" value="k_dramas"> K Dramas</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="western_series"> Western Series</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="Latest-TV-Series"> Latest Tv Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="k_dramas"> K Dramas</label>
+                             <label><input type="checkbox" name="contentType" value="send_notification"> Send Notification</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="contentIdentifier">Content Name or TMDB ID</label><input type="text" id="contentIdentifier" placeholder="e.g., The Matrix or TMDB ID 603" required></div>
@@ -595,7 +596,7 @@
                         <label>Categories</label>
                         <div class="checkbox-group" id="manualContentTypeCheckboxes">
                             <label><input type="checkbox" name="manualContentType" value="latest_uploads"> Latest Uploads</label>
-                            <label><input type="checkbox" name="manualContentType" value="Latest-Movies">Latest Movies</label>
+                            <label class="movie-only-category"><input type="checkbox" name="manualContentType" value="Latest-Movies">Latest Movies</label>
                             <label><input type="checkbox" name="manualContentType" value="most_liked"> Most Liked</label>
                             <label><input type="checkbox" name="manualContentType" value="animation"> Animation</label>
                             <label><input type="checkbox" name="manualContentType" value="indian"> Indian</label>
@@ -607,10 +608,11 @@
                             <label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label>
                             <label><input type="checkbox" name="manualContentType" value="high-school"> High School</label>
                             <label><input type="checkbox" name="manualContentType" value="nigerian"> Nigerian Movies</label>
-                            <label><input type="checkbox" name="manualContentType" value="upcoming_shows"> Upcoming Shows</label>
-                            <label><input type="checkbox" name="manualContentType" value="western_series"> Western Series</label>
-                            <label><input type="checkbox" name="manualContentType" value="Latest-TV-Series">Latest Tv shows</label>
-                            <label><input type="checkbox" name="manualContentType" value="k_dramas"> K Dramas</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="western_series"> Western Series</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="Latest-TV-Series">Latest Tv shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="k_dramas"> K Dramas</label>
+                             <label><input type="checkbox" name="manualContentType" value="send_notification"> Send Notification</label>
                         </div>
                     </div>
 
@@ -699,6 +701,7 @@
                         <option value="western_series">Western Series</option>
                         <option value="Latest-TV-Series">Latest Tv Shows</option>
                         <option value="k_dramas">K Dramas</option>
+                        <option value="send_notification">Send Notification</option>
                     </select>
                 </div>
                 <div id="allContentContainer" class="movie-grid"></div>
@@ -720,7 +723,7 @@
                         <label>Categories</label>
                         <div class="checkbox-group" id="editContentTypeCheckboxes">
                             <label><input type="checkbox" name="editContentType" value="latest_uploads"> Latest Uploads</label>
-                            <label><input type="checkbox" name="editContentType" value="Latest-Movies">Latest Movies</label>
+                            <label class="movie-only-category"><input type="checkbox" name="editContentType" value="Latest-Movies">Latest Movies</label>
                             <label><input type="checkbox" name="editContentType" value="most_liked"> Most Liked</label>
                             <label><input type="checkbox" name="editContentType" value="animation"> Animation</label>
                             <label><input type="checkbox" name="editContentType" value="indian"> Indian</label>
@@ -732,10 +735,11 @@
                             <label><input type="checkbox" name="editContentType" value="action-thriller"> Action & Thriller</label>
                             <label><input type="checkbox" name="editContentType" value="high-school"> High School</label>
                             <label><input type="checkbox" name="editContentType" value="nigerian"> Nigerian Movies</label>
-                            <label><input type="checkbox" name="editContentType" value="upcoming_shows"> Upcoming Shows</label>
-                            <label><input type="checkbox" name="editContentType" value="western_series"> Western Series</label>
-                            <label><input type="checkbox" name="editContentType" value="Latest-TV-Series"> Latest Tv shows</label>
-                            <label><input type="checkbox" name="editContentType" value="k_dramas"> K Dramas</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="western_series"> Western Series</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="Latest-TV-Series"> Latest Tv shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="k_dramas"> K Dramas</label>
+                             <label><input type="checkbox" name="editContentType" value="send_notification"> Send Notification</label>
                         </div>
                     </div>
 
@@ -821,27 +825,26 @@
                 <div class="notification-layout">
                     <div class="notification-form-col">
                         <form id="notificationForm">
-                             <div class="form-group"><label for="notifTitle">Title</label><input type="text" id="notifTitle" placeholder="New Movie Alert!" required></div>
-                             <div class="form-group"><label for="notifBody">Body</label><textarea id="notifBody" rows="4" placeholder="Check out the latest blockbuster..." required></textarea></div>
-                             <div class="form-group"><label for="notifImageUrl">Image URL <span style="color: #888; font-weight: normal;">(Optional)</span></label><input type="url" id="notifImageUrl" placeholder="https://example.com/image.jpg"></div>
-                             <div class="form-group"><label for="notifUrl">Page to Open <span style="color: #888; font-weight: normal;">(Optional)</span></label><input type="url" id="notifUrl" placeholder="https://app.streamzonemovies.online/page.html"></div>
-                             <button type="submit" id="sendNotificationBtn">Send Notification <i class="fas fa-paper-plane"></i><span class="spinner"></span></button>
+                            <div class="form-group"><label for="notifTitle">Title</label><input type="text" id="notifTitle" placeholder="New Movie Alert!" required></div>
+                            <div class="form-group"><label for="notifBody">Body</label><textarea id="notifBody" rows="4" placeholder="Check out the latest blockbuster..." required></textarea></div>
+                            <div class="form-group"><label for="notifImageUrl">Image URL <span style="color: #888; font-weight: normal;">(Optional)</span></label><input type="url" id="notifImageUrl" placeholder="https://example.com/image.jpg"></div>
+                            <button type="submit" id="sendNotificationBtn">Send Notification <i class="fas fa-paper-plane"></i><span class="spinner"></span></button>
                         </form>
                         <div id="notificationMessage" class="message"></div>
                     </div>
                     <div class="notification-preview-col">
                         <div class="notification-preview-wrapper">
                             <h3 style="text-align: center; color: var(--accent-color); margin-bottom: 15px;">Live Preview</h3>
-                             <div style="display: flex; align-items: center; margin-bottom: 8px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
-                                 <img src="https://placehold.co/24x24/d1e231/0b0f30?text=S" alt="App Icon" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;">
-                                 <span style="font-size: 13px; font-weight: bold; color: var(--text-color);">Stream Zone Movies</span>
-                                 <span style="font-size: 13px; color: #aaa; margin-left: auto;">now</span>
-                             </div>
-                             <div style="padding-left: 32px; margin-top: 10px;">
-                                 <h4 id="previewTitle" style="font-weight: bold; color: var(--text-color); margin: 0 0 4px 0; font-size: 16px;">Notification Title</h4>
-                                 <p id="previewBody" style="font-size: 14px; color: #ccc; margin: 0;">Notification body will appear here...</p>
-                             </div>
-                             <img id="previewImage" alt="Notification Image">
+                            <div style="display: flex; align-items: center; margin-bottom: 8px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                                <img src="https://placehold.co/24x24/d1e231/0b0f30?text=S" alt="App Icon" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;">
+                                <span style="font-size: 13px; font-weight: bold; color: var(--text-color);">Stream Zone Movies</span>
+                                <span style="font-size: 13px; color: #aaa; margin-left: auto;">now</span>
+                            </div>
+                            <div style="padding-left: 32px; margin-top: 10px;">
+                                <h4 id="previewTitle" style="font-weight: bold; color: var(--text-color); margin: 0 0 4px 0; font-size: 16px;">Notification Title</h4>
+                                <p id="previewBody" style="font-size: 14px; color: #ccc; margin: 0;">Notification body will appear here...</p>
+                            </div>
+                            <img id="previewImage" alt="Notification Image">
                         </div>
                     </div>
                 </div>
@@ -878,7 +881,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     
-   <script>
+ <script>
     document.addEventListener('DOMContentLoaded', () => {
     // --- Firebase Configuration ---
     const firebaseConfig = {
@@ -965,7 +968,7 @@
     const notifTitleInput = document.getElementById('notifTitle');
     const notifBodyInput = document.getElementById('notifBody');
     const notifImageUrlInput = document.getElementById('notifImageUrl');
-    const notifUrlInput = document.getElementById('notifUrl'); // Added this
+    // Removed notifUrlInput as it's no longer needed in the HTML and JS variable list
     const previewTitle = document.getElementById('previewTitle');
     const previewBody = document.getElementById('previewBody');
     const previewImage = document.getElementById('previewImage');
@@ -1092,6 +1095,52 @@
         userMessageArea.classList.remove('hidden');
     }
 
+    /**
+     * Sends a push notification to all users.
+     * @param {string} title - The title of the notification.
+     * @param {string} body - The body/message of the notification.
+     * @param {string} [imageUrl=''] - Optional: URL of an image to display in the notification.
+     * @param {string} [url=''] - Optional: URL to open when the notification is clicked.
+     * @param {HTMLElement} [msgElement=notificationMessage] - The DOM element to display feedback messages.
+     * @returns {Promise<boolean>} - True if notification sent successfully, false otherwise.
+     */
+    async function sendNotification(title, body, imageUrl = '', url = '', msgElement = notificationMessage) {
+        const payload = {
+            title: title,
+            body: body,
+            image_url: imageUrl,
+            url: url // This will now always be passed, even if empty
+        };
+
+        try {
+            const response = await fetch(notificationScriptUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                // If the PHP script returns an HTTP error (e.g., 404, 500)
+                const errorText = await response.text(); // Get raw response text for debugging
+                throw new Error(`Server responded with status: ${response.status} ${response.statusText}. Response: ${errorText}`);
+            }
+            
+            const result = await response.json();
+
+            if (result.success) {
+                displayMessage(msgElement, 'Notification sent successfully!', 'success');
+                return true;
+            } else {
+                displayMessage(msgElement, 'Failed to send notification: ' + (result.error || 'Unknown error from server response'), 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error("Error sending notification:", error);
+            displayMessage(msgElement, `A network error occurred: ${error.message}. Please check your connection or PHP script.`, 'error');
+            return false;
+        }
+    }
+
 
     // --- Auth and Navigation ---
     auth.onAuthStateChanged(user => {
@@ -1207,12 +1256,12 @@
 
         // Define movie and TV series categories
         const movieCategories = [
-            'latest_movies', 'latest_uploads', 'Latest-Movies', 'most_liked', 'animation', 'indian', 'horror', 'comedy', 'romance', 
-            'adventure', 'scifi-fantasy', 'action-thriller', 'high-school', 'nigerian'
+            "latest_uploads", "Latest-Movies", "most_liked", "animation", "indian", "horror", "comedy", "romance", 
+            "adventure", "scifi-fantasy", "action-thriller", "high-school", "nigerian", "send_notification"
         ];
         const tvCategories = [
-            'latest_tv_shows', 'latest_uploads', 'Latest-Movies', 'most_liked',
-            'upcoming_shows', 'western_series', 'Latest-TV-Series', 'k_dramas'
+            "latest_uploads", "most_liked", "upcoming_shows", "western_series", 
+            "Latest-TV-Series", "k_dramas", "send_notification"
         ];
 
         function toggleFields() {
@@ -1328,6 +1377,9 @@
         // For simplicity, we'll store TMDB's genre_ids directly or leave empty if not applicable.
         payload.genres = tmdbData.genre_ids || [];
 
+        // Check if "Send Notification" is ticked
+        const sendNotificationChecked = document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked;
+
         if (isTV) {
             payload.contentType = 'tv';
             // For TV, 'type' will store the selected TV categories
@@ -1337,7 +1389,7 @@
                 setLoading(addContentBtn, false);
                 return;
             }
-            payload.type = selectedTypes;
+            payload.type = selectedTypes.filter(type => type !== 'send_notification'); // Filter out the notification category from being saved to Firestore
             try {
                 const seriesDataValue = document.getElementById('seriesData').value;
                 if(!seriesDataValue) {
@@ -1384,6 +1436,15 @@
                 // Reset new sort checkboxes after successful add
                 document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
                 document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
+                
+                // Automatically send notification if checked
+                if (sendNotificationChecked) {
+                    // Assuming you have a standard URL format for series details
+                    const contentUrl = `https://app.streamzonemovies.online/series/${payload.slug}`; // Example URL
+                    await sendNotification(finalTitle, tmdbData.overview || '', tmdbData.fullBackdropPath || '', contentUrl, addMessage); // Changed to fullBackdropPath
+                }
+                document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked = false; // Uncheck notification
+
 
             } catch (err) {
                 console.error("Error adding TV series or parsing JSON:", err);
@@ -1392,7 +1453,7 @@
                 setLoading(addContentBtn, false);
             }
 
-        } else {    
+        } else {   
             payload.contentType = 'movie';
             // For movies, 'type' will store the selected movie categories
             const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => cb.value);
@@ -1401,7 +1462,7 @@
                 setLoading(addContentBtn, false);
                 return;
             }
-            payload.type = selectedTypes;
+            payload.type = selectedTypes.filter(type => type !== 'send_notification'); // Filter out the notification category from being saved to Firestore
             payload.videoUrl = document.getElementById('videoSourceUrl').value;
 
             try {
@@ -1415,6 +1476,14 @@
                     // Reset new sort checkboxes after successful add
                     document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
                     document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
+                    
+                    // Automatically send notification if checked
+                    if (sendNotificationChecked) {
+                        // Assuming you have a standard URL format for movie details
+                        const contentUrl = `https://app.streamzonemovies.online/movie/${payload.slug}`; // Example URL
+                        await sendNotification(finalTitle, tmdbData.overview || '', tmdbData.fullBackdropPath || '', contentUrl, addMessage); // Changed to fullBackdropPath
+                    }
+                    document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked = false; // Uncheck notification
                 }
             } catch (error) {
                 console.error("Error adding document:", error);
@@ -1431,6 +1500,7 @@
         setLoading(manualAddBtn, true);
         
         const manualTitle = document.getElementById('manualTitle').value.trim();
+        const manualOverview = document.getElementById('manualOverview').value.trim();
         const manualVjName = document.getElementById('manualVjName').value.trim();
         const referenceIdInput = document.getElementById('manualReferenceId').value.trim(); 
         const manualPosterUrl = document.getElementById('manualPosterUrl').value.trim();
@@ -1479,6 +1549,9 @@
             sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesManual input[name="sortGenresManual"]:checked')).map(cb => cb.value)
         };
 
+        // Check if "Send Notification" is ticked
+        const sendNotificationChecked = document.querySelector('#manualContentTypeCheckboxes input[name="manualContentType"][value="send_notification"]').checked;
+
         const primaryType = document.getElementById('manualPrimaryContentType').value;
         if (primaryType === 'tv') {
             payload.contentType = 'tv';
@@ -1489,7 +1562,7 @@
                 setLoading(manualAddBtn, false);
                 return;
             }
-            payload.type = selectedTypes;
+            payload.type = selectedTypes.filter(type => type !== 'send_notification'); // Filter out notification category
             try {
                 const seriesDataValue = document.getElementById('manualSeriesData').value;
                 if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
@@ -1541,6 +1614,13 @@
                 // Reset new sort checkboxes after successful add
                 document.querySelectorAll('#sortVjsCheckboxesManual input').forEach(cb => cb.checked = false);
                 document.querySelectorAll('#sortGenresCheckboxesManual input').forEach(cb => cb.checked = false);
+                
+                // Automatically send notification if checked
+                if (sendNotificationChecked) {
+                    const contentUrl = `https://app.streamzonemovies.online/series/${payload.slug}`; // Example URL
+                    await sendNotification(manualTitle, manualOverview, manualBackdropUrl, contentUrl, manualAddMessage); // Changed to manualBackdropUrl
+                }
+                document.querySelector('#manualContentTypeCheckboxes input[name="manualContentType"][value="send_notification"]').checked = false; // Uncheck notification
 
             } catch (err) {
                 console.error("Error adding TV series manually or parsing JSON:", err);
@@ -1558,7 +1638,7 @@
                 setLoading(manualAddBtn, false);
                 return;
             }
-            payload.type = selectedTypes;
+            payload.type = selectedTypes.filter(type => type !== 'send_notification'); // Filter out notification category
             payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
 
             try {
@@ -1573,6 +1653,13 @@
                     document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]').forEach(cb => cb.checked = false);
                     document.querySelectorAll('#sortVjsCheckboxesManual input').forEach(cb => cb.checked = false);
                     document.querySelectorAll('#sortGenresCheckboxesManual input').forEach(cb => cb.checked = false);
+                    
+                    // Automatically send notification if checked
+                    if (sendNotificationChecked) {
+                        const contentUrl = `https://app.streamzonemovies.online/movie/${payload.slug}`; // Example URL
+                        await sendNotification(manualTitle, manualOverview, manualBackdropUrl, contentUrl, manualAddMessage); // Changed to manualBackdropUrl
+                    }
+                    document.querySelector('#manualContentTypeCheckboxes input[name="manualContentType"][value="send_notification"]').checked = false; // Uncheck notification
                 }
             } catch (error) {
                 console.error("Error adding document manually:", error);
@@ -1728,13 +1815,17 @@
                 data.type.forEach(typeValue => {
                     // Adjust typeValue for the admin panel's specific display values
                     let displayValue = typeValue;
-                    if (typeValue === 'movie') displayValue = 'latest_movies';
-                    if (typeValue === 'tv') displayValue = 'latest_tv_shows';
+                    if (typeValue === 'movie') displayValue = 'Latest-Movies'; // Renamed for display
+                    if (typeValue === 'tv') displayValue = 'Latest-TV-Series'; // Renamed for display
                     if (typeValue === 'popular') displayValue = 'latest_uploads'; // Map 'popular' back to 'latest_uploads'
 
                     const checkbox = document.querySelector(`#editContentTypeCheckboxes input[value="${displayValue}"]`);
                     if (checkbox) checkbox.checked = true;
                 });
+            }
+            // Also check the "Send Notification" checkbox if the content has that type
+            if (data.type && data.type.includes('send_notification')) {
+                document.querySelector('#editContentTypeCheckboxes input[name="editContentType"][value="send_notification"]').checked = true;
             }
 
             // Uncheck all genre checkboxes first
@@ -1806,6 +1897,7 @@
             return;
         }
         const editTitle = document.getElementById('editTitle').value.trim();
+        const editOverview = document.getElementById('editOverview').value.trim();
         const editVjName = document.getElementById('editVjName').value.trim();
         const referenceIdInput = document.getElementById('editReferenceId').value.trim();  
         const editPosterUrl = document.getElementById('editPosterUrl').value.trim();
@@ -1837,10 +1929,14 @@
             return;
         }
 
+        // Check if "Send Notification" is ticked
+        const sendNotificationChecked = document.querySelector('#editContentTypeCheckboxes input[name="editContentType"][value="send_notification"]').checked;
+
+
         let payload = {
             title: editTitle,
             slug: slug,
-            overview: document.getElementById('editOverview').value,
+            overview: editOverview,
             posterUrl: editPosterUrl,
             backdropUrl: editBackdropUrl,
             vjName: editVjName,
@@ -1858,9 +1954,9 @@
             // For TV, 'type' will store the selected TV categories
             const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => {
                 // Map the displayed values back to original stored values
-                if (cb.value === 'latest_movies') return 'movie';
-                if (cb.value === 'latest_tv_shows') return 'tv';
-                if (cb.value === 'latest_uploads') return 'popular';
+                if (cb.value === 'Latest-Movies') return 'movie'; // Map back to 'movie'
+                if (cb.value === 'Latest-TV-Series') return 'tv'; // Map back to 'tv'
+                if (cb.value === 'latest_uploads') return 'popular'; // Map 'latest_uploads' to 'popular'
                 return cb.value; // Return as is for other values
             });
             if (selectedTypes.length === 0) {
@@ -1868,7 +1964,7 @@
                     setLoading(updateContentBtn, false);
                     return;
             }
-            payload.type = selectedTypes;
+            payload.type = selectedTypes.filter(type => type !== 'send_notification'); // Filter out notification category
             
             try {
                 const seriesDataValue = document.getElementById('editSeriesData').value;
@@ -1922,19 +2018,26 @@
 
                 displayMessage(editMessage, 'TV series and episodes updated successfully!', 'success');
                 setTimeout(() => navigateToPage('allContentPage'), 2000);
+                
+                // Automatically send notification if checked
+                if (sendNotificationChecked) {
+                    const contentUrl = `https://app.streamzonemovies.online/series/${payload.slug}`; // Example URL
+                    await sendNotification(editTitle, editOverview, editBackdropUrl, contentUrl, editMessage); // Changed to editBackdropUrl
+                }
+                document.querySelector('#editContentTypeCheckboxes input[name="editContentType"][value="send_notification"]').checked = false; // Uncheck notification
 
             } catch (err) {
                     displayMessage(editMessage, `Error updating TV Series: ${err.message}`, 'error');
                     setLoading(updateContentBtn, false);
                     return;
             }
-        } else {    
+        } else {   
             payload.contentType = 'movie';
             // For movies, 'type' will store the selected movie categories
             const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => {
                 // Map the displayed values back to original stored values
-                if (cb.value === 'latest_movies') return 'movie';
-                if (cb.value === 'latest_tv_shows') return 'tv';
+                if (cb.value === 'Latest-Movies') return 'movie';
+                if (cb.value === 'Latest-TV-Series') return 'tv';
                 if (cb.value === 'latest_uploads') return 'popular';
                 return cb.value; // Return as is for other values
             });
@@ -1943,7 +2046,7 @@
                     setLoading(updateContentBtn, false);
                     return;
             }
-            payload.type = selectedTypes;
+            payload.type = selectedTypes.filter(type => type !== 'send_notification'); // Filter out notification category
             payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
             payload.seriesInfo = firebase.firestore.FieldValue.delete(); // Ensure seriesInfo is removed for movies
 
@@ -1957,10 +2060,18 @@
             await db.collection('movies').doc(docId).update(payload);
             displayMessage(editMessage, 'Content updated successfully!', 'success');
             setTimeout(() => navigateToPage('allContentPage'), 2000);
+            
+            // Automatically send notification if checked
+            if (sendNotificationChecked) {
+                const contentUrl = `https://app.streamzonemovies.online/movie/${payload.slug}`; // Example URL
+                await sendNotification(editTitle, editOverview, editBackdropUrl, contentUrl, editMessage); // Changed to editBackdropUrl
+            }
+            document.querySelector('#editContentTypeCheckboxes input[name="editContentType"][value="send_notification"]').checked = false; // Uncheck notification
         }
         
         try {
             // All updates happen within the if/else blocks now.
+            // No longer pre-filling notification form or navigating; just sending automatically.
         } catch (error) {
             console.error("Update Error:", error);
             displayMessage(editMessage, `Update Error: ${error.message}`, 'error');
@@ -1981,7 +2092,7 @@
         const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
         
         // Adjust button text and behavior based on filter
-        if (filterValue === 'all' || filterValue === 'latest_movies' || filterValue === 'latest_tv_shows') {
+        if (filterValue === 'all' || filterValue === 'Latest-Movies' || filterValue === 'Latest-TV-Series') {
             deleteSelectedAllContentBtn.textContent = `Delete Selected Content (${selectedAllContentForDeletion.size})`;
             deleteSelectedAllContentBtn.classList.remove('remove-from-category-mode'); // Optional: add a class for styling
             deleteSelectedAllContentBtn.dataset.deleteMode = 'permanent';
@@ -1997,18 +2108,18 @@
             let query = db.collection('movies').orderBy('createdAt', 'desc');
             
             if (filterValue !== 'all') {
-                // For 'latest_movies' or 'latest_tv_shows' primary content type filters
-                if (filterValue === 'latest_movies') {
+                // For 'Latest-Movies' or 'Latest-TV-Series' primary content type filters
+                if (filterValue === 'Latest-Movies') {
                     query = query.where('contentType', '==', 'movie');
-                } else if (filterValue === 'latest_tv_shows') {
+                } else if (filterValue === 'Latest-TV-Series') {
                     query = query.where('contentType', '==', 'tv');
                 }
                 // For specific categories (e.g., 'animation', 'horror'), query the 'type' array
                 else {
                     // Map filterValue back to the actual stored type value if it's a renamed one
                     let actualFilterValue = filterValue;
-                    if (filterValue === 'latest_movies') actualFilterValue = 'movie';
-                    if (filterValue === 'latest_tv_shows') actualFilterValue = 'tv';
+                    if (filterValue === 'Latest-Movies') actualFilterValue = 'movie';
+                    if (filterValue === 'Latest-TV-Series') actualFilterValue = 'tv';
                     if (filterValue === 'latest_uploads') actualFilterValue = 'popular';
 
                     query = query.where('type', 'array-contains', actualFilterValue);
@@ -2034,8 +2145,8 @@
                 const contentId = item.tmdbId || item.slug || 'N/A'; 
 
                 // Determine button text based on filterType
-                const individualButtonText = (filterValue === 'all' || filterValue === 'latest_movies' || filterValue === 'latest_tv_shows') ? 'Delete' : 'Remove from Category';
-                const individualButtonClass = (filterValue === 'all' || filterValue === 'latest_movies' || filterValue === 'latest_tv_shows') ? 'delete' : 'remove-from-category';
+                const individualButtonText = (filterValue === 'all' || filterValue === 'Latest-Movies' || filterValue === 'Latest-TV-Series') ? 'Delete' : 'Remove from Category';
+                const individualButtonClass = (filterValue === 'all' || filterValue === 'Latest-Movies' || filterValue === 'Latest-TV-Series') ? 'delete' : 'remove-from-category';
 
                 const cardHtml = `
                     <div class="content-card">
@@ -2070,7 +2181,7 @@
         // Update the text on the main button as well
         const filterValue = allContentFilter.value;
         const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
-        if (filterValue === 'all' || filterValue === 'latest_movies' || filterValue === 'latest_tv_shows') {
+        if (filterValue === 'all' || filterValue === 'Latest-Movies' || filterValue === 'Latest-TV-Series') {
             deleteSelectedAllContentBtn.textContent = `Delete Selected Content (${selectedAllContentForDeletion.size})`;
         } else {
             deleteSelectedAllContentBtn.textContent = `Remove Selected from ${filterText} (${selectedAllContentForDeletion.size})`;
@@ -2088,8 +2199,8 @@
             const currentTypes = docSnap.data().type || [];
             // Map the categoryToRemove back to its original stored value if it was a renamed display value
             let actualCategoryToRemove = categoryToRemove;
-            if (categoryToRemove === 'latest_movies') actualCategoryToRemove = 'movie';
-            if (categoryToRemove === 'latest_tv_shows') actualCategoryToRemove = 'tv';
+            if (categoryToRemove === 'Latest-Movies') actualCategoryToRemove = 'movie';
+            if (categoryToRemove === 'Latest-TV-Series') actualCategoryToRemove = 'tv';
             if (categoryToRemove === 'latest_uploads') actualCategoryToRemove = 'popular';
 
             const updatedTypes = currentTypes.filter(type => type !== actualCategoryToRemove);
@@ -2170,7 +2281,7 @@
         
         const filterValue = allContentFilter.value;
         const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
-        const isPermanentDelete = (filterValue === 'all' || filterValue === 'latest_movies' || filterValue === 'latest_tv_shows');
+        const isPermanentDelete = (filterValue === 'all' || filterValue === 'Latest-Movies' || filterValue === 'Latest-TV-Series');
 
         let confirmationMessage;
         let successMessage;
@@ -2273,7 +2384,7 @@
                     await db.collection('banners').doc(docId).delete();
                     displayMessage(viewBannersMessage, 'Banner deleted successfully!', 'success');
                     await displayAllBanners();
-                } catch (err) {
+                }  catch (err) { // More specific error handling
                     console.error("Error deleting banner:", err);
                     displayMessage(viewBannersMessage, `Error deleting banner: ${err.message}`, 'error');
                     setLoading(target, false);
@@ -2471,6 +2582,7 @@
     });
     
     // --- Notification Panel Logic ---
+    // Removed notifUrlInput from elements as per request
     if (notifForm) {
         // Live Preview Logic
         notifTitleInput.addEventListener('input', () => {
@@ -2494,14 +2606,15 @@
             }
         });
 
-        // Form Submission Logic
+        // Form Submission Logic for the Notification Tab itself
         notifForm.addEventListener('submit', async function(event) {
             event.preventDefault();
             
             const title = notifTitleInput.value;
             const body = notifBodyInput.value;
             const imageUrl = notifImageUrlInput.value;
-            const url = notifUrlInput.value;
+            // No URL input on this form anymore, use a default app link or empty
+            const url = 'https://app.streamzonemovies.online/'; // Default URL for the notification tab itself
 
             if (!title || !body) {
                 displayMessage(notificationMessage, 'Please fill in the title and body fields.', 'error');
@@ -2509,40 +2622,14 @@
             }
 
             setLoading(sendNotificationBtn, true);
+            const success = await sendNotification(title, body, imageUrl, url, notificationMessage);
+            setLoading(sendNotificationBtn, false);
 
-            const payload = {
-                title: title,
-                body: body,
-                image_url: imageUrl,
-                url: url
-            };
-
-            try {
-                const response = await fetch(notificationScriptUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Server responded with status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-
-                if (result.success) {
-                    displayMessage(notificationMessage, 'Notification sent successfully!', 'success');
-                    notifForm.reset();
-                    previewTitle.textContent = 'Notification Title';
-                    previewBody.textContent = 'Notification body will appear here...';
-                    previewImage.style.display = 'none';
-                } else {
-                    displayMessage(notificationMessage, 'Failed to send notification: ' + (result.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                displayMessage(notificationMessage, `A network error occurred: ${error.message}. Please check your connection.`, 'error');
-            } finally {
-                setLoading(sendNotificationBtn, false);
+            if (success) {
+                notifForm.reset();
+                previewTitle.textContent = 'Notification Title';
+                previewBody.textContent = 'Notification body will appear here...';
+                previewImage.style.display = 'none';
             }
         });
     }
@@ -2551,5 +2638,7 @@
 
     </script>
 
+</body>
+</html>
 </body>
 </html>
