@@ -970,7 +970,6 @@
     const notifTitleInput = document.getElementById('notifTitle');
     const notifBodyInput = document.getElementById('notifBody');
     const notifImageUrlInput = document.getElementById('notifImageUrl');
-    // NEW: Added this line for the URL input
     const notifUrlInput = document.getElementById('notifUrl'); 
     const previewTitle = document.getElementById('previewTitle');
     const previewBody = document.getElementById('previewBody');
@@ -1487,7 +1486,8 @@
                 
                 if (sendNotificationChecked) {
                     const contentUrl = `https://app.streamzonemovies.online/series/${payload.slug}`;
-                    await sendNotification(finalTitle, tmdbData.overview || '', tmdbData.fullBackdropPath || '', contentUrl, addMessage);
+                    const imageUrlToSend = tmdbData.fullBackdropPath || tmdbData.fullPosterPath || ''; // Prefer backdrop
+                    await sendNotification(finalTitle, tmdbData.overview || '', imageUrlToSend, contentUrl, addMessage);
                 }
                 document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked = false;
 
@@ -1522,7 +1522,8 @@
                     
                     if (sendNotificationChecked) {
                         const contentUrl = `https://app.streamzonemovies.online/movie/${payload.slug}`;
-                        await sendNotification(finalTitle, tmdbData.overview || '', tmdbData.fullBackdropPath || '', contentUrl, addMessage);
+                        const imageUrlToSend = tmdbData.fullBackdropPath || tmdbData.fullPosterPath || ''; // Prefer backdrop
+                        await sendNotification(finalTitle, tmdbData.overview || '', imageUrlToSend, contentUrl, addMessage);
                     }
                     document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked = false;
                 }
@@ -1659,7 +1660,8 @@
                 // Automatically send notification if checked
                 if (sendNotificationChecked) {
                     const contentUrl = `https://app.streamzonemovies.online/series/${payload.slug}`; // Example URL
-                    await sendNotification(manualTitle, manualOverview, manualBackdropUrl, contentUrl, manualAddMessage);
+                    const imageUrlToSend = manualBackdropUrl || manualPosterUrl || ''; // Prefer backdrop
+                    await sendNotification(manualTitle, manualOverview, imageUrlToSend, contentUrl, manualAddMessage);
                 }
                 document.querySelector('#manualContentTypeCheckboxes input[name="manualContentType"][value="send_notification"]').checked = false; // Uncheck notification
 
@@ -1698,7 +1700,8 @@
                     // Automatically send notification if checked
                     if (sendNotificationChecked) {
                         const contentUrl = `https://app.streamzonemovies.online/movie/${payload.slug}`; // Example URL
-                        await sendNotification(manualTitle, manualOverview, manualBackdropUrl, contentUrl, manualAddMessage);
+                        const imageUrlToSend = manualBackdropUrl || manualPosterUrl || ''; // Prefer backdrop
+                        await sendNotification(manualTitle, manualOverview, imageUrlToSend, contentUrl, manualAddMessage);
                     }
                     document.querySelector('#manualContentTypeCheckboxes input[name="manualContentType"][value="send_notification"]').checked = false; // Uncheck notification
                 }
@@ -2063,7 +2066,8 @@
                 // Automatically send notification if checked
                 if (sendNotificationChecked) {
                     const contentUrl = `https://app.streamzonemovies.online/series/${payload.slug}`; // Example URL
-                    await sendNotification(editTitle, editOverview, editBackdropUrl, contentUrl, editMessage);
+                    const imageUrlToSend = editBackdropUrl || editPosterUrl || ''; // Prefer backdrop
+                    await sendNotification(editTitle, editOverview, imageUrlToSend, contentUrl, editMessage);
                 }
                 document.querySelector('#editContentTypeCheckboxes input[name="editContentType"][value="send_notification"]').checked = false; // Uncheck notification
 
@@ -2105,7 +2109,8 @@
             // Automatically send notification if checked
             if (sendNotificationChecked) {
                 const contentUrl = `https://app.streamzonemovies.online/movie/${payload.slug}`; // Example URL
-                await sendNotification(editTitle, editOverview, editBackdropUrl, contentUrl, editMessage);
+                const imageUrlToSend = editBackdropUrl || editPosterUrl || ''; // Prefer backdrop
+                await sendNotification(editTitle, editOverview, imageUrlToSend, contentUrl, editMessage);
             }
             document.querySelector('#editContentTypeCheckboxes input[name="editContentType"][value="send_notification"]').checked = false; // Uncheck notification
         }
