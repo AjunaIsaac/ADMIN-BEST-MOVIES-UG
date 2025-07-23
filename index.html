@@ -883,31 +883,31 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+   document.addEventListener('DOMContentLoaded', () => {
     // --- Firebase Configuration ---
     const firebaseConfig = {
-    apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
-    authDomain: "stream-zone-movies-a83c1.firebaseapp.com",
-    projectId: "stream-zone-movies-a83c1",
-    storageBucket: "stream-zone-movies-a83c1.appspot.com",
-    messagingSenderId: "148342664213",
-    appId: "1:148342664213:web:56df2549cc480df7cf721c"
-};
+        apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
+        authDomain: "stream-zone-movies-a83c1.firebaseapp.com",
+        projectId: "stream-zone-movies-a83c1",
+        storageBucket: "stream-zone-movies-a83c1.appspot.com",
+        messagingSenderId: "148342664213",
+        appId: "1:148342664213:web:56df2549cc480df7cf721c"
+    };
     // --- Initialize Firebase App ---
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore(app);
     const auth = firebase.auth(app);
-    
+
     // --- DOM Element References ---
     const loginScreen = document.getElementById('loginScreen');
     const adminPanel = document.getElementById('adminPanel');
     const mainMenu = document.getElementById('mainMenu');
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     const pageTitle = document.getElementById('pageTitle');
-    const adminEmailDisplay = document.getElementById('adminEmailDisplay'); 
+    const adminEmailDisplay = document.getElementById('adminEmailDisplay');
     const logoutBtn = document.getElementById('logoutBtn');
     const loginMessage = document.getElementById('loginMessage');
-    const mainContentArea = document.getElementById('mainContentArea'); 
+    const mainContentArea = document.getElementById('mainContentArea');
 
     // Content Management Elements
     const addMovieForm = document.getElementById('addMovieForm');
@@ -950,7 +950,7 @@
     const userEditExpiresAtInput = document.getElementById('user-edit-expiresAt');
     const userUpdateBtn = document.getElementById('user-update-btn');
     const userCreateBtn = document.getElementById('user-create-btn');
-    const userFormTitle = document.getElementById('user-form-title'); 
+    const userFormTitle = document.getElementById('user-form-title');
 
     // All Content Page Elements
     const allContentContainer = document.getElementById('allContentContainer');
@@ -959,28 +959,28 @@
     const deleteSelectedAllContentBtn = document.getElementById('deleteSelectedAllContentBtn');
     const selectedAllContentCount = document.getElementById('selectedAllContentCount');
     let selectedAllContentForDeletion = new Set();
-    
+
     // --- Notification Panel Elements ---
     // **CRITICAL:** Replace this with YOUR actual Firebase Function URL from deployment
     const firebaseFunctionUrl = 'https://sendnotification-i7fenevlta-uc.a.run.app';
-    
+
     const notifForm = document.getElementById('notificationForm');
     const sendNotificationBtn = document.getElementById('sendNotificationBtn');
     const notificationMessage = document.getElementById('notificationMessage');
     const notifTitleInput = document.getElementById('notifTitle');
     const notifBodyInput = document.getElementById('notifBody');
     const notifImageUrlInput = document.getElementById('notifImageUrl');
-    const notifUrlInput = document.getElementById('notifUrl'); 
+    const notifUrlInput = document.getElementById('notifUrl');
     const previewTitle = document.getElementById('previewTitle');
     const previewBody = document.getElementById('previewBody');
     const previewImage = document.getElementById('previewImage');
 
     // NEW: VJ and Genre Lists for Sort Page
     const VJ_LIST = [
-        "Vj Junior","Vj TONNY", "Vj Emmy", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo",
+        "Vj Junior", "Vj TONNY", "Vj Emmy", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo",
         "Vj Kevin", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox",
         "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy",
-        "Vj Baros","Vj SOUL","Vj SON", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T","Vj RONAGE"
+        "Vj Baros", "Vj SOUL", "Vj SON", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T", "Vj RONAGE"
     ];
     const GENRE_LIST = [
         "Action", "Horror", "Series", "Adventure", "Love Story", "Comedy", "Crime", "Family", "Sci FI", "Romance",
@@ -1001,7 +1001,7 @@
             checkbox.name = namePrefix;
             checkbox.value = item;
             // Ensure selectedValues is treated as an array even if it's null/undefined
-            checkbox.checked = Array.isArray(selectedValues) && selectedValues.includes(item); 
+            checkbox.checked = Array.isArray(selectedValues) && selectedValues.includes(item);
 
             label.appendChild(checkbox);
             label.appendChild(document.createTextNode(` ${item}`));
@@ -1015,13 +1015,13 @@
     populateCheckboxes('sortVjsCheckboxesManual', 'sortVjsManual', VJ_LIST);
     populateCheckboxes('sortGenresCheckboxesManual', 'sortGenresManual', GENRE_LIST);
     // These will be populated by loadContentForEditing when needed
-    // populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST); 
+    // populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST);
     // populateCheckboxes('sortGenresCheckboxesEdit', 'sortGenresEdit', GENRE_LIST);
 
 
     // --- Helper Functions ---
     function setLoading(button, isLoading) {
-        if(button) {
+        if (button) {
             button.classList.toggle('loading', isLoading);
             button.disabled = isLoading;
         }
@@ -1035,7 +1035,7 @@
             setTimeout(() => { element.style.display = 'none'; }, 8000);
         }
     }
-    
+
     function generateSlug(text) {
         if (!text) return '';
         return text
@@ -1122,7 +1122,7 @@
                 body: JSON.stringify(payload)
             });
 
-            const result = await response.json(); 
+            const result = await response.json();
 
             if (response.ok) { // Check if the HTTP response was successful (status 200-299)
                 displayMessage(msgElement, 'Notification sent successfully to all subscribed users!', 'success');
@@ -1145,8 +1145,8 @@
     auth.onAuthStateChanged(user => {
         loginScreen.style.display = user ? 'none' : 'flex';
         adminPanel.style.display = user ? 'flex' : 'none';
-        
-        if(user) {
+
+        if (user) {
             adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
             // Set initial menu state based on screen size
             if (window.innerWidth >= 769) {
@@ -1181,7 +1181,7 @@
     });
 
     logoutBtn.addEventListener('click', () => auth.signOut());
-    
+
     menuToggleBtn.addEventListener('click', () => {
         mainMenu.classList.toggle('open');
         if (mainMenu.classList.contains('open')) {
@@ -1203,7 +1203,7 @@
                 if (viewBannersTabLink) {
                     viewBannersTabLink.click();
                 }
-            } else if (pageId === 'allContentPage') { 
+            } else if (pageId === 'allContentPage') {
                 displayAllContent();
             }
             // Reset notification preview when navigating away
@@ -1223,17 +1223,17 @@
             if (isActive) pageTitle.textContent = link.textContent.trim();
         });
         // On mobile, automatically close menu after navigating
-        if (window.innerWidth < 769) { 
+        if (window.innerWidth < 769) {
             mainMenu.classList.remove('open');
-            mainContentArea.style.marginLeft = '0'; 
-            menuToggleBtn.style.left = '15px'; 
+            mainContentArea.style.marginLeft = '0';
+            menuToggleBtn.style.left = '15px';
         }
         window.scrollTo(0, 0);
     }
     document.querySelectorAll('.menu-link').forEach(link => {
         // Exclude external links from this navigation logic
         if (!link.hasAttribute('href')) {
-             link.addEventListener('click', (e) => {
+            link.addEventListener('click', (e) => {
                 e.preventDefault();
                 navigateToPage(e.currentTarget.dataset.page);
             });
@@ -1263,13 +1263,13 @@
         const seriesDataGroup = formElement.querySelector('.series-data-group');
         const genreSelectionGroup = formElement.querySelector('.genre-selection-group'); // Get genre group
 
-        // Define movie and TV series categories
+        // Define movie and TV series categories (frontend display values)
         const movieCategories = [
-            "latest_uploads", "Latest-Movies", "most_liked", "animation", "indian", "horror", "comedy", "romance", 
+            "latest_uploads", "Latest-Movies", "most_liked", "animation", "indian", "horror", "comedy", "romance",
             "adventure", "scifi-fantasy", "action-thriller", "high-school", "nigerian", "send_notification"
         ];
         const tvCategories = [
-            "latest_uploads", "most_liked", "upcoming_shows", "western_series", 
+            "latest_uploads", "most_liked", "upcoming_shows", "western_series",
             "Latest-TV-Series", "k_dramas", "send_notification"
         ];
 
@@ -1278,7 +1278,7 @@
             const isTV = primaryType === 'tv';
 
             // Show/hide the entire categories group based on primary type
-            if(mediaCategoriesGroup) mediaCategoriesGroup.style.display = 'block'; 
+            if (mediaCategoriesGroup) mediaCategoriesGroup.style.display = 'block';
 
             // Iterate through all checkboxes within the categories group and set their display style
             const categoriesCheckboxes = mediaCategoriesGroup.querySelectorAll('input[type="checkbox"]');
@@ -1298,14 +1298,14 @@
             // Genre selection group is always visible, as genres apply to both movies and TV.
             if (genreSelectionGroup) genreSelectionGroup.style.display = 'block'; // Ensure it's always visible
 
-            if(videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
-            if(seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
+            if (videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
+            if (seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
         }
 
-        if(primarySelector) {
+        if (primarySelector) {
             primarySelector.addEventListener('change', toggleFields);
             // Call immediately to set initial state based on default selected option
-            toggleFields(); 
+            toggleFields();
         }
     }
     setupMasterContentTypeToggle(document.getElementById('addMovieForm'));
@@ -1317,7 +1317,7 @@
     addMovieForm.addEventListener('submit', async e => {
         e.preventDefault();
         setLoading(addContentBtn, true);
-        
+
         const identifier = document.getElementById('contentIdentifier').value.trim();
         const vjName = document.getElementById('vjName').value.trim();
         const tmdbApiKey = document.getElementById('tmdbApiKey').value;
@@ -1327,7 +1327,7 @@
             setLoading(addContentBtn, false);
             return;
         }
-        
+
         if (!identifier) {
             displayMessage(addMessage, 'Content Name or TMDB ID is required.', 'error');
             setLoading(addContentBtn, false);
@@ -1335,61 +1335,70 @@
         }
 
         let tmdbData = null;
-        let finalApiType = null;
+        const selectedPrimaryContentType = document.getElementById('primaryContentType').value;
+        let finalApiType = selectedPrimaryContentType; // Assume the selected type initially
+
         const isNumericId = /^\d+$/.test(identifier);
 
-        // First, try to fetch as a movie if it's a numeric ID to see if it exists
-        // If not found, try as a TV show. This is crucial for handling mixed content types.
+        // --- IMPROVED TMDB FETCHING LOGIC ---
+        // If it's a numeric ID, try fetching directly based on the selected type first
         if (isNumericId) {
             try {
-                // Try fetching as a movie first
-                let response = await fetch(`https://api.themoviedb.org/3/movie/${identifier}?api_key=${tmdbApiKey}`);
+                let response = await fetch(`https://api.themoviedb.org/3/${selectedPrimaryContentType}/${identifier}?api_key=${tmdbApiKey}`);
                 if (response.ok) {
                     tmdbData = await response.json();
-                    finalApiType = 'movie';
                 } else if (response.status === 404) {
-                    // If not found as a movie, try fetching as a TV show
-                    response = await fetch(`https://api.themoviedb.org/3/tv/${identifier}?api_key=${tmdbApiKey}`);
+                    // If not found with the selected type, try the *other* type as a fallback
+                    const fallbackType = (selectedPrimaryContentType === 'movie') ? 'tv' : 'movie';
+                    response = await fetch(`https://api.themoviedb.org/3/${fallbackType}/${identifier}?api_key=${tmdbApiKey}`);
                     if (response.ok) {
                         tmdbData = await response.json();
-                        finalApiType = 'tv';
+                        finalApiType = fallbackType; // Update finalApiType to the one that worked
                     }
                 }
             } catch (err) {
-                console.warn("Error checking TMDB by ID (initial attempt):", err);
+                console.warn(`Error checking TMDB by ID (${selectedPrimaryContentType} first):`, err);
             }
-        } 
-        
-        // If not a numeric ID, or if numeric ID didn't find anything, perform a search
+        }
+
+        // If no TMDB data found by direct ID or it's a text identifier, perform a search
         if (!tmdbData) {
             try {
-                // Determine which search to prioritize based on current form selection
-                let preferredSearchType = document.getElementById('primaryContentType').value;
-                let searchUrl = `https://api.themoviedb.org/3/search/${preferredSearchType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
+                // Use the *selected* primary content type for the search
+                let searchUrl = `https://api.themoviedb.org/3/search/${selectedPrimaryContentType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
                 let response = await fetch(searchUrl);
-                
+
                 if (!response.ok) {
-                    console.error(`TMDB Search API error (${preferredSearchType}): ${response.status} ${response.statusText}`);
+                    console.error(`TMDB Search API error (${selectedPrimaryContentType}): ${response.status} ${response.statusText}`);
                     // If preferred type search fails, try the other type
-                    preferredSearchType = (preferredSearchType === 'movie') ? 'tv' : 'movie';
-                    searchUrl = `https://api.themoviedb.org/3/search/${preferredSearchType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
+                    const fallbackSearchType = (selectedPrimaryContentType === 'movie') ? 'tv' : 'movie';
+                    searchUrl = `https://api.themoviedb.org/3/search/${fallbackSearchType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
                     response = await fetch(searchUrl);
                     if (!response.ok) {
-                        console.error(`TMDB Search API error (fallback ${preferredSearchType}): ${response.status} ${response.statusText}`);
+                        console.error(`TMDB Search API error (fallback ${fallbackSearchType}): ${response.status} ${response.statusText}`);
                         throw new Error("TMDB search failed for both movie and TV.");
                     }
                 }
                 const searchResult = await response.json();
                 tmdbData = searchResult.results?.[0] || null;
                 if (tmdbData) {
-                    finalApiType = preferredSearchType;
+                    // Important: TMDB search results often have a 'media_type' property that tells you if it's movie or tv.
+                    // Use this to definitively set finalApiType if not already set or confirmed.
+                    if (tmdbData.media_type) {
+                        finalApiType = tmdbData.media_type;
+                    } else {
+                        // If media_type is not present, default to the type that was searched.
+                        finalApiType = selectedPrimaryContentType;
+                    }
                 }
 
             } catch (err) {
                 console.error("Error searching TMDB:", err);
             }
         }
-        
+
+        // --- END IMPROVED TMDB FETCHING LOGIC ---
+
         if (!tmdbData || !tmdbData.id) {
             displayMessage(addMessage, 'Could not find content on TMDB. Check name/ID or API key.', 'error');
             setLoading(addContentBtn, false);
@@ -1403,7 +1412,7 @@
             primaryContentTypeSelector.value = finalApiType;
             primaryContentTypeSelector.dispatchEvent(new Event('change')); // Force update categories
         }
-        
+
         const configUrl = `https://api.themoviedb.org/3/configuration?api_key=${tmdbApiKey}`;
         const configResponse = await fetch(configUrl);
         const configData = await configResponse.json();
@@ -1413,7 +1422,7 @@
         tmdbData.fullPosterPath = tmdbData.poster_path ? `${baseImageUrl}${tmdbData.poster_path}` : '';
         tmdbData.fullBackdropPath = tmdbData.backdrop_path ? `${baseBackdropUrl}${tmdbData.backdrop_path}` : '';
 
-        const finalTitle = tmdbData.title || tmdbData.name;
+        const finalTitle = tmdbData.title || tmdbData.name; // Use 'name' for TV series
         let payload = {
             title: finalTitle,
             tmdbId: tmdbData.id,
@@ -1428,14 +1437,22 @@
             sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesTMDB input[name="sortGenresTMDB"]:checked')).map(cb => cb.value)
         };
 
-        payload.genres = tmdbData.genre_ids || [];
+        payload.genres = tmdbData.genre_ids || []; // TMDB's genre_ids are numeric, but Firestore expects string names.
+                                                  // You might need a mapping here if your Firestore genres are string names.
+                                                  // For example: payload.genres = tmdbData.genre_ids.map(id => getGenreNameFromId(id));
 
         const sendNotificationChecked = document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked;
 
         if (finalApiType === 'tv') {
             payload.contentType = 'tv';
-            const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => cb.value);
-            if(selectedTypes.length === 0) {
+            const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => {
+                // Map display values back to internal Firestore values
+                if (cb.value === 'Latest-TV-Series') return 'tv';
+                if (cb.value === 'latest_uploads') return 'popular';
+                return cb.value;
+            });
+
+            if (selectedTypes.length === 0) {
                 displayMessage(addMessage, 'Please select at least one category for TV series.', 'error');
                 setLoading(addContentBtn, false);
                 return;
@@ -1444,7 +1461,7 @@
 
             try {
                 const seriesDataValue = document.getElementById('seriesData').value;
-                if(!seriesDataValue) {
+                if (!seriesDataValue) {
                     displayMessage(addMessage, "Series Data (JSON) cannot be empty for TV series.", 'error');
                     setLoading(addContentBtn, false);
                     return;
@@ -1454,7 +1471,7 @@
                 if (!Array.isArray(seriesInfo) || seriesInfo.some(s => !s.season_number || !Array.isArray(s.episodes))) {
                     throw new Error("Invalid Series Data JSON structure. Expected an array of seasons, each with an 'episodes' array.");
                 }
-                
+
                 const duplicateCheck = await checkForDuplicates(payload);
                 if (duplicateCheck.found) {
                     displayMessage(addMessage, `Duplicate found by ${duplicateCheck.field}. Addition denied.`, 'error');
@@ -1462,7 +1479,7 @@
                     return;
                 }
 
-                const docRef = await db.collection('movies').add(payload); 
+                const docRef = await db.collection('movies').add(payload);
                 const seriesDocId = docRef.id;
 
                 for (const season of seriesInfo) {
@@ -1483,7 +1500,7 @@
                 addMovieForm.reset();
                 document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
                 document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
-                
+
                 if (sendNotificationChecked) {
                     const contentUrl = `https://app.streamzonemovies.online/series/${payload.slug}`;
                     const imageUrlToSend = tmdbData.fullBackdropPath || tmdbData.fullPosterPath || ''; // Prefer backdrop
@@ -1498,10 +1515,15 @@
                 setLoading(addContentBtn, false);
             }
 
-        } else {   
+        } else {
             payload.contentType = 'movie';
-            const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => cb.value);
-            if(selectedTypes.length === 0) {
+            const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => {
+                // Map display values back to internal Firestore values
+                if (cb.value === 'Latest-Movies') return 'movie';
+                if (cb.value === 'latest_uploads') return 'popular';
+                return cb.value;
+            });
+            if (selectedTypes.length === 0) {
                 displayMessage(addMessage, 'Please select at least one category for movies.', 'error');
                 setLoading(addContentBtn, false);
                 return;
@@ -1519,7 +1541,7 @@
                     addMovieForm.reset();
                     document.querySelectorAll('#sortVjsCheckboxesTMDB input').forEach(cb => cb.checked = false);
                     document.querySelectorAll('#sortGenresCheckboxesTMDB input').forEach(cb => cb.checked = false);
-                    
+
                     if (sendNotificationChecked) {
                         const contentUrl = `https://app.streamzonemovies.online/movie/${payload.slug}`;
                         const imageUrlToSend = tmdbData.fullBackdropPath || tmdbData.fullPosterPath || ''; // Prefer backdrop
@@ -1535,16 +1557,16 @@
             }
         }
     });
-    
+
     // --- Manual Add Form Logic ---
     manualAddForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         setLoading(manualAddBtn, true);
-        
+
         const manualTitle = document.getElementById('manualTitle').value.trim();
         const manualOverview = document.getElementById('manualOverview').value.trim();
         const manualVjName = document.getElementById('manualVjName').value.trim();
-        const referenceIdInput = document.getElementById('manualReferenceId').value.trim(); 
+        const referenceIdInput = document.getElementById('manualReferenceId').value.trim();
         const manualPosterUrl = document.getElementById('manualPosterUrl').value.trim();
         const manualBackdropUrl = document.getElementById('manualBackdropUrl').value.trim();
 
@@ -1558,18 +1580,20 @@
         let slug = generateSlug(manualTitle);
 
         if (referenceIdInput) {
+            // Updated placeholder text to match the functionality.
             if (/^\d+$/.test(referenceIdInput)) {
                 tmdbId = Number(referenceIdInput);
-                displayMessage(manualAddMessage, `Warning: You entered a numeric ID. This will be saved as a TMDB ID, not a custom slug. Slug will be '${slug}'.`, 'warn');
+                displayMessage(manualAddMessage, `Warning: You entered a numeric ID. This will be saved as a TMDB ID, and a slug will be generated from the title: '${slug}'.`, 'warn');
             } else {
                 tmdbId = null;
-                slug = generateSlug(referenceIdInput);
+                slug = generateSlug(referenceIdInput); // Use the custom text as base for slug
+                displayMessage(manualAddMessage, `Custom text ID detected. Slug will be '${slug}'.`, 'info');
             }
         }
-        
+
         // Get selected genres for manual add
         const selectedGenres = Array.from(document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]:checked')).map(cb => cb.value);
-        if(selectedGenres.length === 0) { 
+        if (selectedGenres.length === 0) {
             displayMessage(manualAddMessage, 'Please select at least one genre.', 'error');
             setLoading(manualAddBtn, false);
             return;
@@ -1580,7 +1604,7 @@
 
         let payload = {
             title: manualTitle,
-            slug: slug, // This will be the custom slug if referenceIdInput was text
+            slug: slug, // This will be the custom slug if referenceIdInput was text or derived from title
             overview: document.getElementById('manualOverview').value,
             posterUrl: manualPosterUrl,
             backdropUrl: manualBackdropUrl,
@@ -1599,8 +1623,13 @@
         if (primaryType === 'tv') {
             payload.contentType = 'tv';
             // For TV, 'type' will store the selected TV categories
-            const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input[name="manualContentType"]:checked')).map(cb => cb.value);
-            if(selectedTypes.length === 0) {
+            const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input[name="manualContentType"]:checked')).map(cb => {
+                // Map display values back to internal Firestore values
+                if (cb.value === 'Latest-TV-Series') return 'tv';
+                if (cb.value === 'latest_uploads') return 'popular';
+                return cb.value;
+            });
+            if (selectedTypes.length === 0) {
                 displayMessage(manualAddMessage, 'Please select at least one category for TV series.', 'error');
                 setLoading(manualAddBtn, false);
                 return;
@@ -1608,10 +1637,10 @@
             payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-Movies'); // Filter out notification and Latest-Movies categories
             try {
                 const seriesDataValue = document.getElementById('manualSeriesData').value;
-                if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
+                if (!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
                 const seriesInfo = JSON.parse(seriesDataValue);
 
-                    // Validate seriesInfo structure (basic validation)
+                // Validate seriesInfo structure (basic validation)
                 if (!Array.isArray(seriesInfo) || seriesInfo.some(s => !s.season_number || !Array.isArray(s.episodes))) {
                     throw new Error("Invalid Series Data JSON structure. Expected an array of seasons, each with an 'episodes' array.");
                 }
@@ -1626,7 +1655,8 @@
 
                 // Save the main series document
                 let seriesDocRef;
-                if (payload.slug && !tmdbId) { // Only use slug as doc ID if it's a custom text slug (not TMDB ID)
+                // If a custom text slug was provided (tmdbId is null), use it as the document ID
+                if (payload.slug && !tmdbId) {
                     seriesDocRef = db.collection('movies').doc(payload.slug);
                     await seriesDocRef.set(payload);
                 } else {
@@ -1656,7 +1686,7 @@
                 // Reset new sort checkboxes after successful add
                 document.querySelectorAll('#sortVjsCheckboxesManual input').forEach(cb => cb.checked = false);
                 document.querySelectorAll('#sortGenresCheckboxesManual input').forEach(cb => cb.checked = false);
-                
+
                 // Automatically send notification if checked
                 if (sendNotificationChecked) {
                     const contentUrl = `https://app.streamzonemovies.online/series/${payload.slug}`; // Example URL
@@ -1675,7 +1705,12 @@
         } else {
             payload.contentType = 'movie';
             // For movies, 'type' will store the selected movie categories
-            const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input[name="manualContentType"]:checked')).map(cb => cb.value);
+            const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input[name="manualContentType"]:checked')).map(cb => {
+                // Map display values back to internal Firestore values
+                if (cb.value === 'Latest-Movies') return 'movie';
+                if (cb.value === 'latest_uploads') return 'popular';
+                return cb.value;
+            });
             if (selectedTypes.length === 0) {
                 displayMessage(manualAddMessage, 'Please select at least one category for movies.', 'error');
                 setLoading(manualAddBtn, false);
@@ -1696,7 +1731,7 @@
                     document.querySelectorAll('#manualGenreCheckboxes input[name="manualGenre"]').forEach(cb => cb.checked = false);
                     document.querySelectorAll('#sortVjsCheckboxesManual input').forEach(cb => cb.checked = false);
                     document.querySelectorAll('#sortGenresCheckboxesManual input').forEach(cb => cb.checked = false);
-                    
+
                     // Automatically send notification if checked
                     if (sendNotificationChecked) {
                         const contentUrl = `https://app.streamzonemovies.online/movie/${payload.slug}`; // Example URL
@@ -1726,29 +1761,29 @@
             setLoading(searchManageBtn, false);
             return;
         }
-        
+
         try {
             let docs = [];
             const lowerCaseTerm = term.toLowerCase();
-            
+
             // Search only in the primary db
-            const snapshot = await db.collection('movies').get(); 
+            const snapshot = await db.collection('movies').get();
             snapshot.forEach(doc => {
                 const data = doc.data();
                 // Check if TMDB ID matches (numeric search)
                 if (data.tmdbId && /^\d+$/.test(term) && data.tmdbId === Number(term)) {
                     docs.push({ id: doc.id, ...data });
-                } 
+                }
                 // Check if title or slug includes the term (case-insensitive)
                 else if (
-                    (data.title && data.title.toLowerCase().includes(lowerCaseTerm)) || 
+                    (data.title && data.title.toLowerCase().includes(lowerCaseTerm)) ||
                     (data.slug && data.slug.toLowerCase().includes(lowerCaseTerm))
                 ) {
                     docs.push({ id: doc.id, ...data });
                 }
             });
 
-            if(docs.length === 0) {
+            if (docs.length === 0) {
                 displayMessage(manageMessage, 'No content found matching your search.', 'info');
             } else {
                 docs.forEach(item => {
@@ -1771,12 +1806,12 @@
             setLoading(searchManageBtn, false);
         }
     });
-    
+
     manageSearchResults.addEventListener('click', e => {
-        if(e.target.matches('.select-delete')){
+        if (e.target.matches('.select-delete')) {
             const btn = e.target;
             const id = btn.dataset.id;
-            if(selectedMoviesForDeletion.has(id)){
+            if (selectedMoviesForDeletion.has(id)) {
                 selectedMoviesForDeletion.delete(id);
                 btn.classList.remove('selected');
                 btn.textContent = 'Select';
@@ -1793,9 +1828,9 @@
             loadContentForEditing(docId);
         }
     });
-    
+
     confirmDeleteBtn.addEventListener('click', async () => {
-        if(confirm(`Are you sure you want to delete ${selectedMoviesForDeletion.size} item(s)? This action cannot be undone.`)){
+        if (confirm(`Are you sure you want to delete ${selectedMoviesForDeletion.size} item(s)? This action cannot be undone.`)) {
             setLoading(confirmDeleteBtn, true);
             const deletePromises = [];
             selectedMoviesForDeletion.forEach(id => {
@@ -1808,7 +1843,7 @@
                 manageSearchResults.innerHTML = ''; // Clear results after deletion
                 confirmDeleteBtn.style.display = 'none';
                 selectedMoviesForDeletion.clear();
-            } catch(err){
+            } catch (err) {
                 console.error("Error deleting content:", err);
                 displayMessage(manageMessage, `Error deleting content: ${err.message}`, 'error');
             } finally {
@@ -1822,24 +1857,22 @@
         try {
             const docRef = db.collection('movies').doc(id);
             const docSnap = await docRef.get();
-            
+
             if (!docSnap.exists) {
                 displayMessage(manageMessage, 'Content not found or already deleted.', 'error');
                 return;
             }
             const data = docSnap.data();
-            
+
             editContentForm.reset();
             document.getElementById('editDocId').value = docSnap.id;
-            // No need for projectId dataset as we are only using one project
 
             document.getElementById('editTitle').value = data.title || '';
             document.getElementById('editOverview').value = data.overview || '';
             document.getElementById('editPosterUrl').value = data.posterUrl || '';
             document.getElementById('editBackdropUrl').value = data.backdropUrl || ''; // Populate backdrop URL
             document.getElementById('editVjName').value = data.vjName || '';
-            
-            // Map the `movie` and `tv` values back to `latest_movies` and `latest_tv_shows` for display if needed
+
             const primaryTypeSelector = document.getElementById('editPrimaryContentType');
             primaryTypeSelector.value = data.contentType === 'tv' ? 'tv' : 'movie';
             primaryTypeSelector.dispatchEvent(new Event('change')); // Trigger visibility logic
@@ -1851,17 +1884,17 @@
 
             // Uncheck all category checkboxes first
             document.querySelectorAll('#editContentTypeCheckboxes input').forEach(cb => {
-                cb.checked = false; 
+                cb.checked = false;
             });
 
             // Set checked status based on `data.type`
             if (Array.isArray(data.type)) {
                 data.type.forEach(typeValue => {
-                    // Adjust typeValue for the admin panel's specific display values
-                    let displayValue = typeValue;
+                    let displayValue = typeValue; // Start with the stored value
+                    // Map stored values back to displayed checkbox values
                     if (typeValue === 'movie') displayValue = 'Latest-Movies'; // Renamed for display
-                    if (typeValue === 'tv') displayValue = 'Latest-TV-Series'; // Renamed for display
-                    if (typeValue === 'popular') displayValue = 'latest_uploads'; // Map 'popular' back to 'latest_uploads'
+                    else if (typeValue === 'tv') displayValue = 'Latest-TV-Series'; // Renamed for display
+                    else if (typeValue === 'popular') displayValue = 'latest_uploads'; // Map 'popular' back to 'latest_uploads'
 
                     const checkbox = document.querySelector(`#editContentTypeCheckboxes input[value="${displayValue}"]`);
                     if (checkbox) checkbox.checked = true;
@@ -1883,15 +1916,15 @@
                     if (checkbox) checkbox.checked = true;
                 });
             }
-            
+
             // NEW: Populate sort_vjs and sort_genres checkboxes from fetched data
             populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST, data.sort_vjs);
             populateCheckboxes('sortGenresCheckboxesEdit', 'sortGenresEdit', GENRE_LIST, data.sort_genres);
-            
+
             if (data.contentType === 'movie') {
                 document.getElementById('editVideoSourceUrl').value = data.videoUrl || '';
                 // Clear series data if it was previously a TV series
-                document.getElementById('editSeriesData').value = ''; 
+                document.getElementById('editSeriesData').value = '';
             } else if (data.contentType === 'tv') {
                 // Fetch episodes for TV series
                 const episodesSnapshot = await db.collection('movies').doc(id).collection('episodes').get();
@@ -1920,7 +1953,7 @@
 
                 document.getElementById('editSeriesData').value = JSON.stringify(formattedSeriesInfo, null, 2);
                 // Clear video URL if it was previously a movie
-                document.getElementById('editVideoSourceUrl').value = ''; 
+                document.getElementById('editVideoSourceUrl').value = '';
             }
 
             navigateToPage('editContentPage');
@@ -1943,7 +1976,7 @@
         const editTitle = document.getElementById('editTitle').value.trim();
         const editOverview = document.getElementById('editOverview').value.trim();
         const editVjName = document.getElementById('editVjName').value.trim();
-        const referenceIdInput = document.getElementById('editReferenceId').value.trim();  
+        const referenceIdInput = document.getElementById('editReferenceId').value.trim();
         const editPosterUrl = document.getElementById('editPosterUrl').value.trim();
         const editBackdropUrl = document.getElementById('editBackdropUrl').value.trim(); // Get backdrop URL
 
@@ -1956,18 +1989,18 @@
         let tmdbId = null;
         let slug = generateSlug(editTitle);
 
-        if(referenceIdInput) {
-            if(/^\d+$/.test(referenceIdInput)) {
+        if (referenceIdInput) {
+            if (/^\d+$/.test(referenceIdInput)) {
                 tmdbId = Number(referenceIdInput);
             } else {
                 tmdbId = null;
                 slug = generateSlug(referenceIdInput);
             }
         }
-        
+
         // Get selected genres from the edit form
         const selectedGenres = Array.from(document.querySelectorAll('#editGenreCheckboxes input[name="editGenre"]:checked')).map(cb => cb.value);
-        if(selectedGenres.length === 0) { 
+        if (selectedGenres.length === 0) {
             displayMessage(editMessage, 'Please select at least one genre.', 'error');
             setLoading(updateContentBtn, false);
             return;
@@ -2004,29 +2037,30 @@
                 return cb.value; // Return as is for other values
             });
             if (selectedTypes.length === 0) {
-                    displayMessage(editMessage, 'Please select at least one category for TV series.', 'error');
-                    setLoading(updateContentBtn, false);
-                    return;
+                displayMessage(editMessage, 'Please select at least one category for TV series.', 'error');
+                setLoading(updateContentBtn, false);
+                return;
             }
             payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-Movies'); // Filter out notification and Latest-Movies categories
-            
+
             try {
                 const seriesDataValue = document.getElementById('editSeriesData').value;
-                if(!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
+                if (!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty for TV series.");
                 const seriesInfo = JSON.parse(seriesDataValue);
 
                 // Validate seriesInfo structure (basic validation)
                 if (!Array.isArray(seriesInfo) || seriesInfo.some(s => !s.season_number || !Array.isArray(s.episodes))) {
                     throw new Error("Invalid Series Data JSON structure. Expected an array of seasons, each with an 'episodes' array.");
                 }
-                
-                // Remove videoUrl and seriesInfo field (if it exists) from main document
-                payload.videoUrl = firebase.firestore.FieldValue.delete(); 
-                if (payload.seriesInfo) { // Check if seriesInfo exists before trying to delete it
-                    payload.seriesInfo = firebase.firestore.FieldValue.delete();
-                }
 
-                const duplicateCheck = await checkForDuplicates(payload, docId);  
+                // Remove videoUrl and seriesInfo field (if it exists) from main document
+                payload.videoUrl = firebase.firestore.FieldValue.delete();
+                // Ensure the 'seriesInfo' field is removed from the main document if it was previously a movie
+                // The check `if (payload.seriesInfo)` is for a hypothetical `seriesInfo` field directly in the main doc,
+                // which is now handled via subcollection, so `firebase.firestore.FieldValue.delete()` is safer.
+                payload.seriesInfo = firebase.firestore.FieldValue.delete();
+
+                const duplicateCheck = await checkForDuplicates(payload, docId);
                 if (duplicateCheck.found) {
                     displayMessage(editMessage, `Update failed. Another entry exists with this ${duplicateCheck.field}.`, 'error');
                     setLoading(updateContentBtn, false);
@@ -2062,7 +2096,7 @@
 
                 displayMessage(editMessage, 'TV series and episodes updated successfully!', 'success');
                 setTimeout(() => navigateToPage('allContentPage'), 2000);
-                
+
                 // Automatically send notification if checked
                 if (sendNotificationChecked) {
                     const contentUrl = `https://app.streamzonemovies.online/series/${payload.slug}`; // Example URL
@@ -2072,11 +2106,11 @@
                 document.querySelector('#editContentTypeCheckboxes input[name="editContentType"][value="send_notification"]').checked = false; // Uncheck notification
 
             } catch (err) {
-                    displayMessage(editMessage, `Error updating TV Series: ${err.message}`, 'error');
-                    setLoading(updateContentBtn, false);
-                    return;
+                displayMessage(editMessage, `Error updating TV Series: ${err.message}`, 'error');
+                setLoading(updateContentBtn, false);
+                return;
             }
-        } else {   
+        } else {
             payload.contentType = 'movie';
             // For movies, 'type' will store the selected movie categories
             const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => {
@@ -2087,15 +2121,15 @@
                 return cb.value; // Return as is for other values
             });
             if (selectedTypes.length === 0) {
-                    displayMessage(editMessage, 'Please select at least one category for movies.', 'error');
-                    setLoading(updateContentBtn, false);
-                    return;
+                displayMessage(editMessage, 'Please select at least one category for movies.', 'error');
+                setLoading(updateContentBtn, false);
+                return;
             }
             payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series'); // Filter out notification and Latest-TV-Series categories
             payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
             payload.seriesInfo = firebase.firestore.FieldValue.delete(); // Ensure seriesInfo is removed for movies
 
-            const duplicateCheck = await checkForDuplicates(payload, docId);  
+            const duplicateCheck = await checkForDuplicates(payload, docId);
             if (duplicateCheck.found) {
                 displayMessage(editMessage, `Update failed. Another entry exists with this ${duplicateCheck.field}.`, 'error');
                 setLoading(updateContentBtn, false);
@@ -2105,7 +2139,7 @@
             await db.collection('movies').doc(docId).update(payload);
             displayMessage(editMessage, 'Content updated successfully!', 'success');
             setTimeout(() => navigateToPage('allContentPage'), 2000);
-            
+
             // Automatically send notification if checked
             if (sendNotificationChecked) {
                 const contentUrl = `https://app.streamzonemovies.online/movie/${payload.slug}`; // Example URL
@@ -2114,7 +2148,7 @@
             }
             document.querySelector('#editContentTypeCheckboxes input[name="editContentType"][value="send_notification"]').checked = false; // Uncheck notification
         }
-        
+
         try {
             // All updates happen within the if/else blocks now.
             // No longer pre-filling notification form or navigating; just sending automatically.
@@ -2126,17 +2160,17 @@
         }
     });
 
-    cancelEditBtn.addEventListener('click', () => { navigateToPage('allContentPage'); }); 
+    cancelEditBtn.addEventListener('click', () => { navigateToPage('allContentPage'); });
 
     // --- All Content Page Logic ---
     async function displayAllContent() {
         allContentContainer.innerHTML = '<div class="message info" style="display:block;">Loading all content...</div>';
         selectedAllContentForDeletion.clear();
-        updateDeleteSelectedButton(); 
-        
+        updateDeleteSelectedButton();
+
         const filterValue = allContentFilter.value;
         const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
-        
+
         // Adjust button text and behavior based on filter
         if (filterValue === 'all' || filterValue === 'Latest-Movies' || filterValue === 'Latest-TV-Series') {
             deleteSelectedAllContentBtn.textContent = `Delete Selected Content (${selectedAllContentForDeletion.size})`;
@@ -2152,7 +2186,7 @@
             let docsToDisplay = [];
 
             let query = db.collection('movies').orderBy('createdAt', 'desc');
-            
+
             if (filterValue !== 'all') {
                 if (filterValue === 'Latest-Movies') {
                     // For "Latest Movies", ensure contentType is 'movie' AND it has 'movie' in its type array
@@ -2173,20 +2207,20 @@
             snapshot.forEach(doc => {
                 docsToDisplay.push({ id: doc.id, ...doc.data() });
             });
-            
+
             if (docsToDisplay.length === 0) {
                 allContentContainer.innerHTML = '';
                 displayMessage(allContentMessage, 'No content found.', 'info');
                 return;
             }
-            
+
             allContentContainer.innerHTML = '';
             docsToDisplay.forEach(item => {
-                const imageUrl = item.posterUrl || 'https://placehold.co/500x750/333/eee?text=No+Poster'; 
+                const imageUrl = item.posterUrl || 'https://placehold.co/500x750/333/eee?text=No+Poster';
                 const title = item.title || 'Untitled';
                 const vjName = item.vjName || 'Unknown VJ';
                 // Display TMDB ID or custom slug
-                const contentId = item.tmdbId || item.slug || 'N/A'; 
+                const contentId = item.tmdbId || item.slug || 'N/A';
 
                 // Determine button text based on filterType
                 const individualButtonText = (filterValue === 'all' || filterValue === 'Latest-Movies' || filterValue === 'Latest-TV-Series') ? 'Delete' : 'Remove from Category';
@@ -2221,7 +2255,7 @@
     function updateDeleteSelectedButton() {
         selectedAllContentCount.textContent = selectedAllContentForDeletion.size;
         deleteSelectedAllContentBtn.style.display = selectedAllContentForDeletion.size > 0 ? 'block' : 'none';
-        
+
         // Update the text on the main button as well
         const filterValue = allContentFilter.value;
         const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
@@ -2241,14 +2275,14 @@
 
         if (docSnap.exists) {
             const currentTypes = docSnap.data().type || [];
-            // Map the categoryToRemove back to its original stored value if it was a renamed display value
+            // Map the categoryToRemove (from dropdown value) back to its original stored value
             let actualCategoryToRemove = categoryToRemove;
             if (categoryToRemove === 'Latest-Movies') actualCategoryToRemove = 'movie';
             if (categoryToRemove === 'Latest-TV-Series') actualCategoryToRemove = 'tv';
             if (categoryToRemove === 'latest_uploads') actualCategoryToRemove = 'popular';
 
             const updatedTypes = currentTypes.filter(type => type !== actualCategoryToRemove);
-            
+
             await docRef.update({
                 type: updatedTypes,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -2263,7 +2297,7 @@
         // For checkbox or buttons, get the docId from dataset
         const cardElement = target.closest('.content-card');
         const docId = cardElement?.querySelector('.select-card-checkbox')?.dataset.id || target.dataset.id;
-        
+
         if (!docId) return; // Exit if no id found
 
         const filterValue = allContentFilter.value;
@@ -2284,9 +2318,9 @@
                 try {
                     await db.collection('movies').doc(docId).delete();
                     displayMessage(allContentMessage, 'Content deleted successfully!', 'success');
-                    selectedAllContentForDeletion.delete(docId); 
+                    selectedAllContentForDeletion.delete(docId);
                     updateDeleteSelectedButton();
-                    displayAllContent(); 
+                    displayAllContent();
                 } catch (err) {
                     console.error("Error deleting content:", err);
                     displayMessage(allContentMessage, `Error deleting content: ${err.message}`, 'error');
@@ -2301,7 +2335,7 @@
                     const success = await removeContentFromCategory(docId, filterValue);
                     if (success) {
                         displayMessage(allContentMessage, `Content removed from "${filterText}" category successfully!`, 'success');
-                        selectedAllContentForDeletion.delete(docId); 
+                        selectedAllContentForDeletion.delete(docId);
                         updateDeleteSelectedButton();
                         displayAllContent(); // Re-display to update list
                     } else {
@@ -2322,7 +2356,7 @@
             displayMessage(allContentMessage, 'No content selected for action.', 'info');
             return;
         }
-        
+
         const filterValue = allContentFilter.value;
         const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
         const isPermanentDelete = (filterValue === 'all' || filterValue === 'Latest-Movies' || filterValue === 'Latest-TV-Series');
@@ -2344,7 +2378,7 @@
 
         if (confirm(confirmationMessage)) {
             setLoading(deleteSelectedAllContentBtn, true);
-            
+
             selectedAllContentForDeletion.forEach(id => {
                 if (isPermanentDelete) {
                     actionPromises.push(db.collection('movies').doc(id).delete());
@@ -2356,9 +2390,9 @@
             try {
                 await Promise.all(actionPromises);
                 displayMessage(allContentMessage, successMessage, 'success');
-                selectedAllContentForDeletion.clear(); 
+                selectedAllContentForDeletion.clear();
                 updateDeleteSelectedButton();
-                displayAllContent(); 
+                displayAllContent();
             } catch (err) {
                 console.error(errorMessage, err);
                 displayMessage(allContentMessage, `${errorMessage}${err.message}`, 'error');
@@ -2428,7 +2462,7 @@
                     await db.collection('banners').doc(docId).delete();
                     displayMessage(viewBannersMessage, 'Banner deleted successfully!', 'success');
                     await displayAllBanners();
-                }  catch (err) { // More specific error handling
+                } catch (err) { // More specific error handling
                     console.error("Error deleting banner:", err);
                     displayMessage(viewBannersMessage, `Error deleting banner: ${err.message}`, 'error');
                     setLoading(target, false);
@@ -2466,7 +2500,7 @@
             }
             displayMessage(addBannerMessage, 'Banner saved successfully!', 'success');
             resetBannerForm();
-            document.querySelector('.banner-tab-link[data-tab="viewBannersTab"]').click(); 
+            document.querySelector('.banner-tab-link[data-tab="viewBannersTab"]').click();
         } catch (err) {
             console.error("Error saving banner:", err);
             displayMessage(addBannerMessage, `Error saving banner: ${err.message}`, 'error');
@@ -2481,7 +2515,7 @@
         bannerFormTitle.textContent = 'Add New Banner';
         saveBannerBtn.textContent = 'Save Banner';
         cancelEditBannerBtn.style.display = 'none';
-        displayMessage(addBannerMessage, '', ''); 
+        displayMessage(addBannerMessage, '', '');
     }
     cancelEditBannerBtn.addEventListener('click', resetBannerForm);
 
@@ -2498,12 +2532,12 @@
                 bannerFormTitle.textContent = 'Editing Banner';
                 saveBannerBtn.textContent = 'Update Banner';
                 cancelEditBannerBtn.style.display = 'inline-block';
-                document.querySelector('.banner-tab-link[data-tab="addBannerTab"]').click(); 
+                document.querySelector('.banner-tab-link[data-tab="addBannerTab"]').click();
                 window.scrollTo(0, 0);
             } else {
                 displayMessage(addBannerMessage, 'Banner not found.', 'error');
             }
-        } catch(err) {
+        } catch (err) {
             console.error("Error loading banner for editing:", err);
             displayMessage(addBannerMessage, 'Could not load banner for editing.', 'error');
         }
@@ -2517,7 +2551,7 @@
             displayUserMessage('Please enter an email to search.', 'error');
             return;
         }
-        
+
         hideUserMessage();
         userEditFormSection.classList.add('hidden');
         userSearchBtn.disabled = true;
@@ -2529,7 +2563,7 @@
             const querySnapshot = await q.get();
 
             if (querySnapshot.empty) {
-                displayUserMessage(`No user found with email: ${emailToSearch}. You can create a new document.`, 'info'); 
+                displayUserMessage(`No user found with email: ${emailToSearch}. You can create a new document.`, 'info');
                 clearUserForm();
                 userEditEmailInput.value = emailToSearch;
                 userFormTitle.textContent = "Create New User Document";
@@ -2576,7 +2610,7 @@
                 name: userEditNameInput.value,
                 email: userEditEmailInput.value,
                 activated: userEditActivatedSelect.value === 'true',
-                expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null 
+                expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null
             });
             displayUserMessage('User document updated successfully!', 'success');
         } catch (error) {
@@ -2598,13 +2632,13 @@
         userCreateBtn.disabled = true;
         userCreateBtn.textContent = 'Creating...';
         try {
-            const newDocRef = db.collection("users").doc(); 
+            const newDocRef = db.collection("users").doc();
             const dateValue = userEditExpiresAtInput.value ? new Date(userEditExpiresAtInput.value) : null;
 
             await newDocRef.set({
                 name: name,
                 email: email,
-                phone: "", 
+                phone: "",
                 profileImage: "",
                 activated: userEditActivatedSelect.value === 'true',
                 expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
@@ -2615,7 +2649,7 @@
             displayUserMessage(`New document created successfully with ID: ${newDocRef.id}`, 'success');
             userCreateBtn.classList.add('hidden');
             userUpdateBtn.classList.remove('hidden');
-            userFormTitle.textContent = "Edit User Document"; 
+            userFormTitle.textContent = "Edit User Document";
         } catch (error) {
             console.error("Error creating user document: ", error);
             displayUserMessage(`Failed to create document: ${error.message}`, 'error');
@@ -2624,7 +2658,7 @@
             userCreateBtn.textContent = 'Create New Document';
         }
     });
-    
+
     // --- Notification Panel Logic ---
     if (notifForm) {
         // Live Preview Logic
@@ -2650,16 +2684,18 @@
         });
 
         // Form Submission Logic for the Notification Tab itself
-        notifForm.addEventListener('submit', async function(event) {
+        notifForm.addEventListener('submit', async function (event) {
             event.preventDefault();
-            
+
             const title = notifTitleInput.value;
             const body = notifBodyInput.value;
             const imageUrl = notifImageUrlInput.value;
             const url = notifUrlInput.value; // Get the URL from the new input
 
-            if (!title && !body) { // Changed to check both title and body for notification form submission
-                displayMessage(notificationMessage, 'Please fill in either the title or the body field for the notification.', 'error');
+            // Grammar/Style Edit: Changed to check both title and body for notification form submission.
+            // "Please fill in either the title or the body field for the notification."
+            if (!title && !body) {
+                displayMessage(notificationMessage, 'Please provide a title or body for the notification.', 'error');
                 return;
             }
 
@@ -2683,3 +2719,4 @@
 
 </body>
 </html>
+
