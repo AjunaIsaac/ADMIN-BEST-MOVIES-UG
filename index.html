@@ -880,9 +880,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+ document.addEventListener('DOMContentLoaded', () => {
     // --- Firebase Configuration ---
-  const firebaseConfig = {
+    const firebaseConfig = {
         apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
         authDomain: "stream-zone-movies-a83c1.firebaseapp.com",
         projectId: "stream-zone-movies-a83c1",
@@ -890,8 +890,6 @@
         messagingSenderId: "148342664213",
         appId: "1:148342664213:web:56df2549cc480df7cf721c"
     };
-
-
     // --- Initialize Firebase App ---
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore(app);
@@ -960,7 +958,7 @@
     let selectedAllContentForDeletion = new Set();
 
     // --- Notification Panel Elements ---
-    const firebaseFunctionUrl = 'https://sendnotification-dgy4ehtr4a-uc.a.run.app';
+    const firebaseFunctionUrl = 'https://sendnotification-i7fenevlta-uc.a.run.app';
 
     const notifForm = document.getElementById('notificationForm');
     const sendNotificationBtn = document.getElementById('sendNotificationBtn');
@@ -1073,7 +1071,13 @@
     }
 
     async function sendNotification(title, body, imageUrl = '', url = '', msgElement) {
-        const payload = { title, body, imageUrl, url, id: Date.now() };
+        const payload = {
+            title: title,
+            body: body,
+            imageUrl: imageUrl,
+            url: url,
+            id: Date.now()
+        };
         try {
             const response = await fetch(firebaseFunctionUrl, {
                 method: 'POST',
@@ -1082,14 +1086,16 @@
             });
             const result = await response.json();
             if (response.ok) {
-                displayMessage(msgElement, 'Notification sent successfully!', 'success');
+                displayMessage(msgElement, 'Notification sent successfully to all subscribed users!', 'success');
                 return true;
             } else {
-                displayMessage(msgElement, `Failed to send notification: ${result.error || 'Unknown error'}`, 'error');
+                displayMessage(msgElement, 'Failed to send notification: ' + (result.error || result.message || 'Unknown error'), 'error');
+                console.error('Backend Error Response:', result);
                 return false;
             }
         } catch (error) {
-            displayMessage(msgElement, `A network error occurred: ${error.message}`, 'error');
+            console.error("Fetch API Error:", error);
+            displayMessage(msgElement, `A network error occurred or the Firebase Function response was invalid: ${error.message}`, 'error');
             return false;
         }
     }
@@ -1316,7 +1322,6 @@
         const sendNotificationChecked = document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked;
         const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => {
             if (cb.value === 'Latest-Movies') return 'movie';
-            // **REMOVED** if (cb.value === 'Latest-TV-Series') return 'tv';
             if (cb.value === 'latest_uploads') return 'popular';
             return cb.value;
         });
@@ -1371,7 +1376,7 @@
             }
         } else {
             payload.contentType = 'movie';
-            payload.type = selectedTypes.filter(type => type !== 'send_notification');
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
             payload.videoUrl = document.getElementById('videoSourceUrl').value;
             try {
                 const duplicateCheck = await checkForDuplicates(payload);
@@ -1411,7 +1416,6 @@
         
         const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input[name="manualContentType"]:checked')).map(cb => {
             if (cb.value === 'Latest-Movies') return 'movie';
-            // **REMOVED** if (cb.value === 'Latest-TV-Series') return 'tv';
             if (cb.value === 'latest_uploads') return 'popular';
             return cb.value;
         });
@@ -1459,7 +1463,7 @@
             } finally { setLoading(manualAddBtn, false); }
         } else {
             payload.contentType = 'movie';
-            payload.type = selectedTypes.filter(type => type !== 'send_notification');
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
             payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
             try {
                 const duplicateCheck = await checkForDuplicates(payload);
@@ -1581,7 +1585,6 @@
                 data.type.forEach(typeValue => {
                     let displayValue = typeValue;
                     if (typeValue === 'movie') displayValue = 'Latest-Movies';
-                    // **REMOVED** if (typeValue === 'tv') displayValue = 'Latest-TV-Series';
                     if (typeValue === 'popular') displayValue = 'latest_uploads';
                     const checkbox = document.querySelector(`#editContentTypeCheckboxes input[value="${displayValue}"]`);
                     if (checkbox) checkbox.checked = true;
@@ -1640,7 +1643,6 @@
 
         const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => {
             if (cb.value === 'Latest-Movies') return 'movie';
-            // **REMOVED** if (cb.value === 'Latest-TV-Series') return 'tv';
             if (cb.value === 'latest_uploads') return 'popular';
             return cb.value;
         });
@@ -1685,7 +1687,7 @@
             } finally { setLoading(updateContentBtn, false); }
         } else {
             payload.contentType = 'movie';
-            payload.type = selectedTypes.filter(type => type !== 'send_notification');
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
             payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
             try {
                 const duplicateCheck = await checkForDuplicates(payload, docId);
@@ -1711,8 +1713,7 @@
             let actualFilterValue = filterValue;
             if (filterValue === 'latest_uploads') actualFilterValue = 'popular';
             if (filterValue === 'Latest-Movies') actualFilterValue = 'movie';
-            // **REMOVED** if (filterValue === 'Latest-TV-Series') actualFilterValue = 'tv';
-
+            
             if (filterValue !== 'all') {
                 query = query.where('type', 'array-contains', actualFilterValue);
             }
@@ -1772,7 +1773,7 @@
             let actualCategoryToRemove = categoryToRemove;
             if (categoryToRemove === 'latest_uploads') actualCategoryToRemove = 'popular';
             if (categoryToRemove === 'Latest-Movies') actualCategoryToRemove = 'movie';
-            // **REMOVED** if (categoryToRemove === 'Latest-TV-Series') actualCategoryToRemove = 'tv';
+            
             const updatedTypes = currentTypes.filter(type => type !== actualCategoryToRemove);
             await docRef.update({ type: updatedTypes, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
             return true;
@@ -2074,7 +2075,7 @@
             previewTitle.textContent = notifTitleInput.value || 'Notification Title';
         });
         notifBodyInput.addEventListener('input', () => {
-            previewBody.textContent = notifBodyInput.value || 'Notification body...';
+            previewBody.textContent = notifBodyInput.value || 'Notification body will appear here...';
         });
         notifImageUrlInput.addEventListener('input', () => {
             const url = notifImageUrlInput.value;
@@ -2100,7 +2101,7 @@
             if (success) {
                 notifForm.reset();
                 previewTitle.textContent = 'Notification Title';
-                previewBody.textContent = 'Notification body...';
+                previewBody.textContent = 'Notification body will appear here...';
                 previewImage.style.display = 'none';
             }
         });
