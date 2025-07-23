@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Zone Movies Admin Panel</title>
+    <title>Admin Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
@@ -540,13 +540,12 @@
                         <label>Categories (Select all that apply)</label>
                         <div class="checkbox-group" id="contentTypeCheckboxes">
                             <label><input type="checkbox" name="contentType" value="latest_uploads"> Latest Uploads</label>
-                            <label class="movie-only-category"><input type="checkbox" name="contentType" value="Latest-Movies">Latest Movies</label>
+                            <label><input type="checkbox" name="contentType" value="romance">Latest Movies</label>
                             <label><input type="checkbox" name="contentType" value="most_liked"> Most Liked</label>
                             <label><input type="checkbox" name="contentType" value="animation"> Animation</label>
                             <label><input type="checkbox" name="contentType" value="indian"> Indian</label>
                             <label><input type="checkbox" name="contentType" value="horror"> Horror</label>
                             <label><input type="checkbox" name="contentType" value="comedy"> Comedy</label>
-                            <label><input type="checkbox" name="contentType" value="romance"> Romance</label>
                             <label><input type="checkbox" name="contentType" value="adventure"> Adventure</label>
                             <label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
                             <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
@@ -596,13 +595,13 @@
                         <label>Categories</label>
                         <div class="checkbox-group" id="manualContentTypeCheckboxes">
                             <label><input type="checkbox" name="manualContentType" value="latest_uploads"> Latest Uploads</label>
-                            <label class="movie-only-category"><input type="checkbox" name="manualContentType" value="Latest-Movies">Latest Movies</label>
+                             <label><input type="checkbox" name="manualContentType" value="romance"> Latest-Movies</label>
                             <label><input type="checkbox" name="manualContentType" value="most_liked"> Most Liked</label>
                             <label><input type="checkbox" name="manualContentType" value="animation"> Animation</label>
                             <label><input type="checkbox" name="manualContentType" value="indian"> Indian</label>
                             <label><input type="checkbox" name="manualContentType" value="horror"> Horror</label>
                             <label><input type="checkbox" name="manualContentType" value="comedy"> Comedy</label>
-                            <label><input type="checkbox" name="manualContentType" value="romance"> Romance</label>
+                           
                             <label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label>
                             <label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
                             <label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label>
@@ -685,13 +684,13 @@
                     <select id="allContentFilter">
                         <option value="all">All</option>
                         <option value="latest_uploads">Latest Uploads</option>
-                        <option value="Latest-Movies">Latest Movies</option>
+                        <option value="romance">Latest-Movies</option>
+                        <option value="Latest-TV-Series">Latest Tv Shows</option>
                         <option value="most_liked">Most Liked</option>
                         <option value="animation">Animation</option>
                         <option value="indian">Indian</option>
                         <option value="horror">Horror</option>
                         <option value="comedy">Comedy</option>
-                        <option value="romance">Romance</option>
                         <option value="adventure">Adventure</option>
                         <option value="scifi-fantasy">Sci-fi & Fantasy</option>
                         <option value="action-thriller">Action & Thriller</option>
@@ -699,7 +698,6 @@
                         <option value="nigerian">Nigerian Movies</option>
                         <option value="upcoming_shows">Upcoming Shows</option>
                         <option value="western_series">Western Series</option>
-                        <option value="Latest-TV-Series">Latest Tv Shows</option>
                         <option value="k_dramas">K Dramas</option>
                         <option value="send_notification">Send Notification</option>
                     </select>
@@ -723,17 +721,16 @@
                         <label>Categories</label>
                         <div class="checkbox-group" id="editContentTypeCheckboxes">
                             <label><input type="checkbox" name="editContentType" value="latest_uploads"> Latest Uploads</label>
-                            <label class="movie-only-category"><input type="checkbox" name="editContentType" value="Latest-Movies">Latest Movies</label>
+                           <label><input type="checkbox" name="manualGenre" value="romance"> latest_movies</label>
                             <label><input type="checkbox" name="editContentType" value="most_liked"> Most Liked</label>
                             <label><input type="checkbox" name="editContentType" value="animation"> Animation</label>
                             <label><input type="checkbox" name="editContentType" value="indian"> Indian</label>
                             <label><input type="checkbox" name="editContentType" value="horror"> Horror</label>
                             <label><input type="checkbox" name="editContentType" value="comedy"> Comedy</label>
-                            <label><input type="checkbox" name="editContentType" value="romance"> Romance</label>
                             <label><input type="checkbox" name="editContentType" value="adventure"> Adventure</label>
                             <label><input type="checkbox" name="editContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
                             <label><input type="checkbox" name="editContentType" value="action-thriller"> Action & Thriller</label>
-                            <label><input type="checkbox" name="editContentType" value="high-school"> High School</label>
+                            <label><input type="checkbox" name="editContentType" value="high-school">High School</label>
                             <label><input type="checkbox" name="editContentType" value="nigerian"> Nigerian Movies</label>
                             <label class="tv-only-category"><input type="checkbox" name="editContentType" value="upcoming_shows"> Upcoming Shows</label>
                             <label class="tv-only-category"><input type="checkbox" name="editContentType" value="western_series"> Western Series</label>
@@ -885,7 +882,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     // --- Firebase Configuration ---
-    const firebaseConfig = {
+  const firebaseConfig = {
         apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
         authDomain: "stream-zone-movies-a83c1.firebaseapp.com",
         projectId: "stream-zone-movies-a83c1",
@@ -893,6 +890,8 @@
         messagingSenderId: "148342664213",
         appId: "1:148342664213:web:56df2549cc480df7cf721c"
     };
+
+
     // --- Initialize Firebase App ---
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore(app);
@@ -961,7 +960,7 @@
     let selectedAllContentForDeletion = new Set();
 
     // --- Notification Panel Elements ---
-    const firebaseFunctionUrl = 'https://sendnotification-i7fenevlta-uc.a.run.app';
+    const firebaseFunctionUrl = 'https://sendnotification-dgy4ehtr4a-uc.a.run.app';
 
     const notifForm = document.getElementById('notificationForm');
     const sendNotificationBtn = document.getElementById('sendNotificationBtn');
