@@ -493,6 +493,22 @@
                 width: auto !important;
             }
         }
+        .input-group-prefix {
+            display: flex;
+            align-items: center;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: var(--primary-bg);
+        }
+        .input-group-prefix span {
+            padding: 12px;
+            color: #888;
+            white-space: nowrap;
+        }
+        .input-group-prefix input {
+            border: none;
+            flex-grow: 1;
+        }
     </style>
 </head>
 <body>
@@ -825,7 +841,15 @@
                             <div class="form-group"><label for="notifTitle">Title</label><input type="text" id="notifTitle" placeholder="New Movie Alert!" required></div>
                             <div class="form-group"><label for="notifBody">Body</label><textarea id="notifBody" rows="4" placeholder="Check out the latest blockbuster..." required></textarea></div>
                             <div class="form-group"><label for="notifImageUrl">Image URL <span style="color: #888; font-weight: normal;">(Optional)</span></label><input type="url" id="notifImageUrl" placeholder="https://example.com/image.jpg"></div>
-                            <div class="form-group"><label for="notifUrl">Page to Open <span style="color: #888; font-weight: normal;">(Optional)</span></label><input type="url" id="notifUrl" placeholder="https://app.streamzonemovies.online/page.html"></div>
+                            
+                            <div class="form-group">
+                                <label for="notifUrlId">Page to Open (Enter Movie/Series ID)</label>
+                                <div class="input-group-prefix">
+                                    <span>streamzonemovies://details?id=</span>
+                                    <input type="text" id="notifUrlId" placeholder="your_movie_id">
+                                </div>
+                            </div>
+                            
                             <button type="submit" id="sendNotificationBtn">Send Notification <i class="fas fa-paper-plane"></i><span class="spinner"></span></button>
                         </form>
                         <div id="notificationMessage" class="message"></div>
@@ -880,7 +904,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     
 <script>
- document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
     // --- Firebase Configuration ---
     const firebaseConfig = {
         apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
@@ -905,8 +929,6 @@
     const logoutBtn = document.getElementById('logoutBtn');
     const loginMessage = document.getElementById('loginMessage');
     const mainContentArea = document.getElementById('mainContentArea');
-
-    // Content Management Elements
     const addMovieForm = document.getElementById('addMovieForm');
     const addContentBtn = document.getElementById('addContentBtn');
     const addMessage = document.getElementById('addMessage');
@@ -921,8 +943,6 @@
     const updateContentBtn = document.getElementById('updateContentBtn');
     const editMessage = document.getElementById('editMessage');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
-
-    // Banner Management Elements
     const bannerNavTabs = document.querySelector('.banner-nav-tabs');
     const addEditBannerForm = document.getElementById('addEditBannerForm');
     const bannerFormTitle = document.getElementById('bannerFormTitle');
@@ -933,8 +953,6 @@
     const allBannersContainer = document.getElementById('allBannersContainer');
     const viewBannersMessage = document.getElementById('viewBannersMessage');
     let selectedMoviesForDeletion = new Set();
-
-    // User Management Elements
     const userSearchEmailInput = document.getElementById('user-search-email');
     const userSearchBtn = document.getElementById('user-search-btn');
     const userMessageArea = document.getElementById('user-message-area');
@@ -948,18 +966,12 @@
     const userUpdateBtn = document.getElementById('user-update-btn');
     const userCreateBtn = document.getElementById('user-create-btn');
     const userFormTitle = document.getElementById('user-form-title');
-
-    // All Content Page Elements
     const allContentContainer = document.getElementById('allContentContainer');
     const allContentMessage = document.getElementById('allContentMessage');
     const allContentFilter = document.getElementById('allContentFilter');
     const deleteSelectedAllContentBtn = document.getElementById('deleteSelectedAllContentBtn');
     const selectedAllContentCount = document.getElementById('selectedAllContentCount');
     let selectedAllContentForDeletion = new Set();
-
-    // --- Notification Panel Elements ---
-    const firebaseFunctionUrl = 'https://sendnotification-i7fenevlta-uc.a.run.app';
-
     const notifForm = document.getElementById('notificationForm');
     const sendNotificationBtn = document.getElementById('sendNotificationBtn');
     const notificationMessage = document.getElementById('notificationMessage');
@@ -971,18 +983,22 @@
     const previewBody = document.getElementById('previewBody');
     const previewImage = document.getElementById('previewImage');
 
-    // VJ and Genre Lists for Sort Page
-    const VJ_LIST = [
-        "Vj Junior", "Vj TONNY", "Vj Emmy", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo",
-        "Vj Kevin", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox",
-        "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy",
-        "Vj Baros", "Vj SOUL", "Vj SON", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T", "Vj RONAGE"
-    ];
-    const GENRE_LIST = [
-        "Action", "Horror", "Series", "Adventure", "Love Story", "Comedy", "Crime", "Family", "Sci FI", "Romance",
-        "Kungu Fu", "Drama", "Sport", "Thriller", "Animation", "Documentary", "Fantasy", "History", "Music", "Mystery",
-        "War", "Western"
-    ];
+    const VJ_LIST = ["Vj Junior", "Vj TONNY", "Vj Emmy", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo", "Vj Kevin", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox", "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy", "Vj Baros", "Vj SOUL", "Vj SON", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T", "Vj RONAGE"];
+    const GENRE_LIST = ["Action", "Horror", "Series", "Adventure", "Love Story", "Comedy", "Crime", "Family", "Sci FI", "Romance", "Kungu Fu", "Drama", "Sport", "Thriller", "Animation", "Documentary", "Fantasy", "History", "Music", "Mystery", "War", "Western"];
+
+    function generateSearchKeywords(title, vjName) {
+        const keywords = new Set();
+        const fullText = `${title || ''} ${vjName || ''}`.toLowerCase();
+        const words = fullText.split(' ').filter(word => word);
+
+        words.forEach(word => {
+            const cleanedWord = word.replace(/[^a-z0-9]/gi, '');
+            for (let i = 1; i <= cleanedWord.length; i++) {
+                keywords.add(cleanedWord.substring(0, i));
+            }
+        });
+        return Array.from(keywords);
+    }
 
     function populateCheckboxes(containerId, namePrefix, list, selectedValues = []) {
         const container = document.getElementById(containerId);
@@ -1072,30 +1088,30 @@
 
     async function sendNotification(title, body, imageUrl = '', url = '', msgElement) {
         const payload = {
-            title: title,
-            body: body,
-            imageUrl: imageUrl,
-            url: url,
-            id: Date.now()
+            data: {
+                title: title,
+                body: body,
+                imageUrl: imageUrl,
+                url: url
+            }
         };
         try {
-            const response = await fetch(firebaseFunctionUrl, {
+            const functionUrl = 'https://sendnotification-i7fenevlta-uc.a.run.app';
+            const response = await fetch(functionUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
             const result = await response.json();
             if (response.ok) {
-                displayMessage(msgElement, 'Notification sent successfully to all subscribed users!', 'success');
+                displayMessage(msgElement, 'Notification sent successfully!', 'success');
                 return true;
             } else {
-                displayMessage(msgElement, 'Failed to send notification: ' + (result.error || result.message || 'Unknown error'), 'error');
-                console.error('Backend Error Response:', result);
+                displayMessage(msgElement, `Failed to send: ${result.error || 'Unknown error'}`, 'error');
                 return false;
             }
         } catch (error) {
-            console.error("Fetch API Error:", error);
-            displayMessage(msgElement, `A network error occurred or the Firebase Function response was invalid: ${error.message}`, 'error');
+            displayMessage(msgElement, `Network error: ${error.message}`, 'error');
             return false;
         }
     }
@@ -1326,8 +1342,13 @@
             return cb.value;
         });
 
+        const titleLowercase = finalTitle.toLowerCase();
+        const searchKeywords = generateSearchKeywords(finalTitle, vjName);
+
         let payload = {
             title: finalTitle,
+            title_lowercase: titleLowercase,
+            search_keywords: searchKeywords,
             tmdbId: tmdbData.id,
             slug: generateSlug(finalTitle),
             posterUrl: tmdbData.fullPosterPath || '',
@@ -1367,7 +1388,10 @@
                     }
                 }
                 displayMessage(addMessage, 'TV series added!', 'success');
-                if (sendNotificationChecked) await sendNotification(finalTitle, tmdbData.overview, tmdbData.fullBackdropPath, `https://app.streamzonemovies.online/series/${payload.slug}`, addMessage);
+                if (sendNotificationChecked) {
+                    const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                    await sendNotification(finalTitle, tmdbData.overview, tmdbData.fullBackdropPath, notificationUrl, addMessage);
+                }
                 addMovieForm.reset();
             } catch (err) {
                 displayMessage(addMessage, `Error: ${err.message}`, 'error');
@@ -1383,9 +1407,12 @@
                 if (duplicateCheck.found) {
                     displayMessage(addMessage, `Duplicate found: ${duplicateCheck.field}.`, 'error');
                 } else {
-                    await db.collection('movies').add(payload);
+                    const docRef = await db.collection('movies').add(payload);
                     displayMessage(addMessage, 'Content added!', 'success');
-                    if (sendNotificationChecked) await sendNotification(finalTitle, tmdbData.overview, tmdbData.fullBackdropPath, `https://app.streamzonemovies.online/movie/${payload.slug}`, addMessage);
+                    if (sendNotificationChecked) {
+                        const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                        await sendNotification(finalTitle, tmdbData.overview, tmdbData.fullBackdropPath, notificationUrl, addMessage);
+                    }
                     addMovieForm.reset();
                 }
             } catch (error) {
@@ -1420,8 +1447,15 @@
             return cb.value;
         });
 
+        const titleLowercase = manualTitle.toLowerCase();
+        const searchKeywords = generateSearchKeywords(manualTitle, manualVjName);
+
         let payload = {
-            title: manualTitle, slug, tmdbId,
+            title: manualTitle,
+            title_lowercase: titleLowercase,
+            search_keywords: searchKeywords,
+            slug, 
+            tmdbId,
             overview: document.getElementById('manualOverview').value.trim(),
             posterUrl: manualPosterUrl,
             backdropUrl: document.getElementById('manualBackdropUrl').value.trim(),
@@ -1456,7 +1490,10 @@
                     }
                 }
                 displayMessage(manualAddMessage, 'TV series added!', 'success');
-                if (sendNotificationChecked) await sendNotification(payload.title, payload.overview, payload.backdropUrl, `https://app.streamzonemovies.online/series/${payload.slug}`, manualAddMessage);
+                if (sendNotificationChecked) {
+                    const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                    await sendNotification(payload.title, payload.overview, payload.backdropUrl, notificationUrl, manualAddMessage);
+                }
                 manualAddForm.reset();
             } catch (err) {
                 displayMessage(manualAddMessage, `Error: ${err.message}`, 'error');
@@ -1470,9 +1507,12 @@
                 if (duplicateCheck.found) {
                     displayMessage(manualAddMessage, `Duplicate found: ${duplicateCheck.field}.`, 'error');
                 } else {
-                    await db.collection('movies').add(payload);
+                    const docRef = await db.collection('movies').add(payload);
                     displayMessage(manualAddMessage, 'Content added!', 'success');
-                    if (sendNotificationChecked) await sendNotification(payload.title, payload.overview, payload.backdropUrl, `https://app.streamzonemovies.online/movie/${payload.slug}`, manualAddMessage);
+                    if (sendNotificationChecked) {
+                        const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                        await sendNotification(payload.title, payload.overview, payload.backdropUrl, notificationUrl, manualAddMessage);
+                    }
                     manualAddForm.reset();
                 }
             } catch (error) {
@@ -1637,9 +1677,13 @@
         }
 
         const editTitle = document.getElementById('editTitle').value.trim();
+        const editVjName = document.getElementById('editVjName').value.trim();
         const referenceIdInput = document.getElementById('editReferenceId').value.trim();
         let tmdbId = /^\d+$/.test(referenceIdInput) ? Number(referenceIdInput) : null;
         let slug = referenceIdInput && !tmdbId ? generateSlug(referenceIdInput) : generateSlug(editTitle);
+
+        const titleLowercase = editTitle.toLowerCase();
+        const searchKeywords = generateSearchKeywords(editTitle, editVjName);
 
         const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => {
             if (cb.value === 'Latest-Movies') return 'movie';
@@ -1648,11 +1692,15 @@
         });
 
         let payload = {
-            title: editTitle, slug, tmdbId,
+            title: editTitle,
+            title_lowercase: titleLowercase,
+            search_keywords: searchKeywords,
+            slug, 
+            tmdbId,
             overview: document.getElementById('editOverview').value,
             posterUrl: document.getElementById('editPosterUrl').value,
             backdropUrl: document.getElementById('editBackdropUrl').value,
-            vjName: document.getElementById('editVjName').value,
+            vjName: editVjName,
             genres: Array.from(document.querySelectorAll('#editGenreCheckboxes input:checked')).map(cb => cb.value),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesEdit input:checked')).map(cb => cb.value),
@@ -2087,6 +2135,20 @@
                 previewImage.style.display = 'none';
             }
         });
+
+        // ✅ ADDED: Event listener for the new ID input field
+        const notifUrlIdInput = document.getElementById('notifUrlId');
+        const previewUrl = document.getElementById('previewUrl');
+
+        notifUrlIdInput.addEventListener('input', () => {
+            const contentId = notifUrlIdInput.value.trim();
+            if (contentId) {
+                previewUrl.textContent = `Will open: streamzonemovies://details?id=${contentId}`;
+            } else {
+                previewUrl.textContent = '';
+            }
+        });
+
         notifForm.addEventListener('submit', async function (event) {
             event.preventDefault();
             const title = notifTitleInput.value;
@@ -2095,19 +2157,25 @@
                 displayMessage(notificationMessage, 'Please provide a title or body.', 'error');
                 return;
             }
+
+            const contentId = notifUrlIdInput.value.trim();
+            const fullUrl = contentId ? `streamzonemovies://details?id=${contentId}` : '';
+
             setLoading(sendNotificationBtn, true);
-            const success = await sendNotification(title, body, notifImageUrlInput.value, notifUrlInput.value, notificationMessage);
+            const success = await sendNotification(title, body, notifImageUrlInput.value, fullUrl, notificationMessage);
             setLoading(sendNotificationBtn, false);
+            
             if (success) {
                 notifForm.reset();
                 previewTitle.textContent = 'Notification Title';
                 previewBody.textContent = 'Notification body will appear here...';
                 previewImage.style.display = 'none';
+                previewUrl.textContent = ''; // Also reset the URL preview
             }
+
         });
     }
 });
 </script>
-
 </body>
 </html>
