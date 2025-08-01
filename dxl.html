@@ -548,7 +548,7 @@
             </div>
 
             <div id="addContentPage" class="page-container">
-                <h2>Add Content from TMDB</h2>
+                <h2>Add Content from TMDB Aj</h2>
                 <form id="addMovieForm">
                     <div class="form-group"><label for="tmdbApiKey">TMDB API Key</label><input type="text" id="tmdbApiKey" value="f7a3b097ba7a990fd0c8ef3147646fb5" readonly></div>
                     <div class="form-group"><label for="primaryContentType">Content Type</label><select id="primaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
@@ -987,7 +987,7 @@
     const GENRE_LIST = ["Action", "Horror", "Series", "Adventure", "Love Story", "Comedy", "Crime", "Family", "Sci FI", "Romance", "Kungu Fu", "Drama", "Sport", "Thriller", "Animation", "Documentary", "Fantasy", "History", "Music", "Mystery", "War", "Western"];
     let tmdbGenreList = [];
 
-    async function fetchAndPopulateTmdbGenres(apiKey) {
+      async function fetchAndPopulateTmdbGenres(apiKey) {
         const container = document.getElementById('sortGenresCheckboxesTMDB');
         if (!container) return;
         try {
@@ -1019,6 +1019,7 @@
                 checkbox.type = 'checkbox';
                 checkbox.name = 'sortGenresTMDB';
                 checkbox.value = genre.name; 
+                checkbox.setAttribute('data-genre-id', genre.id); // <-- This is the important new line
                 label.appendChild(checkbox);
                 label.appendChild(document.createTextNode(` ${genre.name}`));
                 container.appendChild(label);
@@ -1301,7 +1302,6 @@
     setupMasterContentTypeToggle(document.getElementById('addMovieForm'));
     setupMasterContentTypeToggle(document.getElementById('manualAddForm'));
     setupMasterContentTypeToggle(document.getElementById('editContentForm'));
-
     addMovieForm.addEventListener('submit', async e => {
         e.preventDefault();
         setLoading(addContentBtn, true);
@@ -1380,21 +1380,19 @@
         tmdbData.fullPosterPath = tmdbData.poster_path ? `${baseImageUrl}${tmdbData.poster_path}` : '';
         tmdbData.fullBackdropPath = tmdbData.backdrop_path ? `${baseBackdropUrl}${tmdbData.backdrop_path}` : '';
         
-        // This is where we automatically check the genres based on TMDB data
+        // --- This is the updated selection logic ---
         document.querySelectorAll('#sortGenresCheckboxesTMDB input[type="checkbox"]').forEach(cb => {
             cb.checked = false;
         });
-        if (tmdbData.genre_ids && Array.isArray(tmdbData.genre_ids) && tmdbGenreList.length > 0) {
+        if (tmdbData.genre_ids && Array.isArray(tmdbData.genre_ids)) {
             tmdbData.genre_ids.forEach(genreId => {
-                const genre = tmdbGenreList.find(g => g.id === genreId);
-                if (genre && genre.name) {
-                    const checkbox = document.querySelector(`#sortGenresCheckboxesTMDB input[value="${CSS.escape(genre.name)}"]`);
-                    if (checkbox) {
-                        checkbox.checked = true;
-                    }
+                const checkbox = document.querySelector(`#sortGenresCheckboxesTMDB input[data-genre-id="${genreId}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
                 }
             });
         }
+        // --- End of updated logic ---
 
         const finalTitle = tmdbData.title || tmdbData.name;
         
