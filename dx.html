@@ -978,7 +978,7 @@
     const notifTitleInput = document.getElementById('notifTitle');
     const notifBodyInput = document.getElementById('notifBody');
     const notifImageUrlInput = document.getElementById('notifImageUrl');
-    const notifUrlInput = document.getElementById('notifUrl');
+    const notifUrlIdInput = document.getElementById('notifUrlId'); // ✅ Corrected reference
     const previewTitle = document.getElementById('previewTitle');
     const previewBody = document.getElementById('previewBody');
     const previewImage = document.getElementById('previewImage');
@@ -1226,7 +1226,7 @@
                 notifTitleInput.value = '';
                 notifBodyInput.value = '';
                 notifImageUrlInput.value = '';
-                notifUrlInput.value = '';
+                if(notifUrlIdInput) notifUrlIdInput.value = ''; // ✅ Corrected reference and added a check
                 previewTitle.textContent = 'Notification Title';
                 previewBody.textContent = 'Notification body will appear here...';
                 previewImage.style.display = 'none';
@@ -1379,11 +1379,11 @@
         const baseBackdropUrl = configData.images.base_url + configData.images.backdrop_sizes[2];
         tmdbData.fullPosterPath = tmdbData.poster_path ? `${baseImageUrl}${tmdbData.poster_path}` : '';
         tmdbData.fullBackdropPath = tmdbData.backdrop_path ? `${baseBackdropUrl}${tmdbData.backdrop_path}` : '';
-
+        
+        // This is where we automatically check the genres based on TMDB data
         document.querySelectorAll('#sortGenresCheckboxesTMDB input[type="checkbox"]').forEach(cb => {
             cb.checked = false;
         });
-
         if (tmdbData.genre_ids && Array.isArray(tmdbData.genre_ids) && tmdbGenreList.length > 0) {
             tmdbData.genre_ids.forEach(genreId => {
                 const genre = tmdbGenreList.find(g => g.id === genreId);
@@ -1400,10 +1400,8 @@
         
         const sendNotificationChecked = document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked;
         const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => {
-            if (cb.value === 'Latest-Movies') return 'movie';
-            if (cb.value === 'latest_uploads') return 'popular';
             return cb.value;
-        });
+        }).filter(val => val !== 'send_notification');
 
         const titleLowercase = finalTitle.toLowerCase();
         const searchKeywords = generateSearchKeywords(finalTitle, vjName);
@@ -1427,7 +1425,7 @@
         
         if (finalApiType === 'tv') {
             payload.contentType = 'tv';
-            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
+            payload.type = selectedTypes.filter(type => type !== 'movie'); // Ensure 'movie' isn't in TV type
             try {
                 const seriesDataValue = document.getElementById('seriesData').value;
                 if (!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty.");
@@ -1463,7 +1461,7 @@
             }
         } else {
             payload.contentType = 'movie';
-            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
+            payload.type = selectedTypes.filter(type => type !== 'Latest-TV-Series'); // Ensure TV types aren't in movie
             payload.videoUrl = document.getElementById('videoSourceUrl').value;
             try {
                 const duplicateCheck = await checkForDuplicates(payload);
@@ -1505,10 +1503,8 @@
         let slug = referenceIdInput && !tmdbId ? generateSlug(referenceIdInput) : generateSlug(manualTitle);
         
         const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input[name="manualContentType"]:checked')).map(cb => {
-            if (cb.value === 'Latest-Movies') return 'movie';
-            if (cb.value === 'latest_uploads') return 'popular';
             return cb.value;
-        });
+        }).filter(val => val !== 'send_notification');
 
         const titleLowercase = manualTitle.toLowerCase();
         const searchKeywords = generateSearchKeywords(manualTitle, manualVjName);
@@ -1533,7 +1529,7 @@
         const primaryType = document.getElementById('manualPrimaryContentType').value;
         if (primaryType === 'tv') {
             payload.contentType = 'tv';
-            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
+            payload.type = selectedTypes.filter(type => type !== 'movie');
             try {
                 const seriesDataValue = document.getElementById('manualSeriesData').value;
                 if (!seriesDataValue) throw new Error("Series Data (JSON) is required.");
@@ -1563,7 +1559,7 @@
             } finally { setLoading(manualAddBtn, false); }
         } else {
             payload.contentType = 'movie';
-            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
+            payload.type = selectedTypes.filter(type => type !== 'Latest-TV-Series');
             payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
             try {
                 const duplicateCheck = await checkForDuplicates(payload);
@@ -2199,19 +2195,6 @@
             }
         });
 
-        // ✅ ADDED: Event listener for the new ID input field
-        const notifUrlIdInput = document.getElementById('notifUrlId');
-        const previewUrl = document.getElementById('previewUrl');
-
-        notifUrlIdInput.addEventListener('input', () => {
-            const contentId = notifUrlIdInput.value.trim();
-            if (contentId) {
-                previewUrl.textContent = `Will open: streamzonemovies://details?id=${contentId}`;
-            } else {
-                previewUrl.textContent = '';
-            }
-        });
-
         notifForm.addEventListener('submit', async function (event) {
             event.preventDefault();
             const title = notifTitleInput.value;
@@ -2233,7 +2216,6 @@
                 previewTitle.textContent = 'Notification Title';
                 previewBody.textContent = 'Notification body will appear here...';
                 previewImage.style.display = 'none';
-                previewUrl.textContent = ''; // Also reset the URL preview
             }
 
         });
