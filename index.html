@@ -550,18 +550,20 @@
             <div id="addContentPage" class="page-container">
                 <h2>Add Content from TMDB</h2>
                 <form id="addMovieForm">
-                    <div class="form-group"><label for="tmdbApiKey">TMDB API Key</label><input type="text" id="tmdbApiKey" value="93fb64d4811f2ff8b0fc1be8beb4ab74" readonly></div>
+                    <div class="form-group"><label for="tmdbApiKey">TMDB API Key</label><input type="text" id="tmdbApiKey" value="f7a3b097ba7a990fd0c8ef3147646fb5" readonly></div>
                     <div class="form-group"><label for="primaryContentType">Primary Content Type</label><select id="primaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
                     <div class="form-group media-categories-group">
                         <label>Categories (Select all that apply)</label>
                         <div class="checkbox-group" id="contentTypeCheckboxes">
-                            <label><input type="checkbox" name="contentType" value="latest_uploads"> Latest Uploads</label>
                             <label><input type="checkbox" name="contentType" value="romance">Latest Movies</label>
-                            <label><input type="checkbox" name="contentType" value="most_liked">Latest On Jmovies</label>
+                            <label><input type="checkbox" name="contentType" value="most_liked">Most Liked</label>
+                            <!-- ✅ NEWLY ADDED -->
+                            <label><input type="checkbox" name="contentType" value="recent_movies">Recently Added Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="recent_tv_shows">Recently Added TV Shows</label>
                             <label><input type="checkbox" name="contentType" value="animation"> Animation</label>
-                            <label><input type="checkbox" name="contentType" value="indian">Trending This Week</label>
+                            <label><input type="checkbox" name="contentType" value="indian"> Indian</label>
                             <label><input type="checkbox" name="contentType" value="horror"> Horror</label>
-                            <label><input type="checkbox" name="contentType" value="comedy">Popular Movies</label>
+                            <label><input type="checkbox" name="contentType" value="comedy"> Comedy</label>
                             <label><input type="checkbox" name="contentType" value="adventure"> Adventure</label>
                             <label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
                             <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
@@ -612,11 +614,14 @@
                         <div class="checkbox-group" id="manualContentTypeCheckboxes">
                             <label><input type="checkbox" name="manualContentType" value="latest_uploads"> Latest Uploads</label>
                              <label><input type="checkbox" name="manualContentType" value="romance"> Latest-Movies</label>
-                            <label><input type="checkbox" name="manualContentType" value="most_liked">Latest On Jmovies</label>
+                            <label><input type="checkbox" name="manualContentType" value="most_liked">Most Liked</label>
+                            <!-- ✅ NEWLY ADDED -->
+                            <label><input type="checkbox" name="manualContentType" value="recent_movies">Recently Added Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="recent_tv_shows">Recently Added TV Shows</label>
                             <label><input type="checkbox" name="manualContentType" value="animation"> Animation</label>
-                            <label><input type="checkbox" name="manualContentType" value="indian"> Trending This Week</label>
+                            <label><input type="checkbox" name="manualContentType" value="indian"> Indian</label>
                             <label><input type="checkbox" name="manualContentType" value="horror"> Horror</label>
-                            <label><input type="checkbox" name="manualContentType" value="comedy"> Popular Movies</label>
+                            <label><input type="checkbox" name="manualContentType" value="comedy"> Comedy</label>
                            
                             <label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label>
                             <label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
@@ -702,11 +707,14 @@
                         <option value="latest_uploads">Latest Uploads</option>
                         <option value="romance">Latest-Movies</option>
                         <option value="Latest-TV-Series">Latest Tv Shows</option>
-                        <option value="most_liked">Latest On Jmovies</option>
+                        <option value="most_liked">Most Liked</option>
+                        <!-- ✅ NEWLY ADDED -->
+                        <option value="recent_movies">Recently Added Movies</option>
+                        <option value="recent_tv_shows">Recently Added TV Shows</option>
                         <option value="animation">Animation</option>
-                        <option value="indian">Trending This Week</option>
+                        <option value="indian">Indian</option>
                         <option value="horror">Horror</option>
-                        <option value="comedy">Popular Movies</option>
+                        <option value="comedy">Comedy</option>
                         <option value="adventure">Adventure</option>
                         <option value="scifi-fantasy">Sci-fi & Fantasy</option>
                         <option value="action-thriller">Action & Thriller</option>
@@ -738,11 +746,14 @@
                         <div class="checkbox-group" id="editContentTypeCheckboxes">
                             <label><input type="checkbox" name="editContentType" value="latest_uploads"> Latest Uploads</label>
                            <label><input type="checkbox" name="manualGenre" value="romance"> latest_movies</label>
-                            <label><input type="checkbox" name="editContentType" value="most_liked">Latest On Jmovies</label>
+                            <label><input type="checkbox" name="editContentType" value="most_liked">Most Liked</label>
+                            <!-- ✅ NEWLY ADDED -->
+                            <label><input type="checkbox" name="editContentType" value="recent_movies">Recently Added Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="recent_tv_shows">Recently Added TV Shows</label>
                             <label><input type="checkbox" name="editContentType" value="animation"> Animation</label>
-                            <label><input type="checkbox" name="editContentType" value="indian">Trending This Week</label>
+                            <label><input type="checkbox" name="editContentType" value="indian"> Indian</label>
                             <label><input type="checkbox" name="editContentType" value="horror"> Horror</label>
-                            <label><input type="checkbox" name="editContentType" value="comedy"> Popular Movies</label>
+                            <label><input type="checkbox" name="editContentType" value="comedy"> Comedy</label>
                             <label><input type="checkbox" name="editContentType" value="adventure"> Adventure</label>
                             <label><input type="checkbox" name="editContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
                             <label><input type="checkbox" name="editContentType" value="action-thriller"> Action & Thriller</label>
@@ -906,14 +917,14 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
     // --- Firebase Configuration ---
-    const firebaseConfig = { 
-            apiKey: "AIzaSyCQhwMc1uYLmjLMmBWk5QpT3XcLsuzBIEQ", 
-            authDomain: "reyikingtv1.firebaseapp.com", 
-            projectId: "reyikingtv1", 
-            storageBucket: "reyikingtv1.appspot.com", 
-            messagingSenderId: "617666017039", 
-            appId: "1:617666017039:web:5fa4ce795d9a0da0cfb07a" 
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
+        authDomain: "stream-zone-movies-a83c1.firebaseapp.com",
+        projectId: "stream-zone-movies-a83c1",
+        storageBucket: "stream-zone-movies-a83c1.appspot.com",
+        messagingSenderId: "148342664213",
+        appId: "1:148342664213:web:56df2549cc480df7cf721c"
+    };
     // --- Initialize Firebase App ---
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore(app);
@@ -972,10 +983,18 @@
     const deleteSelectedAllContentBtn = document.getElementById('deleteSelectedAllContentBtn');
     const selectedAllContentCount = document.getElementById('selectedAllContentCount');
     let selectedAllContentForDeletion = new Set();
-    
-    // --- Notification System Elements Removed ---
+    const notifForm = document.getElementById('notificationForm');
+    const sendNotificationBtn = document.getElementById('sendNotificationBtn');
+    const notificationMessage = document.getElementById('notificationMessage');
+    const notifTitleInput = document.getElementById('notifTitle');
+    const notifBodyInput = document.getElementById('notifBody');
+    const notifImageUrlInput = document.getElementById('notifImageUrl');
+    const notifUrlInput = document.getElementById('notifUrl');
+    const previewTitle = document.getElementById('previewTitle');
+    const previewBody = document.getElementById('previewBody');
+    const previewImage = document.getElementById('previewImage');
 
-    const VJ_LIST = ["Vj Junior", "Vj TONNY", "Vj Emmy", "Heavy q","Vj Mk","Vj SHIELD","Vj Light","Vj BONNY", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo", "Vj Kevin", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox", "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy", "Vj Baros", "Vj SOUL", "Vj SON", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T", "Vj RONAGE"];
+    const VJ_LIST = ["Vj Junior", "Vj TONNY", "Vj Emmy","Vj RYAN", "Heavy q","Vj Mk","Vj SHIELD ","Vj BONNY", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo", "Vj Kevin", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox", "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy", "Vj Baros", "Vj SOUL", "Vj SON", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T", "Vj RONAGE"];
     const GENRE_LIST = ["Action", "Horror", "Series", "Adventure", "Love Story", "Comedy", "Crime", "Family", "Sci FI", "Romance", "Kungu Fu", "Drama", "Sport", "Thriller", "Animation", "Documentary", "Fantasy", "History", "Music", "Mystery", "War", "Western"];
 
     function generateSearchKeywords(title, vjName) {
@@ -1015,6 +1034,7 @@
         populateCheckboxes('sortVjsCheckboxesManual', 'sortVjsManual', VJ_LIST);
         populateCheckboxes('sortGenresCheckboxesManual', 'sortGenresManual', GENRE_LIST);
     }
+    
 
     function setLoading(button, isLoading) {
         if (button) {
@@ -1082,7 +1102,35 @@
         }
     }
 
-    // --- sendNotification function removed ---
+    async function sendNotification(title, body, imageUrl = '', url = '', msgElement) {
+        const payload = {
+            data: {
+                title: title,
+                body: body,
+                imageUrl: imageUrl,
+                url: url
+            }
+        };
+        try {
+            const functionUrl = 'https://sendnotification-i7fenevlta-uc.a.run.app';
+            const response = await fetch(functionUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (response.ok) {
+                displayMessage(msgElement, 'Notification sent successfully!', 'success');
+                return true;
+            } else {
+                displayMessage(msgElement, `Failed to send: ${result.error || 'Unknown error'}`, 'error');
+                return false;
+            }
+        } catch (error) {
+            displayMessage(msgElement, `Network error: ${error.message}`, 'error');
+            return false;
+        }
+    }
 
     auth.onAuthStateChanged(async (user) => {
         if (user) {
@@ -1166,7 +1214,15 @@
                     displayAllContent();
                 }
             }
-            // --- Notification fields reset logic removed ---
+            if (pageId !== 'notificationPage') {
+                if (notifTitleInput) notifTitleInput.value = '';
+                if (notifBodyInput) notifBodyInput.value = '';
+                if (notifImageUrlInput) notifImageUrlInput.value = '';
+                if (notifUrlInput) notifUrlInput.value = '';
+                if (previewTitle) previewTitle.textContent = 'Notification Title';
+                if (previewBody) previewBody.textContent = 'Notification body will appear here...';
+                if (previewImage) previewImage.style.display = 'none';
+            }
         }
         document.querySelectorAll('.menu-link').forEach(link => {
             const isActive = link.dataset.page === pageId;
@@ -1183,9 +1239,14 @@
         window.scrollTo(0, 0);
     }
     
+    // ✅ THIS IS THE CORRECTED EVENT LISTENER CODE
+    // It will prevent page reloads when you click the menu items.
     document.querySelectorAll('.menu-link').forEach(link => {
         link.addEventListener('click', (e) => {
+            // Always prevent the default link behavior (like reloading the page)
             e.preventDefault(); 
+            
+            // Get the page target from the 'data-page' attribute and navigate
             const pageId = e.currentTarget.dataset.page;
             if (pageId) {
                 navigateToPage(pageId);
@@ -1215,9 +1276,8 @@
         const seriesDataGroup = formElement.querySelector('.series-data-group');
         const genreSelectionGroup = formElement.querySelector('.genre-selection-group');
         
-        // "send_notification" removed from these arrays
-        const movieCategories = ["latest_uploads", "Latest-Movies", "most_liked", "animation", "indian", "horror", "comedy", "romance", "adventure", "scifi-fantasy", "action-thriller", "high-school", "nigerian"];
-        const tvCategories = ["latest_uploads", "most_liked", "upcoming_shows", "western_series", "Latest-TV-Series", "k_dramas"];
+        const movieCategories = ["latest_uploads", "Latest-Movies", "most_liked", "recent_movies", "animation", "indian", "horror", "comedy", "romance", "adventure", "scifi-fantasy", "action-thriller", "high-school", "nigerian", "send_notification"];
+        const tvCategories = ["latest_uploads", "most_liked", "recent_tv_shows", "upcoming_shows", "western_series", "Latest-TV-Series", "k_dramas", "send_notification"];
 
         function toggleFields() {
             const primaryType = primarySelector.value;
@@ -1327,6 +1387,7 @@
 
         const finalTitle = tmdbData.title || tmdbData.name;
         
+        const sendNotificationChecked = document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked;
         const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => {
             if (cb.value === 'Latest-Movies') return 'movie';
             if (cb.value === 'latest_uploads') return 'popular';
@@ -1355,7 +1416,7 @@
         
         if (finalApiType === 'tv') {
             payload.contentType = 'tv';
-            payload.type = selectedTypes.filter(type => type !== 'movie');
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
             try {
                 const seriesDataValue = document.getElementById('seriesData').value;
                 if (!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty.");
@@ -1379,6 +1440,10 @@
                     }
                 }
                 displayMessage(addMessage, 'TV series added!', 'success');
+                if (sendNotificationChecked) {
+                    const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                    await sendNotification(finalTitle, tmdbData.overview, tmdbData.fullBackdropPath, notificationUrl, addMessage);
+                }
                 addMovieForm.reset();
             } catch (err) {
                 displayMessage(addMessage, `Error: ${err.message}`, 'error');
@@ -1387,7 +1452,7 @@
             }
         } else {
             payload.contentType = 'movie';
-            payload.type = selectedTypes.filter(type => type !== 'Latest-TV-Series');
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
             payload.videoUrl = document.getElementById('videoSourceUrl').value;
             try {
                 const duplicateCheck = await checkForDuplicates(payload);
@@ -1396,6 +1461,10 @@
                 } else {
                     const docRef = await db.collection('movies').add(payload);
                     displayMessage(addMessage, 'Content added!', 'success');
+                    if (sendNotificationChecked) {
+                        const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                        await sendNotification(finalTitle, tmdbData.overview, tmdbData.fullBackdropPath, notificationUrl, addMessage);
+                    }
                     addMovieForm.reset();
                 }
             } catch (error) {
@@ -1409,6 +1478,7 @@
     if(manualAddForm) manualAddForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         setLoading(manualAddBtn, true);
+        const sendNotificationChecked = document.querySelector('#manualContentTypeCheckboxes input[name="manualContentType"][value="send_notification"]').checked;
         
         const manualTitle = document.getElementById('manualTitle').value.trim();
         const manualVjName = document.getElementById('manualVjName').value.trim();
@@ -1452,7 +1522,7 @@
         const primaryType = document.getElementById('manualPrimaryContentType').value;
         if (primaryType === 'tv') {
             payload.contentType = 'tv';
-            payload.type = selectedTypes.filter(type => type !== 'movie');
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
             try {
                 const seriesDataValue = document.getElementById('manualSeriesData').value;
                 if (!seriesDataValue) throw new Error("Series Data (JSON) is required.");
@@ -1472,13 +1542,17 @@
                     }
                 }
                 displayMessage(manualAddMessage, 'TV series added!', 'success');
+                if (sendNotificationChecked) {
+                    const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                    await sendNotification(payload.title, payload.overview, payload.backdropUrl, notificationUrl, manualAddMessage);
+                }
                 manualAddForm.reset();
             } catch (err) {
                 displayMessage(manualAddMessage, `Error: ${err.message}`, 'error');
             } finally { setLoading(manualAddBtn, false); }
         } else {
             payload.contentType = 'movie';
-            payload.type = selectedTypes.filter(type => type !== 'Latest-TV-Series');
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
             payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
             try {
                 const duplicateCheck = await checkForDuplicates(payload);
@@ -1487,6 +1561,10 @@
                 } else {
                     const docRef = await db.collection('movies').add(payload);
                     displayMessage(manualAddMessage, 'Content added!', 'success');
+                    if (sendNotificationChecked) {
+                        const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                        await sendNotification(payload.title, payload.overview, payload.backdropUrl, notificationUrl, manualAddMessage);
+                    }
                     manualAddForm.reset();
                 }
             } catch (error) {
@@ -1606,6 +1684,9 @@
                     if (checkbox) checkbox.checked = true;
                 });
             }
+            if (data.type?.includes('send_notification')) {
+                document.querySelector('#editContentTypeCheckboxes input[value="send_notification"]').checked = true;
+            }
             
             document.querySelectorAll('#editGenreCheckboxes input').forEach(cb => { cb.checked = false; });
             if (Array.isArray(data.genres)) {
@@ -1683,7 +1764,7 @@
         const primaryType = document.getElementById('editPrimaryContentType').value;
         if (primaryType === 'tv') {
             payload.contentType = 'tv';
-            payload.type = selectedTypes.filter(type => type !== 'movie');
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
             payload.videoUrl = firebase.firestore.FieldValue.delete();
             try {
                 const seriesDataValue = document.getElementById('editSeriesData').value;
@@ -1708,7 +1789,7 @@
             } finally { setLoading(updateContentBtn, false); }
         } else {
             payload.contentType = 'movie';
-            payload.type = selectedTypes.filter(type => type !== 'Latest-TV-Series');
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
             payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
             try {
                 const duplicateCheck = await checkForDuplicates(payload, docId);
@@ -2096,7 +2177,65 @@
         }
     });
 
-    // --- All notification form event listeners have been removed ---
+    if (notifForm) {
+        if (notifTitleInput) notifTitleInput.addEventListener('input', () => {
+            if (previewTitle) previewTitle.textContent = notifTitleInput.value || 'Notification Title';
+        });
+        if (notifBodyInput) notifBodyInput.addEventListener('input', () => {
+            if (previewBody) previewBody.textContent = notifBodyInput.value || 'Notification body will appear here...';
+        });
+        if (notifImageUrlInput) notifImageUrlInput.addEventListener('input', () => {
+            const url = notifImageUrlInput.value;
+            if (previewImage) {
+                if (url) {
+                    previewImage.src = url;
+                    previewImage.style.display = 'block';
+                    previewImage.onerror = () => { previewImage.style.display = 'none'; };
+                } else {
+                    previewImage.style.display = 'none';
+                }
+            }
+        });
+
+        const notifUrlIdInput = document.getElementById('notifUrlId');
+        const previewUrl = document.getElementById('previewUrl');
+
+        if (notifUrlIdInput) notifUrlIdInput.addEventListener('input', () => {
+            const contentId = notifUrlIdInput.value.trim();
+            if (previewUrl) {
+                if (contentId) {
+                    previewUrl.textContent = `Will open: streamzonemovies://details?id=${contentId}`;
+                } else {
+                    previewUrl.textContent = '';
+                }
+            }
+        });
+
+        notifForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const title = notifTitleInput.value;
+            const body = notifBodyInput.value;
+            if (!title && !body) {
+                displayMessage(notificationMessage, 'Please provide a title or body.', 'error');
+                return;
+            }
+
+            const contentId = document.getElementById('notifUrlId')?.value.trim();
+            const fullUrl = contentId ? `streamzonemovies://details?id=${contentId}` : '';
+
+            setLoading(sendNotificationBtn, true);
+            const success = await sendNotification(title, body, notifImageUrlInput.value, fullUrl, notificationMessage);
+            setLoading(sendNotificationBtn, false);
+            
+            if (success) {
+                notifForm.reset();
+                if (previewTitle) previewTitle.textContent = 'Notification Title';
+                if (previewBody) previewBody.textContent = 'Notification body will appear here...';
+                if (previewImage) previewImage.style.display = 'none';
+                if (previewUrl) previewUrl.textContent = '';
+            }
+        });
+    }
 });
 </script>
 </body>
