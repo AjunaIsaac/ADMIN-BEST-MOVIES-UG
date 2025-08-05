@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #0b0f30;
+            --secondary-bg: #121740;
+            --accent-color: #d1e231;
+            --text-color: #ffffff;
+            --gradient-start: #ff006b;
+            --gradient-mid: #FF9800;
+            --gradient-end: #FFEB3B;
+            --danger-color: #f44336;
+            --success-color: #4CAF50;
+            --info-color: #2196F3;
+            --warn-color: #f39c12;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background-color: var(--primary-bg); color: var(--text-color); display: flex; min-height: 100vh; overflow-x: hidden; flex-direction: column; } /* Adjusted to min-height and overflow-x hidden */
+
+        /* Main Menu / Sidebar */
+        #mainMenu {
+            position: fixed; /* Keep fixed */
+            top: 0;
+            left: -260px; /* Default closed state */
+            width: 250px;
+            height: 100%;
+            background-color: var(--secondary-bg);
+            padding-top: 60px;
+            transition: left 0.3s ease-in-out;
+            z-index: 1100;
+            border-right: 2px solid var(--accent-color);
+            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+        }
+        #mainMenu.open { left: 0; } /* Open state */
+        #mainMenu .menu-header { color: var(--accent-color); padding: 10px 20px; font-size: 1.5em; text-align: center; border-bottom: 1px solid #333; margin-bottom: 20px; }
+        #mainMenu a { padding: 15px 20px; text-decoration: none; font-size: 18px; color: var(--text-color); display: flex; align-items: center; gap: 15px; transition: background-color 0.2s, color 0.2s; cursor: pointer; }
+        #mainMenu a:hover { background-color: var(--primary-bg); }
+        #mainMenu a.active { background-color: var(--accent-color); color: var(--primary-bg); font-weight: bold; }
+
+        /* Menu Toggle Button */
+        #menuToggleBtn {
+            position: fixed;
+            top: 15px; /* Adjusted for better visibility */
+            left: 15px; /* Adjusted for better visibility */
+            background: var(--secondary-bg);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            border-radius: 5px;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            z-index: 1200;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        #menuToggleBtn:hover { background-color: var(--primary-bg); }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            min-height: 100vh; /* Ensure it takes full height */
+            transition: margin-left 0.3s ease-in-out;
+            width: 100%;
+            margin-left: 0; /* Default for closed menu/mobile */
+        }
+
+        /* Login Container */
+        .login-container {
+            background-color: var(--secondary-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 400px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        /* Page Containers */
+        .page-container {
+            display: none;
+            background-color: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 1200px; /* Wider for new notification layout */
+            margin: 20px auto;
+        }
+        .page-container.active { display: block; }
+
+        h1, h2 { text-align: center; color: var(--accent-color); margin-bottom: 20px; }
+
+        /* Admin Header (Top bar) */
+        .admin-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+            gap: 10px;
+        }
+
+        /* Logged in user email display */
+        #adminEmailDisplay {
+            font-size: 0.9em;
+            color: #aaa;
+            font-weight: normal;
+            text-align: center;
+            width: 100%;
+            order: 3;
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            background: var(--danger-color);
+            width: auto;
+            padding: 10px 15px;
+            font-size: 14px;
+            order: 2;
+        }
+
+        /* Form elements */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 5px; background-color: var(--primary-bg); color: var(--text-color); font-size: 16px; }
+        .form-group input[readonly] { background-color: #2a2f50; cursor: not-allowed; opacity: 0.7; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent-color); }
+        button { display: inline-block; width: 100%; padding: 15px; background: linear-gradient(45deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end)); color: var(--text-color); border: none; border-radius: 5px; font-size: 18px; cursor: pointer; transition: transform 0.2s ease, opacity 0.2s; margin-top: 10px; position: relative; text-align: center; }
+        button:hover { transform: translateY(-2px); opacity: 0.9; }
+        button.loading { color: transparent !important; pointer-events: none; }
+        button .spinner { display: none; border: 4px solid rgba(255, 255, 255, 0.3); border-top: 4px solid white; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+        button.loading .spinner { display: block; }
+        @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px 20px; background-color: var(--primary-bg); padding: 15px; border-radius: 5px; border: 1px solid #333; }
+        .checkbox-group label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal; }
+        .checkbox-group input[type="checkbox"] { height: 18px; width: 18px; cursor: pointer; }
+        .message { margin-top: 20px; padding: 12px; border-radius: 5px; text-align: center; display: none; }
+        .message.success { background-color: var(--success-color); }
+        .message.error { background-color: var(--danger-color); }
+        .message.info { background-color: var(--info-color); }
+        .message.warn { background-color: var(--warn-color); } /* Added for warnings */
+        .result-item { background-color: var(--primary-bg); padding: 10px; margin-bottom: 5px; border-radius: 5px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 10px; }
+        .result-item span { text-align: left; width: 100%; }
+        .result-item-actions { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; justify-content: flex-start; }
+        .action-btn { background-color: var(--accent-color) !important; color: var(--primary-bg) !important; padding: 8px 12px !important; border-radius: 5px !important; width: auto !important; font-size: 14px !important; margin-top: 0 !important; flex-grow: 1; min-width: 80px; }
+        .action-btn.edit { background-color: var(--warn-color) !important; color: white !important; }
+        .action-btn.delete { background-color: var(--danger-color) !important; color: white !important; }
+        .action-btn.select-delete.selected { background-color: var(--success-color) !important; color: white !important; }
+        .banner-nav-tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--accent-color); margin-bottom: 20px; }
+        .banner-tab-link { padding: 10px 15px; cursor: pointer; color: #aaa; border: none; background: none; font-size: 15px; flex-grow: 1; text-align: center; }
+        .banner-tab-link.active { color: var(--accent-color); border-bottom: 2px solid var(--accent-color); font-weight: bold; }
+        .banner-tab-content { display: none; }
+        .banner-tab-content.active { display: block; }
+        #allBannersContainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+        .banner-card { background-color: var(--primary-bg); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+        .banner-card img { width: 100%; height: 120px; object-fit: cover; background-color: #000; }
+        .banner-card-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
+        .banner-card h3 { font-size: 1em; color: var(--accent-color); margin-bottom: 5px; text-align: left; }
+        .banner-card p { font-size: 0.8em; color: #ccc; margin-bottom: 10px; flex-grow: 1; line-height: 1.4; }
+        .banner-card-actions { display: flex; gap: 8px; margin-top: auto; border-top: 1px solid #333; padding-top: 8px; }
+        .banner-card-actions .action-btn { width: 100% !important; flex: 1; }
+        .banner-card-actions .action-btn.delete { background-color: var(--danger-color) !important; color: white !important; }
+
+        /* Styles for User Management Section */
+        #userManagementPage .input-group { margin-bottom: 15px; }
+        #userManagementPage .input-group label { display: block; margin-bottom: 8px; color: #ccc; font-size: 14px; }
+        #userManagementPage .input-group input, #userManagementPage .input-group select { width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 8px; color: white; font-size: 15px; }
+        #userManagementPage .btn-secondary { background: #555; }
+        #userManagementPage hr { border-color: #444; margin: 20px 0; }
+
+        /* NEW: Styles for Notification Page */
+        .notification-layout { display: flex; flex-wrap: wrap; gap: 30px; }
+        .notification-form-col, .notification-preview-col { flex: 1; min-width: 300px; }
+        .notification-preview-wrapper {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 12px;
+            height: 100%;
+        }
+        #previewImage {
+            display: none;
+            width: 100%;
+            height: auto;
+            margin-top: 12px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #333;
+        }
+
+        /* NEW: Styles for All Content Page */
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Adjusted for more columns */
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .content-card {
+            background-color: var(--primary-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            position: relative; /* For the checkbox */
+        }
+
+        .content-card img {
+            width: 100%;
+            height: 250px; /* Increased height for better visibility */
+            object-fit: cover;
+            background-color: #000;
+            border-bottom: 1px solid #333;
+        }
+
+        .content-card-content {
+            padding: 10px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Pushes buttons to bottom */
+        }
+
+        .content-card h3 {
+            font-size: 1.1em;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+            white-space: nowrap; /* Prevent title from wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add ellipsis for long titles */
+            padding: 0 5px; /* Add some padding */
+        }
+
+        .content-card p.vj-name {
+            font-size: 0.8em;
+            color: #ccc;
+            margin-bottom: 10px;
+            padding: 0 5px;
+        }
+        .content-card p.content-id-display,
+        .content-card p.content-project-display {
+            font-size: 0.75em;
+            color: #999;
+            margin-bottom: 3px;
+        }
+
+        .content-card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px; /* Space from description */
+            border-top: 1px solid #333;
+            padding-top: 8px;
+            justify-content: center; /* Center the buttons */
+        }
+
+        .content-card-actions .action-btn {
+            flex: 1; /* Make buttons take equal space */
+            min-width: unset; /* Override previous min-width */
+            font-size: 0.9em !important;
+            padding: 6px 10px !important;
+        }
+
+        .content-card input[type="checkbox"].select-card-checkbox {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 10;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            background-color: rgba(0,0,0,0.5);
+            border: 2px solid var(--accent-color);
+            border-radius: 4px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .content-card input[type="checkbox"].select-card-checkbox:checked {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .content-card input[type="checkbox"].select-card-checkbox:checked::before {
+            content: '\2713'; /* Checkmark character */
+            display: block;
+            color: var(--primary-bg);
+            font-size: 18px;
+            line-height: 20px;
+            text-align: center;
+        }
+
+        /* Styles for the new "For Sort Page Only" sections */
+        .sort-page-section {
+            margin-top: 30px;
+            border-top: 1px solid #555;
+            padding-top: 20px;
+        }
+        .sort-page-section h3 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        /* --- Media Queries for Responsiveness --- */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            #mainMenu {
+                left: -260px; /* Keep it off-screen by default on small screens */
+                width: 250px;
+                padding-top: 80px; /* Make space for toggle button */
+            }
+            /* .open class will apply `left: 0` */
+
+            #menuToggleBtn {
+                position: fixed;
+                top: 15px;
+                left: 15px;
+            }
+
+            .main-content {
+                margin-left: 0; /* No margin on small screens when menu is closed */
+                padding: 15px;
+                margin-top: 60px; /* Space for the fixed toggle button */
+            }
+
+            /* Adjust admin header for small screens */
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+                margin-top: 0; /* Remove extra top margin as main-content now handles it */
+            }
+            #pageTitle {
+                width: 100%;
+                text-align: left;
+                font-size: 1.8em;
+                margin-bottom: 10px;
+                order: 1;
+            }
+            #adminEmailDisplay {
+                width: 100%;
+                text-align: left;
+                font-size: 0.8em;
+                margin-bottom: 10px;
+                order: 3;
+            }
+            .logout-btn {
+                width: auto;
+                order: 2;
+                margin-left: auto;
+                margin-top: -40px; /* Pull it up to sit next to the title if space allows */
+            }
+
+            .page-container {
+                padding: 15px;
+                margin: 15px auto;
+            }
+
+            .result-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .result-item-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            .action-btn {
+                width: 100% !important;
+            }
+
+            #allBannersContainer {
+                grid-template-columns: 1fr;
+            }
+            .banner-card img {
+                height: 100px;
+            }
+            .banner-card-content {
+                padding: 8px;
+            }
+            .banner-card h3 {
+                font-size: 0.9em;
+            }
+            .banner-card p {
+                font-size: 0.75em;
+            }
+            .banner-tab-link {
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+
+            /* NEW: All Content Page mobile adjustments */
+            .movie-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 15px;
+            }
+            .content-card img {
+                height: 200px;
+            }
+            .content-card h3 {
+                font-size: 1em;
+            }
+            .content-card p.vj-name {
+                font-size: 0.7em;
+            }
+            .content-card-actions .action-btn {
+                font-size: 0.8em !important;
+                padding: 5px 8px !important;
+            }
+        }
+
+        /* Desktop adjustments (min-width: 769px) */
+        @media (min-width: 769px) {
+            body {
+                flex-direction: row; /* Main content and menu side-by-side */
+            }
+
+            #mainMenu {
+                left: 0; /* Default open state on desktop */
+                box-shadow: 5px 0 15px rgba(0,0,0,0.2); /* Re-add shadow for fixed menu */
+            }
+
+            #menuToggleBtn {
+                top: 15px; /* Stay at top */
+                left: calc(250px + 15px); /* Positioned relative to the open menu, +15px for spacing */
+                transition: left 0.3s ease-in-out; /* Add transition for button too */
+            }
+            #mainMenu.open + #menuToggleBtn { /* When menu is open, move toggle button */
+                left: calc(250px + 15px);
+            }
+            #mainMenu:not(.open) + #menuToggleBtn { /* When menu is NOT open, move toggle button back */
+                left: 15px;
+            }
+
+
+            .main-content {
+                margin-left: 250px; /* Space for the open sidebar */
+                padding-top: 20px; /* Reset top padding from mobile */
+            }
+
+            /* Admin header for desktop */
+            .admin-header {
+                flex-direction: row;
+                align-items: center;
+                margin-top: 0;
+            }
+            #pageTitle {
+                text-align: center;
+                flex-grow: 1;
+                order: initial;
+            }
+            #adminEmailDisplay {
+                font-size: 14px;
+                text-align: right;
+                width: auto;
+                margin-left: 20px;
+                order: initial;
+            }
+            .logout-btn {
+                width: auto;
+                order: initial;
+                margin-left: 15px;
+                margin-top: 0;
+            }
+            
+            .result-item {
+                flex-direction: row;
+                align-items: center;
+            }
+            .result-item-actions {
+                flex-direction: row;
+                width: auto;
+            }
+            .action-btn {
+                width: auto !important;
+            }
+        }
+        .input-group-prefix {
+            display: flex;
+            align-items: center;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: var(--primary-bg);
+        }
+        .input-group-prefix span {
+            padding: 12px;
+            color: #888;
+            white-space: nowrap;
+        }
+        .input-group-prefix input {
+            border: none;
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loginScreen" class="main-content">
+        <div class="login-container">
+            <h1>Admin Login</h1>
+            <form id="loginForm">
+                <div class="form-group"><label for="loginEmail">Email</label><input type="email" id="loginEmail" required></div>
+                <div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" required></div>
+                <button type="submit">Login<span class="spinner"></span></button>
+            </form>
+            <div id="loginMessage" class="message"></div>
+        </div>
+    </div>
+
+    <div id="adminPanel" style="display: none; width: 100%;">
+        <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+        <nav id="mainMenu">
+            <div class="menu-header">Admin Menu</div>
+            <a class="menu-link" data-page="addContentPage"><i class="fas fa-magic"></i> Add from TMDB</a>
+            <a class="menu-link" data-page="manualAddPage"><i class="fas fa-edit"></i> Manual Add</a>
+            <a class="menu-link" data-page="manageContentPage"><i class="fas fa-search"></i> Search & Edit/Delete</a>
+            <a class="menu-link" data-page="allContentPage"><i class="fas fa-film"></i> All Content</a>
+            <a class="menu-link" data-page="bannerPage"><i class="fas fa-images"></i> Manage Banners</a>
+            <a class="menu-link" data-page="notificationPage"><i class="fas fa-paper-plane"></i> Send Notifications</a>
+            <a class="menu-link" data-page="userManagementPage"><i class="fas fa-users-cog"></i> User Management</a>
+            <a href="https://storage1.streamzonemovies.online" target="_blank"><i class="fas fa-server"></i> My Server</a>
+        </nav>
+
+
+        <div class="main-content" id="mainContentArea">
+            <div class="admin-header">
+                <h1 id="pageTitle"></h1>
+                <span id="adminEmailDisplay" style="font-weight: normal;"></span>
+                <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
+            </div>
+
+            <div id="addContentPage" class="page-container">
+                <h2>Add Content from TMDB</h2>
+                <form id="addMovieForm">
+                    <div class="form-group"><label for="tmdbApiKey">TMDB API Key</label><input type="text" id="tmdbApiKey" value="f7a3b097ba7a990fd0c8ef3147646fb5" readonly></div>
+                    <div class="form-group"><label for="primaryContentType">Primary Content Type</label><select id="primaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group media-categories-group">
+                        <label>Categories (Select all that apply)</label>
+                        <div class="checkbox-group" id="contentTypeCheckboxes">
+                            <label><input type="checkbox" name="contentType" value="romance">Latest Movies</label>
+                            <label><input type="checkbox" name="contentType" value="most_liked">Most Liked</label>
+                            <!-- ✅ NEWLY ADDED -->
+                            <label><input type="checkbox" name="contentType" value="recent_movies">Recently Added Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="recent_tv_shows">Recently Added TV Shows</label>
+                            <label><input type="checkbox" name="contentType" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="contentType" value="indian"> Indian</label>
+                            <label><input type="checkbox" name="contentType" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="contentType" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="contentType" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
+                            <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
+                            <label><input type="checkbox" name="contentType" value="high-school"> High School</label>
+                            <label><input type="checkbox" name="contentType" value="nigerian"> Nigerian Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="western_series"> Western Series</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="Latest-TV-Series"> Latest Tv Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="k_dramas"> K Dramas</label>
+                             <label><input type="checkbox" name="contentType" value="send_notification"> Send Notification</label>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="contentIdentifier">Content Name or TMDB ID</label><input type="text" id="contentIdentifier" placeholder="e.g., The Matrix or TMDB ID 603" required></div>
+                    <div class="form-group"><label for="vjName">VJ Name</label><input type="text" id="vjName" required></div>
+                    <div class="form-group video-url-group"><label for="videoSourceUrl">Video Source URL</label><input type="url" id="videoSourceUrl" placeholder="e.g., https://example.com/video.mp4"></div>
+                    <div class="form-group series-data-group" style="display: none;"><label for="seriesData">Series Data (JSON)</label><textarea id="seriesData" rows="8"></textarea></div>
+                    
+                    <hr class="sort-page-section" />
+                    <div class="sort-page-section">
+                        <h3>For Sort Page Only</h3>
+                        <div class="form-group">
+                            <label>VJs for Sort Page</label>
+                            <div class="checkbox-group" id="sortVjsCheckboxesTMDB">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Genres for Sort Page</label>
+                            <div class="checkbox-group" id="sortGenresCheckboxesTMDB">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="addContentBtn">Add Content<span class="spinner"></span></button>
+                </form>
+                <div id="addMessage" class="message"></div>
+            </div>
+
+            <div id="manualAddPage" class="page-container">
+                <h2>Manually Add Content</h2>
+                <form id="manualAddForm">
+                    <div class="form-group"><label for="manualTitle">Title</label><input type="text" id="manualTitle" required></div>
+                    <div class="form-group"><label for="manualOverview">Overview</label><textarea id="manualOverview" rows="4" required></textarea></div>
+                    <div class="form-group"><label for="manualPosterUrl">Poster Image URL</label><input type="url" id="manualPosterUrl" required></div>
+                    <div class="form-group"><label for="manualBackdropUrl">Backdrop Image URL</label><input type="url" id="manualBackdropUrl"></div>
+                    <div class="form-group"><label for="manualVjName">VJ Name</label><input type="text" id="manualVjName" required></div>
+                    <div class="form-group"><label for="manualPrimaryContentType">Primary Content Type</label><select id="manualPrimaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group media-categories-group">
+                        <label>Categories</label>
+                        <div class="checkbox-group" id="manualContentTypeCheckboxes">
+                            <label><input type="checkbox" name="manualContentType" value="latest_uploads"> Latest Uploads</label>
+                             <label><input type="checkbox" name="manualContentType" value="romance"> Latest-Movies</label>
+                            <label><input type="checkbox" name="manualContentType" value="most_liked">Most Liked</label>
+                            <!-- ✅ NEWLY ADDED -->
+                            <label><input type="checkbox" name="manualContentType" value="recent_movies">Recently Added Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="recent_tv_shows">Recently Added TV Shows</label>
+                            <label><input type="checkbox" name="manualContentType" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="manualContentType" value="indian"> Indian</label>
+                            <label><input type="checkbox" name="manualContentType" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="manualContentType" value="comedy"> Comedy</label>
+                           
+                            <label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
+                            <label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label>
+                            <label><input type="checkbox" name="manualContentType" value="high-school"> High School</label>
+                            <label><input type="checkbox" name="manualContentType" value="nigerian"> Nigerian Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="western_series"> Western Series</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="Latest-TV-Series">Latest Tv shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="k_dramas"> K Dramas</label>
+                             <label><input type="checkbox" name="manualContentType" value="send_notification"> Send Notification</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group genre-selection-group">
+                        <label>Genres (Select all that apply)</label>
+                        <div class="checkbox-group" id="manualGenreCheckboxes">
+                            <label><input type="checkbox" name="manualGenre" value="action"> Action</label>
+                            <label><input type="checkbox" name="manualGenre" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="manualGenre" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="manualGenre" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="manualGenre" value="crime"> Crime</label>
+                            <label><input type="checkbox" name="manualGenre" value="documentary"> Documentary</label>
+                            <label><input type="checkbox" name="manualGenre" value="drama"> Drama</label>
+                            <label><input type="checkbox" name="manualGenre" value="family"> Family</label>
+                            <label><input type="checkbox" name="manualGenre" value="fantasy"> Fantasy</label>
+                            <label><input type="checkbox" name="manualGenre" value="history"> History</label>
+                            <label><input type="checkbox" name="manualGenre" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="manualGenre" value="music"> Music</label>
+                            <label><input type="checkbox" name="manualGenre" value="mystery"> Mystery</label>
+                            <label><input type="checkbox" name="manualGenre" value="romance"> Romance</label>
+                            <label><input type="checkbox" name="manualGenre" value="science-fiction"> Science Fiction</label>
+                            <label><input type="checkbox" name="manualGenre" value="tv-movie"> TV Movie</label>
+                            <label><input type="checkbox" name="manualGenre" value="thriller"> Thriller</label>
+                            <label><input type="checkbox" name="manualGenre" value="war"> War</label>
+                            <label><input type="checkbox" name="manualGenre" value="western"> Western</label>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="manualReferenceId">Unique Text ID (e.g., mercy-for-none)</label><input type="text" id="manualReferenceId" placeholder="Enter a unique text identifier" required></div>
+
+                    <div class="form-group video-url-group"><label for="manualVideoSourceUrl">Video Source URL</label><input type="url" id="manualVideoSourceUrl"></div>
+                    <div class="form-group series-data-group" style="display: none;"><label for="manualSeriesData">Series Data (JSON)</label><textarea id="manualSeriesData" rows="8"></textarea></div>
+
+                    <hr class="sort-page-section" />
+                    <div class="sort-page-section">
+                        <h3>For Sort Page Only</h3>
+                        <div class="form-group">
+                            <label>VJs for Sort Page</label>
+                            <div class="checkbox-group" id="sortVjsCheckboxesManual">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Genres for Sort Page</label>
+                            <div class="checkbox-group" id="sortGenresCheckboxesManual">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="manualAddContentBtn">Add Manually<span class="spinner"></span></button>
+                </form>
+                <div id="manualAddMessage" class="message"></div>
+            </div>
+
+            <div id="manageContentPage" class="page-container">
+                <h2>Search & Manage Content</h2>
+                <form id="manageContentForm">
+                    <div class="form-group">
+                        <label for="manageContentIdentifier">Search by Content Name, TMDB ID or Unique Text ID</label>
+                        <input type="text" id="manageContentIdentifier" required>
+                    </div>
+                    <button type="button" id="searchManageBtn">Search Content<span class="spinner"></span></button>
+                </form>
+                <div id="manageSearchResults" style="margin-top: 20px;"></div>
+                <button type="button" id="confirmDeleteBtn" style="display: none; background-color: var(--danger-color);">Delete Selected Content<span class="spinner"></span></button>
+                <div id="manageMessage" class="message"></div>
+            </div>
+
+            <div id="allContentPage" class="page-container">
+                <h2>All Available Content</h2>
+                <div class="form-group">
+                    <label for="allContentFilter">Filter by Category:</label>
+                    <select id="allContentFilter">
+                        <option value="all">All</option>
+                        <option value="latest_uploads">Latest Uploads</option>
+                        <option value="romance">Latest-Movies</option>
+                        <option value="Latest-TV-Series">Latest Tv Shows</option>
+                        <option value="most_liked">Most Liked</option>
+                        <!-- ✅ NEWLY ADDED -->
+                        <option value="recent_movies">Recently Added Movies</option>
+                        <option value="recent_tv_shows">Recently Added TV Shows</option>
+                        <option value="animation">Animation</option>
+                        <option value="indian">Indian</option>
+                        <option value="horror">Horror</option>
+                        <option value="comedy">Comedy</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="scifi-fantasy">Sci-fi & Fantasy</option>
+                        <option value="action-thriller">Action & Thriller</option>
+                        <option value="high-school">High School</option>
+                        <option value="nigerian">Nigerian Movies</option>
+                        <option value="upcoming_shows">Upcoming Shows</option>
+                        <option value="western_series">Western Series</option>
+                        <option value="k_dramas">K Dramas</option>
+                        <option value="send_notification">Send Notification</option>
+                    </select>
+                </div>
+                <div id="allContentContainer" class="movie-grid"></div>
+                <button type="button" id="deleteSelectedAllContentBtn" style="display: none; background-color: var(--danger-color); margin-top: 20px;">Delete Selected Content (<span id="selectedAllContentCount">0</span>)<span class="spinner"></span></button>
+                <div id="allContentMessage" class="message"></div>
+            </div>
+
+            <div id="editContentPage" class="page-container">
+                <h2>Edit Content</h2>
+                <form id="editContentForm">
+                    <input type="hidden" id="editDocId">
+                    <div class="form-group"><label for="editTitle">Title</label><input type="text" id="editTitle" required></div>
+                    <div class="form-group"><label for="editOverview">Overview</label><textarea id="editOverview" rows="4" required></textarea></div>
+                    <div class="form-group"><label for="editPosterUrl">Poster Image URL</label><input type="url" id="editPosterUrl" required></div>
+                    <div class="form-group"><label for="editBackdropUrl">Backdrop Image URL</label><input type="url" id="editBackdropUrl"></div>
+                    <div class="form-group"><label for="editVjName">VJ Name</label><input type="text" id="editVjName" required></div>
+                    <div class="form-group"><label for="editPrimaryContentType">Primary Content Type</label><select id="editPrimaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group media-categories-group">
+                        <label>Categories</label>
+                        <div class="checkbox-group" id="editContentTypeCheckboxes">
+                            <label><input type="checkbox" name="editContentType" value="latest_uploads"> Latest Uploads</label>
+                           <label><input type="checkbox" name="manualGenre" value="romance"> latest_movies</label>
+                            <label><input type="checkbox" name="editContentType" value="most_liked">Most Liked</label>
+                            <!-- ✅ NEWLY ADDED -->
+                            <label><input type="checkbox" name="editContentType" value="recent_movies">Recently Added Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="recent_tv_shows">Recently Added TV Shows</label>
+                            <label><input type="checkbox" name="editContentType" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="editContentType" value="indian"> Indian</label>
+                            <label><input type="checkbox" name="editContentType" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="editContentType" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="editContentType" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="editContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
+                            <label><input type="checkbox" name="editContentType" value="action-thriller"> Action & Thriller</label>
+                            <label><input type="checkbox" name="editContentType" value="high-school">High School</label>
+                            <label><input type="checkbox" name="editContentType" value="nigerian"> Nigerian Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="western_series"> Western Series</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="Latest-TV-Series"> Latest Tv shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="editContentType" value="k_dramas"> K Dramas</label>
+                             <label><input type="checkbox" name="editContentType" value="send_notification"> Send Notification</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group genre-selection-group">
+                        <label>Genres (Select all that apply)</label>
+                        <div class="checkbox-group" id="editGenreCheckboxes">
+                            <label><input type="checkbox" name="editGenre" value="action"> Action</label>
+                            <label><input type="checkbox" name="editGenre" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="editGenre" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="editGenre" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="editGenre" value="crime"> Crime</label>
+                            <label><input type="checkbox" name="editGenre" value="documentary"> Documentary</label>
+                            <label><input type="checkbox" name="editGenre" value="drama"> Drama</label>
+                            <label><input type="checkbox" name="genre" value="family"> Family</label>
+                            <label><input type="checkbox" name="editGenre" value="fantasy"> Fantasy</label>
+                            <label><input type="checkbox" name="editGenre" value="history"> History</label>
+                            <label><input type="checkbox" name="editGenre" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="editGenre" value="music"> Music</label>
+                            <label><input type="checkbox" name="editGenre" value="mystery"> Mystery</label>
+                            <label><input type="checkbox" name="editGenre" value="romance"> Romance</label>
+                            <label><input type="checkbox" name="editGenre" value="science-fiction"> Science Fiction</label>
+                            <label><input type="checkbox" name="editGenre" value="tv-movie"> TV Movie</label>
+                            <label><input type="checkbox" name="editGenre" value="thriller"> Thriller</label>
+                            <label><input type="checkbox" name="editGenre" value="war"> War</label>
+                            <label><input type="checkbox" name="editGenre" value="western"> Western</label>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="editReferenceId">Reference ID (TMDB or Custom Text)</label><input type="text" id="editReferenceId" placeholder="TMDB ID or your unique text ID"></div>
+
+                    <div class="form-group video-url-group"><label for="editVideoSourceUrl">Video Source URL</label><input type="url" id="editVideoSourceUrl"></div>
+                    <div class="form-group series-data-group" style="display: none;"><label for="editSeriesData">Series Data (JSON)</label><textarea id="editSeriesData" rows="8"></textarea></div>
+
+                    <hr class="sort-page-section" />
+                    <div class="sort-page-section">
+                        <h3>For Sort Page Only</h3>
+                        <div class="form-group">
+                            <label>VJs for Sort Page</label>
+                            <div class="checkbox-group" id="sortVjsCheckboxesEdit">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Genres for Sort Page</label>
+                            <div class="checkbox-group" id="sortGenresCheckboxesEdit">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="updateContentBtn">Update Content<span class="spinner"></span></button>
+                    <button type="button" id="cancelEditBtn" style="background-color: gray; margin-top: 10px;">Cancel Edit</button>
+                </form>
+                <div id="editMessage" class="message"></div>
+            </div>
+
+            <div id="bannerPage" class="page-container">
+                <div class="banner-nav-tabs">
+                    <button class="banner-tab-link" data-tab="viewBannersTab">View All Banners</button>
+                    <button class="banner-tab-link" data-tab="addBannerTab">Add/Edit Banner</button>
+                </div>
+                
+                <div id="addBannerTab" class="banner-tab-content">
+                    <h2 id="bannerFormTitle">Add New Banner</h2>
+                    <form id="addEditBannerForm">
+                        <input type="hidden" id="bannerDocId">
+                        <div class="form-group"><label for="bannerTitle">Banner Title</label><input type="text" id="bannerTitle" required></div>
+                        <div class="form-group"><label for="bannerImageUrl">Image URL</label><input type="text" id="bannerImageUrl" required></div>
+                        <div class="form-group"><label for="bannerDescription">Description</label><textarea id="bannerDescription" rows="3"></textarea></div>
+                        <div class="form-group"><label for="bannerLink">"Watch Now" Link</label><input type="text" id="bannerLink" required></div>
+                        <button type="submit" id="saveBannerBtn">Save Banner<span class="spinner"></span></button>
+                        <button type="button" id="cancelEditBannerBtn" style="display:none; background: gray;">Cancel Edit / New</button>
+                    </form>
+                    <div id="addBannerMessage" class="message"></div>
+                </div>
+
+                <div id="viewBannersTab" class="banner-tab-content">
+                    <h2>All Available Banners</h2>
+                    <div id="allBannersContainer"></div>
+                    <div id="viewBannersMessage" class="message"></div>
+                </div>
+            </div>
+            
+            <div id="notificationPage" class="page-container">
+                <h2>Notification Dashboard</h2>
+                <p style="text-align:center; color: #ccc; margin-top: -15px; margin-bottom: 25px;">Send notifications to all your users instantly.</p>
+                <div class="notification-layout">
+                    <div class="notification-form-col">
+                        <form id="notificationForm">
+                            <div class="form-group"><label for="notifTitle">Title</label><input type="text" id="notifTitle" placeholder="New Movie Alert!" required></div>
+                            <div class="form-group"><label for="notifBody">Body</label><textarea id="notifBody" rows="4" placeholder="Check out the latest blockbuster..." required></textarea></div>
+                            <div class="form-group"><label for="notifImageUrl">Image URL <span style="color: #888; font-weight: normal;">(Optional)</span></label><input type="url" id="notifImageUrl" placeholder="https://example.com/image.jpg"></div>
+                            
+                            <div class="form-group">
+                                <label for="notifUrlId">Page to Open (Enter Movie/Series ID)</label>
+                                <div class="input-group-prefix">
+                                    <span>streamzonemovies://details?id=</span>
+                                    <input type="text" id="notifUrlId" placeholder="your_movie_id">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" id="sendNotificationBtn">Send Notification <i class="fas fa-paper-plane"></i><span class="spinner"></span></button>
+                        </form>
+                        <div id="notificationMessage" class="message"></div>
+                    </div>
+                    <div class="notification-preview-col">
+                        <div class="notification-preview-wrapper">
+                            <h3 style="text-align: center; color: var(--accent-color); margin-bottom: 15px;">Live Preview</h3>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                                <img src="https://placehold.co/24x24/d1e231/0b0f30?text=S" alt="App Icon" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;">
+                                <span style="font-size: 13px; font-weight: bold; color: var(--text-color);">Stream Zone Movies</span>
+                                <span style="font-size: 13px; color: #aaa; margin-left: auto;">now</span>
+                            </div>
+                            <div style="padding-left: 32px; margin-top: 10px;">
+                                <h4 id="previewTitle" style="font-weight: bold; color: var(--text-color); margin: 0 0 4px 0; font-size: 16px;">Notification Title</h4>
+                                <p id="previewBody" style="font-size: 14px; color: #ccc; margin: 0;">Notification body will appear here...</p>
+                            </div>
+                            <img id="previewImage" alt="Notification Image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="userManagementPage" class="page-container">
+                <h2>User Management Panel</h2>
+                
+                <div class="input-group">
+                    <label for="user-search-email">Search User by Email</label>
+                    <input type="email" id="user-search-email" placeholder="user@example.com" />
+                </div>
+                <button class="btn" id="user-search-btn">Search User</button>
+
+                <div id="user-message-area" class="message hidden"></div>
+                <hr class="hidden" id="user-form-divider" />
+
+                <div id="user-edit-form-section" class="hidden">
+                    <h3 id="user-form-title">Edit User</h3>
+                    <div class="input-group"><label for="user-doc-id">Document ID (User UID)</label><input type="text" id="user-doc-id" disabled /></div>
+                    <div class="input-group"><label for="user-edit-name">Full Name</label><input type="text" id="user-edit-name" /></div>
+                    <div class="input-group"><label for="user-edit-email">Email</label><input type="email" id="user-edit-email" /></div>
+                    <div class="input-group"><label for="user-edit-activated">Account Activated</label><select id="user-edit-activated"><option value="true">True</option><option value="false">False</option></select></div>
+                    <div class="input-group"><label for="user-edit-expiresAt">Subscription Expiration</label><input type="datetime-local" id="user-edit-expiresAt" /></div>
+                    <button class="btn" id="user-update-btn">Update Document</button>
+                    <button class="btn btn-secondary" id="user-create-btn">Create New Document</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    // --- Firebase Configuration ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
+        authDomain: "stream-zone-movies-a83c1.firebaseapp.com",
+        projectId: "stream-zone-movies-a83c1",
+        storageBucket: "stream-zone-movies-a83c1.appspot.com",
+        messagingSenderId: "148342664213",
+        appId: "1:148342664213:web:56df2549cc480df7cf721c"
+    };
+    // --- Initialize Firebase App ---
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
+    const auth = firebase.auth(app);
+
+    // --- DOM Element References ---
+    const loginScreen = document.getElementById('loginScreen');
+    const adminPanel = document.getElementById('adminPanel');
+    const mainMenu = document.getElementById('mainMenu');
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const pageTitle = document.getElementById('pageTitle');
+    const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const loginMessage = document.getElementById('loginMessage');
+    const mainContentArea = document.getElementById('mainContentArea');
+    const addMovieForm = document.getElementById('addMovieForm');
+    const addContentBtn = document.getElementById('addContentBtn');
+    const addMessage = document.getElementById('addMessage');
+    const manualAddForm = document.getElementById('manualAddForm');
+    const manualAddBtn = document.getElementById('manualAddContentBtn');
+    const manualAddMessage = document.getElementById('manualAddMessage');
+    const searchManageBtn = document.getElementById('searchManageBtn');
+    const manageSearchResults = document.getElementById('manageSearchResults');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const manageMessage = document.getElementById('manageMessage');
+    const editContentForm = document.getElementById('editContentForm');
+    const updateContentBtn = document.getElementById('updateContentBtn');
+    const editMessage = document.getElementById('editMessage');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const bannerNavTabs = document.querySelector('.banner-nav-tabs');
+    const addEditBannerForm = document.getElementById('addEditBannerForm');
+    const bannerFormTitle = document.getElementById('bannerFormTitle');
+    const bannerDocId = document.getElementById('bannerDocId');
+    const saveBannerBtn = document.getElementById('saveBannerBtn');
+    const cancelEditBannerBtn = document.getElementById('cancelEditBannerBtn');
+    const addBannerMessage = document.getElementById('addBannerMessage');
+    const allBannersContainer = document.getElementById('allBannersContainer');
+    const viewBannersMessage = document.getElementById('viewBannersMessage');
+    let selectedMoviesForDeletion = new Set();
+    const userSearchEmailInput = document.getElementById('user-search-email');
+    const userSearchBtn = document.getElementById('user-search-btn');
+    const userMessageArea = document.getElementById('user-message-area');
+    const userEditFormSection = document.getElementById('user-edit-form-section');
+    const userFormDivider = document.getElementById('user-form-divider');
+    const userDocIdInput = document.getElementById('user-doc-id');
+    const userEditNameInput = document.getElementById('user-edit-name');
+    const userEditEmailInput = document.getElementById('user-edit-email');
+    const userEditActivatedSelect = document.getElementById('user-edit-activated');
+    const userEditExpiresAtInput = document.getElementById('user-edit-expiresAt');
+    const userUpdateBtn = document.getElementById('user-update-btn');
+    const userCreateBtn = document.getElementById('user-create-btn');
+    const userFormTitle = document.getElementById('user-form-title');
+    const allContentContainer = document.getElementById('allContentContainer');
+    const allContentMessage = document.getElementById('allContentMessage');
+    const allContentFilter = document.getElementById('allContentFilter');
+    const deleteSelectedAllContentBtn = document.getElementById('deleteSelectedAllContentBtn');
+    const selectedAllContentCount = document.getElementById('selectedAllContentCount');
+    let selectedAllContentForDeletion = new Set();
+    const notifForm = document.getElementById('notificationForm');
+    const sendNotificationBtn = document.getElementById('sendNotificationBtn');
+    const notificationMessage = document.getElementById('notificationMessage');
+    const notifTitleInput = document.getElementById('notifTitle');
+    const notifBodyInput = document.getElementById('notifBody');
+    const notifImageUrlInput = document.getElementById('notifImageUrl');
+    const notifUrlInput = document.getElementById('notifUrl');
+    const previewTitle = document.getElementById('previewTitle');
+    const previewBody = document.getElementById('previewBody');
+    const previewImage = document.getElementById('previewImage');
+
+    const VJ_LIST = ["Vj Junior", "Vj TONNY", "Vj Emmy","Vj RYAN", "Heavy q","Vj Mk","Vj SHIELD ","Vj BONNY", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj Shao Khan", "Vj Jingo", "Vj Ice P", "Vj Kevo", "Vj Kevin", "Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo", "Vj Isma K", "Vj Little T", "Vj Mox", "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy", "Vj Baros", "Vj SOUL", "Vj SON", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj Uncle T", "Vj RONAGE"];
+    const GENRE_LIST = ["Action", "Horror", "Series", "Adventure", "Love Story", "Comedy", "Crime", "Family", "Sci FI", "Romance", "Kungu Fu", "Drama", "Sport", "Thriller", "Animation", "Documentary", "Fantasy", "History", "Music", "Mystery", "War", "Western"];
+
+    function generateSearchKeywords(title, vjName) {
+        const keywords = new Set();
+        const fullText = `${title || ''} ${vjName || ''}`.toLowerCase();
+        const words = fullText.split(' ').filter(word => word);
+
+        words.forEach(word => {
+            const cleanedWord = word.replace(/[^a-z0-9]/gi, '');
+            for (let i = 1; i <= cleanedWord.length; i++) {
+                keywords.add(cleanedWord.substring(0, i));
+            }
+        });
+        return Array.from(keywords);
+    }
+
+    function populateCheckboxes(containerId, namePrefix, list, selectedValues = []) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        list.forEach(item => {
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = namePrefix;
+            checkbox.value = item;
+            checkbox.checked = Array.isArray(selectedValues) && selectedValues.includes(item);
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(` ${item}`));
+            container.appendChild(label);
+        });
+    }
+
+    if (document.getElementById('sortVjsCheckboxesTMDB')) {
+        populateCheckboxes('sortVjsCheckboxesTMDB', 'sortVjsTMDB', VJ_LIST);
+        populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', GENRE_LIST);
+        populateCheckboxes('sortVjsCheckboxesManual', 'sortVjsManual', VJ_LIST);
+        populateCheckboxes('sortGenresCheckboxesManual', 'sortGenresManual', GENRE_LIST);
+    }
+    
+
+    function setLoading(button, isLoading) {
+        if (button) {
+            button.classList.toggle('loading', isLoading);
+            button.disabled = isLoading;
+        }
+    }
+
+    function displayMessage(element, msg, type) {
+        if (element) {
+            element.textContent = msg;
+            element.className = `message ${type}`;
+            element.style.display = 'block';
+            setTimeout(() => { element.style.display = 'none'; }, 8000);
+        }
+    }
+
+    function generateSlug(text) {
+        if (!text) return '';
+        return text.toString().toLowerCase().trim()
+            .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
+    }
+
+    async function checkForDuplicates(payload, excludeDocId = null) {
+        if (payload.tmdbId && typeof payload.tmdbId === 'number') {
+            const q = db.collection('movies').where('tmdbId', '==', payload.tmdbId);
+            const snapshot = await q.get();
+            for (const doc of snapshot.docs) {
+                if (doc.id !== excludeDocId) return { found: true, field: 'TMDB ID' };
+            }
+        }
+        if (payload.slug) {
+            const q = db.collection('movies').where('slug', '==', payload.slug);
+            const snapshot = await q.get();
+            for (const doc of snapshot.docs) {
+                if (doc.id !== excludeDocId) return { found: true, field: 'Unique Text ID (slug)' };
+            }
+        }
+        return { found: false, field: null };
+    }
+
+    function hideUserMessage() { if (userMessageArea) userMessageArea.classList.add('hidden'); }
+    function clearUserForm() {
+        if (userDocIdInput) userDocIdInput.value = '';
+        if (userEditNameInput) userEditNameInput.value = '';
+        if (userEditEmailInput) userEditEmailInput.value = '';
+        if (userEditActivatedSelect) userEditActivatedSelect.value = 'true';
+        if (userEditExpiresAtInput) userEditExpiresAtInput.value = '';
+        if (userEditFormSection) userEditFormSection.classList.add('hidden');
+        if (userFormDivider) userFormDivider.classList.add('hidden');
+        hideUserMessage();
+    }
+    function formatTimestampForInput(timestamp) {
+        if (!timestamp || typeof timestamp.toDate !== 'function') return '';
+        const date = timestamp.toDate();
+        const timezoneOffset = date.getTimezoneOffset() * 60000;
+        const localDate = new Date(date.getTime() - timezoneOffset);
+        return localDate.toISOString().slice(0, 16);
+    }
+    function displayUserMessage(text, type = 'success') {
+        if (userMessageArea) {
+            userMessageArea.textContent = text;
+            userMessageArea.className = `message ${type}`;
+            userMessageArea.classList.remove('hidden');
+        }
+    }
+
+    async function sendNotification(title, body, imageUrl = '', url = '', msgElement) {
+        const payload = {
+            data: {
+                title: title,
+                body: body,
+                imageUrl: imageUrl,
+                url: url
+            }
+        };
+        try {
+            const functionUrl = 'https://sendnotification-i7fenevlta-uc.a.run.app';
+            const response = await fetch(functionUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (response.ok) {
+                displayMessage(msgElement, 'Notification sent successfully!', 'success');
+                return true;
+            } else {
+                displayMessage(msgElement, `Failed to send: ${result.error || 'Unknown error'}`, 'error');
+                return false;
+            }
+        } catch (error) {
+            displayMessage(msgElement, `Network error: ${error.message}`, 'error');
+            return false;
+        }
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            adminPanel.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            try {
+                const userDocRef = db.collection('users').doc(user.uid);
+                const userDoc = await userDocRef.get();
+                if (userDoc.exists && userDoc.data().isAdmin === true) {
+                    loginScreen.style.display = 'none';
+                    adminPanel.style.display = 'flex';
+                    adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+                    if (window.innerWidth >= 769) {
+                        mainMenu.classList.add('open');
+                        mainContentArea.style.marginLeft = '250px';
+                        menuToggleBtn.style.left = '265px';
+                    } else {
+                        mainMenu.classList.remove('open');
+                        mainContentArea.style.marginLeft = '0';
+                        menuToggleBtn.style.left = '15px';
+                    }
+                    menuToggleBtn.style.display = 'flex';
+                    navigateToPage('addContentPage');
+                } else {
+                    displayMessage(loginMessage, 'You are not an admin. Access is not allowed.', 'error');
+                    await auth.signOut();
+                }
+            } catch (error) {
+                console.error("Error checking admin status:", error);
+                displayMessage(loginMessage, 'Could not verify admin status. Logging out.', 'error');
+                await auth.signOut();
+            }
+        } else {
+            loginScreen.style.display = 'flex';
+            adminPanel.style.display = 'none';
+            adminEmailDisplay.textContent = '';
+            menuToggleBtn.style.display = 'none';
+        }
+    });
+
+    if (document.getElementById('loginForm')) {
+        document.getElementById('loginForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            setLoading(btn, true);
+            if (loginMessage) loginMessage.style.display = 'none';
+            try {
+                await auth.signInWithEmailAndPassword(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+            } catch (error) {
+                displayMessage(loginMessage, 'Invalid email or password.', 'error');
+            } finally {
+                setLoading(btn, false);
+            }
+        });
+    }
+
+    if (logoutBtn) logoutBtn.addEventListener('click', () => auth.signOut());
+
+    if (menuToggleBtn) {
+        menuToggleBtn.addEventListener('click', () => {
+            mainMenu.classList.toggle('open');
+            if (mainMenu.classList.contains('open')) {
+                mainContentArea.style.marginLeft = '250px';
+                menuToggleBtn.style.left = '265px';
+            } else {
+                mainContentArea.style.marginLeft = '0';
+                menuToggleBtn.style.left = '15px';
+            }
+        });
+    }
+
+    function navigateToPage(pageId) {
+        document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
+        const page = document.getElementById(pageId);
+        if (page) {
+            page.classList.add('active');
+            if (pageId === 'bannerPage') {
+                document.querySelector('.banner-tab-link[data-tab="viewBannersTab"]')?.click();
+            } else if (pageId === 'allContentPage') {
+                if (typeof displayAllContent === 'function') {
+                    displayAllContent();
+                }
+            }
+            if (pageId !== 'notificationPage') {
+                if (notifTitleInput) notifTitleInput.value = '';
+                if (notifBodyInput) notifBodyInput.value = '';
+                if (notifImageUrlInput) notifImageUrlInput.value = '';
+                if (notifUrlInput) notifUrlInput.value = '';
+                if (previewTitle) previewTitle.textContent = 'Notification Title';
+                if (previewBody) previewBody.textContent = 'Notification body will appear here...';
+                if (previewImage) previewImage.style.display = 'none';
+            }
+        }
+        document.querySelectorAll('.menu-link').forEach(link => {
+            const isActive = link.dataset.page === pageId;
+            link.classList.toggle('active', isActive);
+            if (isActive && pageTitle) pageTitle.textContent = link.textContent.trim();
+        });
+
+        if (window.innerWidth < 769 && mainMenu && mainContentArea && menuToggleBtn) {
+            mainMenu.classList.remove('open');
+            mainContentArea.style.marginLeft = '0';
+            menuToggleBtn.style.left = '15px';
+        }
+        
+        window.scrollTo(0, 0);
+    }
+    
+    // ✅ THIS IS THE CORRECTED EVENT LISTENER CODE
+    // It will prevent page reloads when you click the menu items.
+    document.querySelectorAll('.menu-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            // Always prevent the default link behavior (like reloading the page)
+            e.preventDefault(); 
+            
+            // Get the page target from the 'data-page' attribute and navigate
+            const pageId = e.currentTarget.dataset.page;
+            if (pageId) {
+                navigateToPage(pageId);
+            }
+        });
+    });
+
+    window.addEventListener('resize', () => {
+        if (auth.currentUser && mainMenu && mainContentArea && menuToggleBtn) {
+            if (window.innerWidth >= 769) {
+                mainMenu.classList.add('open');
+                mainContentArea.style.marginLeft = '250px';
+                menuToggleBtn.style.left = '265px';
+            } else {
+                mainMenu.classList.remove('open');
+                mainContentArea.style.marginLeft = '0';
+                menuToggleBtn.style.left = '15px';
+            }
+        }
+    });
+
+    function setupMasterContentTypeToggle(formElement) {
+        if (!formElement) return;
+        const primarySelector = formElement.querySelector('.primary-content-type-selector');
+        const mediaCategoriesGroup = formElement.querySelector('.media-categories-group');
+        const videoUrlGroup = formElement.querySelector('.video-url-group');
+        const seriesDataGroup = formElement.querySelector('.series-data-group');
+        const genreSelectionGroup = formElement.querySelector('.genre-selection-group');
+        
+        const movieCategories = ["latest_uploads", "Latest-Movies", "most_liked", "recent_movies", "animation", "indian", "horror", "comedy", "romance", "adventure", "scifi-fantasy", "action-thriller", "high-school", "nigerian", "send_notification"];
+        const tvCategories = ["latest_uploads", "most_liked", "recent_tv_shows", "upcoming_shows", "western_series", "Latest-TV-Series", "k_dramas", "send_notification"];
+
+        function toggleFields() {
+            const primaryType = primarySelector.value;
+            const isTV = primaryType === 'tv';
+            if (mediaCategoriesGroup) mediaCategoriesGroup.style.display = 'block';
+            const categoriesCheckboxes = mediaCategoriesGroup.querySelectorAll('input[type="checkbox"]');
+            categoriesCheckboxes.forEach(checkbox => {
+                const parentLabel = checkbox.closest('label');
+                if (parentLabel) {
+                    if (isTV) {
+                        parentLabel.style.display = tvCategories.includes(checkbox.value) ? 'flex' : 'none';
+                    } else {
+                        parentLabel.style.display = movieCategories.includes(checkbox.value) ? 'flex' : 'none';
+                    }
+                }
+            });
+            if (genreSelectionGroup) genreSelectionGroup.style.display = 'block';
+            if (videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
+            if (seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
+        }
+        if (primarySelector) {
+            primarySelector.addEventListener('change', toggleFields);
+            toggleFields();
+        }
+    }
+    setupMasterContentTypeToggle(document.getElementById('addMovieForm'));
+    setupMasterContentTypeToggle(document.getElementById('manualAddForm'));
+    setupMasterContentTypeToggle(document.getElementById('editContentForm'));
+
+    if(addMovieForm) addMovieForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        setLoading(addContentBtn, true);
+
+        const identifier = document.getElementById('contentIdentifier').value.trim();
+        const vjName = document.getElementById('vjName').value.trim();
+        const tmdbApiKey = document.getElementById('tmdbApiKey').value;
+
+        if (!vjName || !identifier) {
+            displayMessage(addMessage, 'VJ Name and Content Identifier are required.', 'error');
+            setLoading(addContentBtn, false);
+            return;
+        }
+
+        let tmdbData = null;
+        const selectedPrimaryContentType = document.getElementById('primaryContentType').value;
+        let finalApiType = selectedPrimaryContentType;
+        const isNumericId = /^\d+$/.test(identifier);
+
+        if (isNumericId) {
+            try {
+                let response = await fetch(`https://api.themoviedb.org/3/${selectedPrimaryContentType}/${identifier}?api_key=${tmdbApiKey}`);
+                if (response.ok) {
+                    tmdbData = await response.json();
+                } else if (response.status === 404) {
+                    const fallbackType = (selectedPrimaryContentType === 'movie') ? 'tv' : 'movie';
+                    const fallbackResponse = await fetch(`https://api.themoviedb.org/3/${fallbackType}/${identifier}?api_key=${tmdbApiKey}`);
+                    if (fallbackResponse.ok) {
+                        tmdbData = await fallbackResponse.json();
+                        finalApiType = fallbackType;
+                    }
+                }
+            } catch (err) { console.warn(`Error fetching from TMDB by ID:`, err); }
+        }
+
+        if (!tmdbData) {
+            try {
+                let searchUrl = `https://api.themoviedb.org/3/search/${selectedPrimaryContentType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
+                let response = await fetch(searchUrl);
+                let searchResult = await response.json();
+
+                if (response.ok && searchResult.results && searchResult.results.length > 0) {
+                    tmdbData = searchResult.results[0];
+                } else {
+                    const fallbackSearchType = (selectedPrimaryContentType === 'movie') ? 'tv' : 'movie';
+                    const fallbackSearchUrl = `https://api.themoviedb.org/3/search/${fallbackSearchType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
+                    const fallbackResponse = await fetch(fallbackSearchUrl);
+                    if (fallbackResponse.ok) {
+                        const fallbackSearchResult = await fallbackResponse.json();
+                        if (fallbackSearchResult.results && fallbackSearchResult.results.length > 0) {
+                            tmdbData = fallbackSearchResult.results[0];
+                            finalApiType = fallbackSearchType;
+                        }
+                    }
+                }
+            } catch (err) { console.error("Error searching TMDB:", err); }
+        }
+
+        if (!tmdbData || !tmdbData.id) {
+            displayMessage(addMessage, 'Could not find content on TMDB. Check name/ID or API key.', 'error');
+            setLoading(addContentBtn, false);
+            return;
+        }
+
+        const primaryContentTypeSelector = document.getElementById('primaryContentType');
+        if (primaryContentTypeSelector.value !== finalApiType) {
+            primaryContentTypeSelector.value = finalApiType;
+            primaryContentTypeSelector.dispatchEvent(new Event('change'));
+        }
+
+        const configUrl = `https://api.themoviedb.org/3/configuration?api_key=${tmdbApiKey}`;
+        const configResponse = await fetch(configUrl);
+        const configData = await configResponse.json();
+        const baseImageUrl = configData.images.base_url + configData.images.poster_sizes[3];
+        const baseBackdropUrl = configData.images.base_url + configData.images.backdrop_sizes[2];
+        tmdbData.fullPosterPath = tmdbData.poster_path ? `${baseImageUrl}${tmdbData.poster_path}` : '';
+        tmdbData.fullBackdropPath = tmdbData.backdrop_path ? `${baseBackdropUrl}${tmdbData.backdrop_path}` : '';
+
+        const finalTitle = tmdbData.title || tmdbData.name;
+        
+        const sendNotificationChecked = document.querySelector('#contentTypeCheckboxes input[name="contentType"][value="send_notification"]').checked;
+        const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input[name="contentType"]:checked')).map(cb => {
+            if (cb.value === 'Latest-Movies') return 'movie';
+            if (cb.value === 'latest_uploads') return 'popular';
+            return cb.value;
+        });
+
+        const titleLowercase = finalTitle.toLowerCase();
+        const searchKeywords = generateSearchKeywords(finalTitle, vjName);
+
+        let payload = {
+            title: finalTitle,
+            title_lowercase: titleLowercase,
+            search_keywords: searchKeywords,
+            tmdbId: tmdbData.id,
+            slug: generateSlug(finalTitle),
+            posterUrl: tmdbData.fullPosterPath || '',
+            backdropUrl: tmdbData.fullBackdropPath || '',
+            overview: tmdbData.overview || "N/A",
+            vjName: vjName,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            addedBy: auth.currentUser.email,
+            sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesTMDB input:checked')).map(cb => cb.value),
+            sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesTMDB input:checked')).map(cb => cb.value),
+            genres: tmdbData.genre_ids || []
+        };
+        
+        if (finalApiType === 'tv') {
+            payload.contentType = 'tv';
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
+            try {
+                const seriesDataValue = document.getElementById('seriesData').value;
+                if (!seriesDataValue) throw new Error("Series Data (JSON) cannot be empty.");
+                const seriesInfo = JSON.parse(seriesDataValue);
+                if (!Array.isArray(seriesInfo)) throw new Error("Invalid Series Data JSON structure.");
+                const duplicateCheck = await checkForDuplicates(payload);
+                if (duplicateCheck.found) throw new Error(`Duplicate found: ${duplicateCheck.field}.`);
+
+                const docRef = await db.collection('movies').add(payload);
+                for (const season of seriesInfo) {
+                    for (const episode of season.episodes) {
+                        await db.collection('movies').doc(docRef.id).collection('episodes').add({
+                            season_number: season.season_number,
+                            episode_number: episode.episode_number,
+                            title: episode.title || `Episode ${episode.episode_number}`,
+                            videoUrl: episode.videoUrl,
+                            overview: episode.overview || '',
+                            air_date: episode.air_date ? firebase.firestore.Timestamp.fromDate(new Date(episode.air_date)) : null,
+                            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+                displayMessage(addMessage, 'TV series added!', 'success');
+                if (sendNotificationChecked) {
+                    const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                    await sendNotification(finalTitle, tmdbData.overview, tmdbData.fullBackdropPath, notificationUrl, addMessage);
+                }
+                addMovieForm.reset();
+            } catch (err) {
+                displayMessage(addMessage, `Error: ${err.message}`, 'error');
+            } finally {
+                setLoading(addContentBtn, false);
+            }
+        } else {
+            payload.contentType = 'movie';
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
+            payload.videoUrl = document.getElementById('videoSourceUrl').value;
+            try {
+                const duplicateCheck = await checkForDuplicates(payload);
+                if (duplicateCheck.found) {
+                    displayMessage(addMessage, `Duplicate found: ${duplicateCheck.field}.`, 'error');
+                } else {
+                    const docRef = await db.collection('movies').add(payload);
+                    displayMessage(addMessage, 'Content added!', 'success');
+                    if (sendNotificationChecked) {
+                        const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                        await sendNotification(finalTitle, tmdbData.overview, tmdbData.fullBackdropPath, notificationUrl, addMessage);
+                    }
+                    addMovieForm.reset();
+                }
+            } catch (error) {
+                displayMessage(addMessage, `Error: ${error.message}`, 'error');
+            } finally {
+                setLoading(addContentBtn, false);
+            }
+        }
+    });
+
+    if(manualAddForm) manualAddForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setLoading(manualAddBtn, true);
+        const sendNotificationChecked = document.querySelector('#manualContentTypeCheckboxes input[name="manualContentType"][value="send_notification"]').checked;
+        
+        const manualTitle = document.getElementById('manualTitle').value.trim();
+        const manualVjName = document.getElementById('manualVjName').value.trim();
+        const manualPosterUrl = document.getElementById('manualPosterUrl').value.trim();
+        if (!manualTitle || !manualVjName || !manualPosterUrl) {
+            displayMessage(manualAddMessage, 'Title, VJ Name, and Poster URL are required.', 'error');
+            setLoading(manualAddBtn, false);
+            return;
+        }
+
+        const referenceIdInput = document.getElementById('manualReferenceId').value.trim();
+        let tmdbId = /^\d+$/.test(referenceIdInput) ? Number(referenceIdInput) : null;
+        let slug = referenceIdInput && !tmdbId ? generateSlug(referenceIdInput) : generateSlug(manualTitle);
+        
+        const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input[name="manualContentType"]:checked')).map(cb => {
+            if (cb.value === 'Latest-Movies') return 'movie';
+            if (cb.value === 'latest_uploads') return 'popular';
+            return cb.value;
+        });
+
+        const titleLowercase = manualTitle.toLowerCase();
+        const searchKeywords = generateSearchKeywords(manualTitle, manualVjName);
+
+        let payload = {
+            title: manualTitle,
+            title_lowercase: titleLowercase,
+            search_keywords: searchKeywords,
+            slug, 
+            tmdbId,
+            overview: document.getElementById('manualOverview').value.trim(),
+            posterUrl: manualPosterUrl,
+            backdropUrl: document.getElementById('manualBackdropUrl').value.trim(),
+            vjName: manualVjName,
+            genres: Array.from(document.querySelectorAll('#manualGenreCheckboxes input:checked')).map(cb => cb.value),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            addedBy: auth.currentUser.email,
+            sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesManual input:checked')).map(cb => cb.value),
+            sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesManual input:checked')).map(cb => cb.value),
+        };
+
+        const primaryType = document.getElementById('manualPrimaryContentType').value;
+        if (primaryType === 'tv') {
+            payload.contentType = 'tv';
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
+            try {
+                const seriesDataValue = document.getElementById('manualSeriesData').value;
+                if (!seriesDataValue) throw new Error("Series Data (JSON) is required.");
+                const seriesInfo = JSON.parse(seriesDataValue);
+                if (!Array.isArray(seriesInfo)) throw new Error("Invalid Series Data JSON.");
+                
+                const duplicateCheck = await checkForDuplicates(payload);
+                if (duplicateCheck.found) throw new Error(`Duplicate found: ${duplicateCheck.field}.`);
+
+                const docRef = await db.collection('movies').add(payload);
+                for (const season of seriesInfo) {
+                    for (const episode of season.episodes) {
+                        await db.collection('movies').doc(docRef.id).collection('episodes').add({
+                            season_number: season.season_number, ...episode,
+                            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+                displayMessage(manualAddMessage, 'TV series added!', 'success');
+                if (sendNotificationChecked) {
+                    const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                    await sendNotification(payload.title, payload.overview, payload.backdropUrl, notificationUrl, manualAddMessage);
+                }
+                manualAddForm.reset();
+            } catch (err) {
+                displayMessage(manualAddMessage, `Error: ${err.message}`, 'error');
+            } finally { setLoading(manualAddBtn, false); }
+        } else {
+            payload.contentType = 'movie';
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
+            payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
+            try {
+                const duplicateCheck = await checkForDuplicates(payload);
+                if (duplicateCheck.found) {
+                    displayMessage(manualAddMessage, `Duplicate found: ${duplicateCheck.field}.`, 'error');
+                } else {
+                    const docRef = await db.collection('movies').add(payload);
+                    displayMessage(manualAddMessage, 'Content added!', 'success');
+                    if (sendNotificationChecked) {
+                        const notificationUrl = `streamzonemovies://details?id=${docRef.id}`;
+                        await sendNotification(payload.title, payload.overview, payload.backdropUrl, notificationUrl, manualAddMessage);
+                    }
+                    manualAddForm.reset();
+                }
+            } catch (error) {
+                displayMessage(manualAddMessage, `Error: ${error.message}`, 'error');
+            } finally { setLoading(manualAddBtn, false); }
+        }
+    });
+
+    if(searchManageBtn) searchManageBtn.addEventListener('click', async () => {
+        setLoading(searchManageBtn, true);
+        if(manageSearchResults) manageSearchResults.innerHTML = '';
+        selectedMoviesForDeletion.clear();
+        if(confirmDeleteBtn) confirmDeleteBtn.style.display = 'none';
+        const term = document.getElementById('manageContentIdentifier').value.trim();
+        if (!term) {
+            displayMessage(manageMessage, 'Enter a name or ID to search.', 'error');
+            setLoading(searchManageBtn, false); return;
+        }
+        try {
+            let docs = [];
+            const lowerCaseTerm = term.toLowerCase();
+            const snapshot = await db.collection('movies').get();
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if ((data.tmdbId && /^\d+$/.test(term) && data.tmdbId === Number(term)) ||
+                    (data.title && data.title.toLowerCase().includes(lowerCaseTerm)) ||
+                    (data.slug && data.slug.toLowerCase().includes(lowerCaseTerm))) {
+                    docs.push({ id: doc.id, ...data });
+                }
+            });
+            if (docs.length === 0) {
+                displayMessage(manageMessage, 'No content found.', 'info');
+            } else {
+                docs.forEach(item => {
+                    manageSearchResults.innerHTML += `<div class="result-item"><span><strong>${item.title}</strong> (ID: ${item.tmdbId || item.slug || 'N/A'}) - Type: ${item.contentType || 'N/A'}</span><div class="result-item-actions"><button class="action-btn edit" data-id="${item.id}">Edit</button><button class="action-btn select-delete" data-id="${item.id}">Select</button></div></div>`;
+                });
+                displayMessage(manageMessage, `Found ${docs.length} item(s).`, 'success');
+            }
+        } catch (err) {
+            displayMessage(manageMessage, `Error searching: ${err.message}`, 'error');
+        } finally {
+            setLoading(searchManageBtn, false);
+        }
+    });
+
+    if(manageSearchResults) manageSearchResults.addEventListener('click', e => {
+        if (e.target.matches('.select-delete')) {
+            const btn = e.target;
+            const id = btn.dataset.id;
+            if (selectedMoviesForDeletion.has(id)) {
+                selectedMoviesForDeletion.delete(id);
+                btn.classList.remove('selected');
+                btn.textContent = 'Select';
+            } else {
+                selectedMoviesForDeletion.add(id);
+                btn.classList.add('selected');
+                btn.textContent = 'Selected';
+            }
+            if(confirmDeleteBtn) {
+                confirmDeleteBtn.style.display = selectedMoviesForDeletion.size > 0 ? 'block' : 'none';
+                confirmDeleteBtn.textContent = `Delete Selected (${selectedMoviesForDeletion.size})`;
+            }
+        }
+        if (e.target.matches('.action-btn.edit')) {
+            loadContentForEditing(e.target.dataset.id);
+        }
+    });
+
+    if(confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', async () => {
+        if (confirm(`Are you sure you want to delete ${selectedMoviesForDeletion.size} item(s)?`)) {
+            setLoading(confirmDeleteBtn, true);
+            const deletePromises = Array.from(selectedMoviesForDeletion).map(id => db.collection('movies').doc(id).delete());
+            try {
+                await Promise.all(deletePromises);
+                displayMessage(manageMessage, `Deleted ${selectedMoviesForDeletion.size} items.`, 'success');
+                if(manageSearchResults) manageSearchResults.innerHTML = '';
+                if(confirmDeleteBtn) confirmDeleteBtn.style.display = 'none';
+                selectedMoviesForDeletion.clear();
+            } catch (err) {
+                displayMessage(manageMessage, `Error deleting: ${err.message}`, 'error');
+            } finally {
+                setLoading(confirmDeleteBtn, false);
+            }
+        }
+    });
+    
+    async function loadContentForEditing(id) {
+        try {
+            const docSnap = await db.collection('movies').doc(id).get();
+            if (!docSnap.exists) {
+                displayMessage(manageMessage, 'Content not found.', 'error');
+                return;
+            }
+            const data = docSnap.data();
+            if(editContentForm) editContentForm.reset();
+            document.getElementById('editDocId').value = docSnap.id;
+            document.getElementById('editTitle').value = data.title || '';
+            document.getElementById('editOverview').value = data.overview || '';
+            document.getElementById('editPosterUrl').value = data.posterUrl || '';
+            document.getElementById('editBackdropUrl').value = data.backdropUrl || '';
+            document.getElementById('editVjName').value = data.vjName || '';
+            
+            const primaryTypeSelector = document.getElementById('editPrimaryContentType');
+            primaryTypeSelector.value = data.contentType === 'tv' ? 'tv' : 'movie';
+            primaryTypeSelector.dispatchEvent(new Event('change'));
+
+            const isSlugFromTitle = generateSlug(data.title || '') === data.slug;
+            document.getElementById('editReferenceId').value = data.tmdbId || (!isSlugFromTitle && data.slug ? data.slug : '');
+            
+            document.querySelectorAll('#editContentTypeCheckboxes input').forEach(cb => { cb.checked = false; });
+            if (Array.isArray(data.type)) {
+                data.type.forEach(typeValue => {
+                    let displayValue = typeValue;
+                    if (typeValue === 'movie') displayValue = 'Latest-Movies';
+                    if (typeValue === 'popular') displayValue = 'latest_uploads';
+                    const checkbox = document.querySelector(`#editContentTypeCheckboxes input[value="${displayValue}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+            if (data.type?.includes('send_notification')) {
+                document.querySelector('#editContentTypeCheckboxes input[value="send_notification"]').checked = true;
+            }
+            
+            document.querySelectorAll('#editGenreCheckboxes input').forEach(cb => { cb.checked = false; });
+            if (Array.isArray(data.genres)) {
+                data.genres.forEach(genreValue => {
+                    const checkbox = document.querySelector(`#editGenreCheckboxes input[value="${genreValue}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+            
+            populateCheckboxes('sortVjsCheckboxesEdit', 'sortVjsEdit', VJ_LIST, data.sort_vjs);
+            populateCheckboxes('sortGenresCheckboxesEdit', 'sortGenresEdit', GENRE_LIST, data.sort_genres);
+
+            if (data.contentType === 'tv') {
+                const episodesSnapshot = await db.collection('movies').doc(id).collection('episodes').get();
+                const seasonsData = {};
+                episodesSnapshot.forEach(doc => {
+                    const epData = doc.data();
+                    if (!seasonsData[epData.season_number]) seasonsData[epData.season_number] = { season_number: epData.season_number, episodes: [] };
+                    seasonsData[epData.season_number].episodes.push(epData);
+                });
+                const formatted = Object.values(seasonsData).sort((a, b) => a.season_number - b.season_number);
+                formatted.forEach(s => s.episodes.sort((a,b)=>a.episode_number - b.episode_number));
+                document.getElementById('editSeriesData').value = JSON.stringify(formatted, null, 2);
+                document.getElementById('editVideoSourceUrl').value = '';
+            } else {
+                document.getElementById('editVideoSourceUrl').value = data.videoUrl || '';
+                document.getElementById('editSeriesData').value = '';
+            }
+            navigateToPage('editContentPage');
+        } catch (err) {
+            displayMessage(manageMessage, `Error loading content: ${err.message}`, 'error');
+        }
+    }
+    
+    if(editContentForm) editContentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setLoading(updateContentBtn, true);
+        const docId = document.getElementById('editDocId').value;
+        if (!docId) {
+            displayMessage(editMessage, 'No document ID found.', 'error');
+            setLoading(updateContentBtn, false); return;
+        }
+
+        const editTitle = document.getElementById('editTitle').value.trim();
+        const editVjName = document.getElementById('editVjName').value.trim();
+        const referenceIdInput = document.getElementById('editReferenceId').value.trim();
+        let tmdbId = /^\d+$/.test(referenceIdInput) ? Number(referenceIdInput) : null;
+        let slug = referenceIdInput && !tmdbId ? generateSlug(referenceIdInput) : generateSlug(editTitle);
+
+        const titleLowercase = editTitle.toLowerCase();
+        const searchKeywords = generateSearchKeywords(editTitle, editVjName);
+
+        const selectedTypes = Array.from(document.querySelectorAll('#editContentTypeCheckboxes input[name="editContentType"]:checked')).map(cb => {
+            if (cb.value === 'Latest-Movies') return 'movie';
+            if (cb.value === 'latest_uploads') return 'popular';
+            return cb.value;
+        });
+
+        let payload = {
+            title: editTitle,
+            title_lowercase: titleLowercase,
+            search_keywords: searchKeywords,
+            slug, 
+            tmdbId,
+            overview: document.getElementById('editOverview').value,
+            posterUrl: document.getElementById('editPosterUrl').value,
+            backdropUrl: document.getElementById('editBackdropUrl').value,
+            vjName: editVjName,
+            genres: Array.from(document.querySelectorAll('#editGenreCheckboxes input:checked')).map(cb => cb.value),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesEdit input:checked')).map(cb => cb.value),
+            sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesEdit input:checked')).map(cb => cb.value)
+        };
+
+        const primaryType = document.getElementById('editPrimaryContentType').value;
+        if (primaryType === 'tv') {
+            payload.contentType = 'tv';
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
+            payload.videoUrl = firebase.firestore.FieldValue.delete();
+            try {
+                const seriesDataValue = document.getElementById('editSeriesData').value;
+                if (!seriesDataValue) throw new Error("Series Data (JSON) is required.");
+                const seriesInfo = JSON.parse(seriesDataValue);
+                const duplicateCheck = await checkForDuplicates(payload, docId);
+                if (duplicateCheck.found) throw new Error(`Duplicate found: ${duplicateCheck.field}.`);
+
+                await db.collection('movies').doc(docId).update(payload);
+                const episodesRef = db.collection('movies').doc(docId).collection('episodes');
+                const oldEpisodes = await episodesRef.get();
+                await Promise.all(oldEpisodes.docs.map(doc => doc.ref.delete()));
+                for (const season of seriesInfo) {
+                    for (const episode of season.episodes) {
+                        await episodesRef.add({ ...episode });
+                    }
+                }
+                displayMessage(editMessage, 'TV series updated!', 'success');
+                setTimeout(() => navigateToPage('allContentPage'), 2000);
+            } catch (err) {
+                displayMessage(editMessage, `Error updating: ${err.message}`, 'error');
+            } finally { setLoading(updateContentBtn, false); }
+        } else {
+            payload.contentType = 'movie';
+            payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
+            payload.videoUrl = document.getElementById('editVideoSourceUrl').value;
+            try {
+                const duplicateCheck = await checkForDuplicates(payload, docId);
+                if (duplicateCheck.found) throw new Error(`Duplicate found: ${duplicateCheck.field}.`);
+                await db.collection('movies').doc(docId).update(payload);
+                displayMessage(editMessage, 'Content updated!', 'success');
+                setTimeout(() => navigateToPage('allContentPage'), 2000);
+            } catch (error) {
+                displayMessage(editMessage, `Error updating: ${error.message}`, 'error');
+            } finally { setLoading(updateContentBtn, false); }
+        }
+    });
+
+    if(cancelEditBtn) cancelEditBtn.addEventListener('click', () => { navigateToPage('allContentPage'); });
+
+    async function displayAllContent() {
+        if (!allContentContainer) return;
+        allContentContainer.innerHTML = '<div class="message info" style="display:block;">Loading all content...</div>';
+        selectedAllContentForDeletion.clear();
+        updateDeleteSelectedButton();
+        const filterValue = allContentFilter.value;
+        try {
+            let query = db.collection('movies').orderBy('createdAt', 'desc');
+            let actualFilterValue = filterValue;
+            if (filterValue === 'latest_uploads') actualFilterValue = 'popular';
+            if (filterValue === 'Latest-Movies') actualFilterValue = 'movie';
+            
+            if (filterValue !== 'all') {
+                query = query.where('type', 'array-contains', actualFilterValue);
+            }
+
+            const snapshot = await query.get();
+            if (snapshot.empty) {
+                allContentContainer.innerHTML = '';
+                displayMessage(allContentMessage, 'No content found.', 'info');
+                return;
+            }
+            allContentContainer.innerHTML = '';
+            snapshot.forEach(doc => {
+                const item = { id: doc.id, ...doc.data() };
+                const isPermanentDeleteView = filterValue === 'all' || (item.type && item.type.length <= 1);
+                const cardHtml = `
+                    <div class="content-card">
+                        <input type="checkbox" class="select-card-checkbox" data-id="${item.id}">
+                        <img src="${item.posterUrl || 'https://placehold.co/500x750/333/eee?text=No+Poster'}" alt="${item.title}" onerror="this.onerror=null; this.src='/Upload/Logo.png';">
+                        <div class="content-card-content">
+                            <h3>${item.title}</h3>
+                            <p class="vj-name">VJ: ${item.vjName}</p>
+                            <p class="content-id-display">ID: ${item.tmdbId || item.slug || 'N/A'}</p>
+                            <div class="content-card-actions">
+                                <button class="action-btn edit" data-id="${item.id}">Edit</button>
+                                <button class="action-btn ${isPermanentDeleteView ? 'delete' : 'remove-from-category'}" data-id="${item.id}">${isPermanentDeleteView ? 'Delete' : 'Remove'}</button>
+                            </div>
+                        </div>
+                    </div>`;
+                allContentContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+            displayMessage(allContentMessage, `Found ${snapshot.size} item(s).`, 'success');
+        } catch (err) {
+            allContentContainer.innerHTML = '';
+            displayMessage(allContentMessage, `Error: ${err.message}`, 'error');
+        }
+    }
+
+    function updateDeleteSelectedButton() {
+        if (!selectedAllContentCount || !deleteSelectedAllContentBtn || !allContentFilter) return;
+        selectedAllContentCount.textContent = selectedAllContentForDeletion.size;
+        deleteSelectedAllContentBtn.style.display = selectedAllContentForDeletion.size > 0 ? 'block' : 'none';
+        const filterValue = allContentFilter.value;
+        const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
+        if (filterValue === 'all') {
+            deleteSelectedAllContentBtn.textContent = `Delete Selected Content (${selectedAllContentForDeletion.size})`;
+        } else {
+            deleteSelectedAllContentBtn.textContent = `Remove Selected from ${filterText} (${selectedAllContentForDeletion.size})`;
+        }
+    }
+
+    if (allContentFilter) allContentFilter.addEventListener('change', displayAllContent);
+
+    async function removeContentFromCategory(docId, categoryToRemove) {
+        const docRef = db.collection('movies').doc(docId);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+            const currentTypes = docSnap.data().type || [];
+            let actualCategoryToRemove = categoryToRemove;
+            if (categoryToRemove === 'latest_uploads') actualCategoryToRemove = 'popular';
+            if (categoryToRemove === 'Latest-Movies') actualCategoryToRemove = 'movie';
+            
+            const updatedTypes = currentTypes.filter(type => type !== actualCategoryToRemove);
+            await docRef.update({ type: updatedTypes, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+            return true;
+        }
+        return false;
+    }
+
+    if (allContentContainer) allContentContainer.addEventListener('click', async e => {
+        const target = e.target;
+        const cardElement = target.closest('.content-card');
+        if (!cardElement) return;
+        const docId = cardElement.querySelector('.select-card-checkbox')?.dataset.id || target.dataset.id;
+        if (!docId) return;
+        const filterValue = allContentFilter.value;
+        const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
+        if (target.matches('.select-card-checkbox')) {
+            if (target.checked) {
+                selectedAllContentForDeletion.add(docId);
+            } else {
+                selectedAllContentForDeletion.delete(docId);
+            }
+            updateDeleteSelectedButton();
+        } else if (target.matches('.action-btn.edit')) {
+            loadContentForEditing(docId);
+        } else if (target.matches('.action-btn.delete')) {
+            if (confirm(`Are you sure you want to delete this content permanently?`)) {
+                setLoading(target, true);
+                try {
+                    await db.collection('movies').doc(docId).delete();
+                    displayMessage(allContentMessage, 'Content deleted!', 'success');
+                    displayAllContent();
+                } catch (err) {
+                    displayMessage(allContentMessage, `Error: ${err.message}`, 'error');
+                } finally {
+                    setLoading(target, false);
+                }
+            }
+        } else if (target.matches('.action-btn.remove-from-category')) {
+            if (confirm(`Remove from "${filterText}" category?`)) {
+                setLoading(target, true);
+                try {
+                    await removeContentFromCategory(docId, filterValue);
+                    displayMessage(allContentMessage, `Removed from category!`, 'success');
+                    displayAllContent();
+                } catch (err) {
+                    displayMessage(allContentMessage, `Error: ${err.message}`, 'error');
+                } finally {
+                    setLoading(target, false);
+                }
+            }
+        }
+    });
+
+    if (deleteSelectedAllContentBtn) deleteSelectedAllContentBtn.addEventListener('click', async () => {
+        if (selectedAllContentForDeletion.size === 0) return;
+        const filterValue = allContentFilter.value;
+        const isPermanentDelete = filterValue === 'all';
+        const action = isPermanentDelete ? 'delete' : 'remove from category';
+        if (confirm(`Are you sure you want to ${action} ${selectedAllContentForDeletion.size} item(s)?`)) {
+            setLoading(deleteSelectedAllContentBtn, true);
+            const promises = [];
+            selectedAllContentForDeletion.forEach(id => {
+                if (isPermanentDelete) {
+                    promises.push(db.collection('movies').doc(id).delete());
+                } else {
+                    promises.push(removeContentFromCategory(id, filterValue));
+                }
+            });
+            try {
+                await Promise.all(promises);
+                displayMessage(allContentMessage, 'Action completed successfully!', 'success');
+                displayAllContent();
+            } catch (err) {
+                displayMessage(allContentMessage, `Error: ${err.message}`, 'error');
+            } finally {
+                setLoading(deleteSelectedAllContentBtn, false);
+            }
+        }
+    });
+
+    async function displayAllBanners() {
+        if (!allBannersContainer) return;
+        allBannersContainer.innerHTML = '<div class="message info" style="display:block;">Loading banners...</div>';
+        try {
+            const snapshot = await db.collection('banners').orderBy('updatedAt', 'desc').limit(10).get();
+            if (snapshot.empty) {
+                allBannersContainer.innerHTML = '';
+                displayMessage(viewBannersMessage, 'No banners found.', 'info');
+                return;
+            }
+            allBannersContainer.innerHTML = '';
+            snapshot.forEach(doc => {
+                const banner = doc.data();
+                const card = `<div class="banner-card"><img src="${banner.imageUrl}" alt="${banner.title}" onerror="this.src='https://placehold.co/500x300/333/eee?text=No+Image';"><div class="banner-card-content"><h3>${banner.title}</h3><p>${(banner.description || '').substring(0, 100)}...</p><div class="banner-card-actions"><button class="action-btn edit" data-id="${doc.id}">Edit</button><button class="action-btn delete" data-id="${doc.id}">Delete</button></div></div></div>`;
+                allBannersContainer.insertAdjacentHTML('beforeend', card);
+            });
+            displayMessage(viewBannersMessage, `Found ${snapshot.size} banner(s).`, 'success');
+        } catch (err) {
+            allBannersContainer.innerHTML = '';
+            displayMessage(viewBannersMessage, `Error: ${err.message}`, 'error');
+        }
+    }
+
+    if (bannerNavTabs) bannerNavTabs.addEventListener('click', e => {
+        if (e.target.matches('.banner-tab-link')) {
+            const tabId = e.target.dataset.tab;
+            document.querySelectorAll('.banner-tab-link').forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            document.querySelectorAll('.banner-tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if (tabId === 'viewBannersTab') {
+                displayAllBanners();
+            }
+        }
+    });
+
+    if (allBannersContainer) allBannersContainer.addEventListener('click', async e => {
+        const target = e.target;
+        if (target.matches('.action-btn.delete')) {
+            const docId = target.dataset.id;
+            if (confirm('Are you sure you want to delete this banner?')) {
+                setLoading(target, true);
+                try {
+                    await db.collection('banners').doc(docId).delete();
+                    displayMessage(viewBannersMessage, 'Banner deleted!', 'success');
+                    await displayAllBanners();
+                } catch (err) {
+                    displayMessage(viewBannersMessage, `Error deleting banner: ${err.message}`, 'error');
+                    setLoading(target, false);
+                }
+            }
+        }
+        if (target.matches('.action-btn.edit')) {
+            await loadBannerForEditing(target.dataset.id);
+        }
+    });
+
+    if (addEditBannerForm) addEditBannerForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        setLoading(saveBannerBtn, true);
+        const id = bannerDocId.value;
+        const data = {
+            title: document.getElementById('bannerTitle').value.trim(),
+            imageUrl: document.getElementById('bannerImageUrl').value,
+            description: document.getElementById('bannerDescription').value,
+            link: document.getElementById('bannerLink').value,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if (!data.title || !data.imageUrl || !data.link) {
+            displayMessage(addBannerMessage, 'Title, Image URL, and Link are required.', 'error');
+            setLoading(saveBannerBtn, false);
+            return;
+        }
+        try {
+            if (id) {
+                await db.collection('banners').doc(id).update(data);
+            } else {
+                await db.collection('banners').add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            }
+            displayMessage(addBannerMessage, 'Banner saved!', 'success');
+            resetBannerForm();
+            document.querySelector('.banner-tab-link[data-tab="viewBannersTab"]').click();
+        } catch (err) {
+            displayMessage(addBannerMessage, `Error saving banner: ${err.message}`, 'error');
+        } finally {
+            setLoading(saveBannerBtn, false);
+        }
+    });
+
+    function resetBannerForm() {
+        if (!addEditBannerForm) return;
+        addEditBannerForm.reset();
+        if (bannerDocId) bannerDocId.value = '';
+        if (bannerFormTitle) bannerFormTitle.textContent = 'Add New Banner';
+        if (saveBannerBtn) saveBannerBtn.textContent = 'Save Banner';
+        if (cancelEditBannerBtn) cancelEditBannerBtn.style.display = 'none';
+        displayMessage(addBannerMessage, '', '');
+    }
+    if (cancelEditBannerBtn) cancelEditBannerBtn.addEventListener('click', resetBannerForm);
+
+    async function loadBannerForEditing(id) {
+        try {
+            const doc = await db.collection('banners').doc(id).get();
+            if (doc.exists) {
+                const d = doc.data();
+                if (bannerDocId) bannerDocId.value = id;
+                document.getElementById('bannerTitle').value = d.title || '';
+                document.getElementById('bannerImageUrl').value = d.imageUrl || '';
+                document.getElementById('bannerDescription').value = d.description || '';
+                document.getElementById('bannerLink').value = d.link || '';
+                if (bannerFormTitle) bannerFormTitle.textContent = 'Editing Banner';
+                if (saveBannerBtn) saveBannerBtn.textContent = 'Update Banner';
+                if (cancelEditBannerBtn) cancelEditBannerBtn.style.display = 'inline-block';
+                document.querySelector('.banner-tab-link[data-tab="addBannerTab"]').click();
+                window.scrollTo(0, 0);
+            } else {
+                displayMessage(addBannerMessage, 'Banner not found.', 'error');
+            }
+        } catch (err) {
+            displayMessage(addBannerMessage, 'Could not load banner for editing.', 'error');
+        }
+    }
+
+    if (userSearchBtn) userSearchBtn.addEventListener('click', async () => {
+        const emailToSearch = userSearchEmailInput.value.trim();
+        if (!emailToSearch) {
+            displayUserMessage('Please enter an email to search.', 'error');
+            return;
+        }
+        hideUserMessage();
+        if (userEditFormSection) userEditFormSection.classList.add('hidden');
+        setLoading(userSearchBtn, true);
+        try {
+            const q = db.collection("users").where("email", "==", emailToSearch);
+            const querySnapshot = await q.get();
+            if (querySnapshot.empty) {
+                displayUserMessage(`No user found. You can create a new document.`, 'info');
+                clearUserForm();
+                if (userEditEmailInput) userEditEmailInput.value = emailToSearch;
+                if (userFormTitle) userFormTitle.textContent = "Create New User Document";
+                if (userDocIdInput) userDocIdInput.value = "Will be auto-generated";
+                if (userUpdateBtn) userUpdateBtn.classList.add('hidden');
+                if (userCreateBtn) userCreateBtn.classList.remove('hidden');
+            } else {
+                const userDoc = querySnapshot.docs[0];
+                const userData = userDoc.data();
+                displayUserMessage('User found.', 'success');
+                if (userDocIdInput) userDocIdInput.value = userDoc.id;
+                if (userEditNameInput) userEditNameInput.value = userData.name || '';
+                if (userEditEmailInput) userEditEmailInput.value = userData.email || '';
+                if (userEditActivatedSelect) userEditActivatedSelect.value = userData.activated ? 'true' : 'false';
+                if (userEditExpiresAtInput) userEditExpiresAtInput.value = formatTimestampForInput(userData.expiresAt);
+                if (userFormTitle) userFormTitle.textContent = "Edit User Document";
+                if (userCreateBtn) userCreateBtn.classList.add('hidden');
+                if (userUpdateBtn) userUpdateBtn.classList.remove('hidden');
+            }
+            if (userEditFormSection) userEditFormSection.classList.remove('hidden');
+            if (userFormDivider) userFormDivider.classList.remove('hidden');
+        } catch (error) {
+            displayUserMessage(`Error searching: ${error.message}`, 'error');
+        } finally {
+            setLoading(userSearchBtn, false);
+        }
+    });
+
+    if (userUpdateBtn) userUpdateBtn.addEventListener('click', async () => {
+        const userId = userDocIdInput.value;
+        if (!userId || userId.startsWith("Will be")) {
+            displayUserMessage('No user document ID found.', 'error');
+            return;
+        }
+        setLoading(userUpdateBtn, true);
+        try {
+            const userDocRef = db.collection("users").doc(userId);
+            const dateValue = userEditExpiresAtInput.value ? new Date(userEditExpiresAtInput.value) : null;
+            await userDocRef.update({
+                name: userEditNameInput.value,
+                email: userEditEmailInput.value,
+                activated: userEditActivatedSelect.value === 'true',
+                expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null
+            });
+            displayUserMessage('User document updated!', 'success');
+        } catch (error) {
+            displayUserMessage(`Update failed: ${error.message}`, 'error');
+        } finally {
+            setLoading(userUpdateBtn, false);
+        }
+    });
+
+    if (userCreateBtn) userCreateBtn.addEventListener('click', async () => {
+        const email = userEditEmailInput.value.trim();
+        const name = userEditNameInput.value.trim();
+        if (!email || !name) {
+            displayUserMessage('Email and Name are required.', 'error');
+            return;
+        }
+        setLoading(userCreateBtn, true);
+        try {
+            const newDocRef = db.collection("users").doc();
+            const dateValue = userEditExpiresAtInput.value ? new Date(userEditExpiresAtInput.value) : null;
+            await newDocRef.set({
+                name: name, email: email, phone: "", profileImage: "",
+                activated: userEditActivatedSelect.value === 'true',
+                expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                deleted: false
+            });
+            if (userDocIdInput) userDocIdInput.value = newDocRef.id;
+            displayUserMessage(`New document created: ${newDocRef.id}`, 'success');
+            userCreateBtn.classList.add('hidden');
+            userUpdateBtn.classList.remove('hidden');
+            if (userFormTitle) userFormTitle.textContent = "Edit User Document";
+        } catch (error) {
+            displayUserMessage(`Creation failed: ${error.message}`, 'error');
+        } finally {
+            setLoading(userCreateBtn, false);
+        }
+    });
+
+    if (notifForm) {
+        if (notifTitleInput) notifTitleInput.addEventListener('input', () => {
+            if (previewTitle) previewTitle.textContent = notifTitleInput.value || 'Notification Title';
+        });
+        if (notifBodyInput) notifBodyInput.addEventListener('input', () => {
+            if (previewBody) previewBody.textContent = notifBodyInput.value || 'Notification body will appear here...';
+        });
+        if (notifImageUrlInput) notifImageUrlInput.addEventListener('input', () => {
+            const url = notifImageUrlInput.value;
+            if (previewImage) {
+                if (url) {
+                    previewImage.src = url;
+                    previewImage.style.display = 'block';
+                    previewImage.onerror = () => { previewImage.style.display = 'none'; };
+                } else {
+                    previewImage.style.display = 'none';
+                }
+            }
+        });
+
+        const notifUrlIdInput = document.getElementById('notifUrlId');
+        const previewUrl = document.getElementById('previewUrl');
+
+        if (notifUrlIdInput) notifUrlIdInput.addEventListener('input', () => {
+            const contentId = notifUrlIdInput.value.trim();
+            if (previewUrl) {
+                if (contentId) {
+                    previewUrl.textContent = `Will open: streamzonemovies://details?id=${contentId}`;
+                } else {
+                    previewUrl.textContent = '';
+                }
+            }
+        });
+
+        notifForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const title = notifTitleInput.value;
+            const body = notifBodyInput.value;
+            if (!title && !body) {
+                displayMessage(notificationMessage, 'Please provide a title or body.', 'error');
+                return;
+            }
+
+            const contentId = document.getElementById('notifUrlId')?.value.trim();
+            const fullUrl = contentId ? `streamzonemovies://details?id=${contentId}` : '';
+
+            setLoading(sendNotificationBtn, true);
+            const success = await sendNotification(title, body, notifImageUrlInput.value, fullUrl, notificationMessage);
+            setLoading(sendNotificationBtn, false);
+            
+            if (success) {
+                notifForm.reset();
+                if (previewTitle) previewTitle.textContent = 'Notification Title';
+                if (previewBody) previewBody.textContent = 'Notification body will appear here...';
+                if (previewImage) previewImage.style.display = 'none';
+                if (previewUrl) previewUrl.textContent = '';
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>
