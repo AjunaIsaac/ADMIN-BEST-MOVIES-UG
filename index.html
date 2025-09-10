@@ -1008,9 +1008,9 @@
     const userEditAdsDisabledSelect = document.getElementById('user-edit-ads-disabled');
     const userEditAdsExpiryInput = document.getElementById('user-edit-ads-expiry');
 
-    const VJ_LIST = ["Vj Junior", "Vj TONNY","Vj PAX", "Vj Emmy","Vj RYAN", "HEAVY Q","Vj Mk","Vj MARK","Vj SHIELD ", "Vj ISMA K","ILLESS", "Vj BONNY", "VJ NEIL", "Vj Jovan", "Vj Tom", "Vj SHAO K", "Vj Jingo", "Vj Ice P", "Vj Kevo", "Vj Kevin", "Vj KIN" ,"Vj Kriss Sweet", "Vj Hd", "Vj Dan De", "Vj Sammy", "Vj Ivo","Vj Little T","Vj LASH", "Vj Mox", "Vj Muba", "Vj Eddy", "Vj Kam", "Vj Lance", "Vj KS", "Vj Ulio", "Vj Aaron", "Vj Cabs", "Vj Banks", "Vj Jimmy", "Vj Baros", "Vj SOUL", "Vj SON", "Vj Kimuli", "Vj Fredy", "Vj Jumpers", "Vj Ashim", "Vj Pauleta", "Vj Martin K", "Vj Henrico", "Vj MUSA", "Vj Uncle T","VJ WAZA", "Vj RONAGE"];
-    const GENRE_LIST = ["Action", "Horror", "Series", "Adventure", "Love Story", "Comedy", "Crime", "Family", "Sci FI", "Romance", "Kungu Fu", "Drama", "Sport", "Thriller", "Animation", "Documentary", "Fantasy", "History", "Music", "Mystery", "War", "Western"];
+    const VJ_LIST = ["VJ JUNIOR", "VJ TONNY", "VJ PAX", "VJ EMMY", "VJ RYAN", "HEAVY Q", "VJ MK", "VJ MARK", "VJ SHIELD", "VJ ISMA K", "ILLESS", "VJ BONNY", "VJ NEIL", "VJ JOVAN", "VJ TOM", "VJ SHAO K", "VJ JINGO", "VJ ICE P", "VJ KEVO", "VJ KEVIN", "VJ KIN", "VJ KRISS SWEET", "VJ HD", "VJ DAN DE", "VJ SAMMY", "VJ IVO", "VJ LITTLE T", "VJ LASH", "VJ MOX", "VJ MUBA", "VJ EDDY", "VJ KAM", "VJ LANCE", "VJ KS", "VJ ULIO", "VJ AARON", "VJ CABS", "VJ BANKS", "VJ JIMMY", "VJ BAROS", "VJ SOUL", "VJ SON", "VJ KIMULI", "VJ FREDY", "VJ JUMPERS", "VJ ASHIM", "VJ PAULETA", "VJ MARTIN K", "VJ HENRICO", "VJ MUSA", "VJ UNCLE T", "VJ WAZA", "VJ RONAGE"];
 
+const GENRE_LIST = ["ACTION", "HORROR", "SERIES", "ADVENTURE", "LOVE STORY", "COMEDY", "CRIME", "FAMILY", "SCI FI", "ROMANCE", "KUNGU FU", "DRAMA", "SPORT", "THRILLER", "ANIMATION", "DOCUMENTARY", "FANTASY", "HISTORY", "MUSIC", "MYSTERY", "WAR", "WESTERN"];
     function generateSearchKeywords(title, vjName) {
         const keywords = new Set();
         const fullText = `${title || ''} ${vjName || ''}`.toLowerCase();
