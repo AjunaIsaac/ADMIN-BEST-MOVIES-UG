@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Notifications - Admin</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="adminPanel" style="display: none; width: 100%;">
+        <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+
+        <!-- SHARED: Sidebar Navigation -->
+        <nav id="mainMenu">
+            <div class="menu-header">Admin Menu</div>
+            <a class="menu-link" href="add_from_tmdb.html"><i class="fas fa-magic"></i> Add from TMDB</a>
+            <a class="menu-link" href="manual_add.html"><i class="fas fa-edit"></i> Manual Add</a>
+            <a class="menu-link" href="manage_content.html"><i class="fas fa-search"></i> Search & Edit/Delete</a>
+            <a class="menu-link" href="all_content.html"><i class="fas fa-film"></i> All Content</a>
+            <a class="menu-link" href="banners.html"><i class="fas fa-images"></i> Manage Banners</a>
+            <a class="menu-link" href="notifications.html"><i class="fas fa-paper-plane"></i> Send Notifications</a>
+            <a class="menu-link" href="user_management.html"><i class="fas fa-users-cog"></i> User Management</a>
+            <a href="https://storage1.streamzonemovies.online" target="_blank"><i class="fas fa-server"></i> My Server</a>
+        </nav>
+
+        <div class="main-content" id="mainContentArea">
+            <!-- SHARED: Admin Header -->
+            <div class="admin-header">
+                <h1 id="pageTitle">Send Notifications</h1>
+                <span id="adminEmailDisplay"></span>
+                <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            
+            <!-- PAGE-SPECIFIC CONTENT -->
+            <div class="page-container" style="display: block;">
+                <h2>Notification Dashboard</h2>
+                <p style="text-align:center; color: #ccc; margin-top: -15px; margin-bottom: 25px;">Send a push notification to all your app users instantly.</p>
+                <div class="notification-layout">
+                    <div class="notification-form-col">
+                        <form id="notificationForm">
+                            <div class="form-group"><label for="notifTitle">Title</label><input type="text" id="notifTitle" placeholder="New Movie Alert!" required></div>
+                            <div class="form-group"><label for="notifBody">Body</label><textarea id="notifBody" rows="4" placeholder="Check out the latest blockbuster..." required></textarea></div>
+                            <div class="form-group"><label for="notifImageUrl">Image URL <span style="color: #888; font-weight: normal;">(Optional)</span></label><input type="url" id="notifImageUrl" placeholder="https://example.com/image.jpg"></div>
+                            
+                            <div class="form-group">
+                                <label for="notifUrlId">Page to Open (Enter Movie/Series ID)</label>
+                                <div class="input-group-prefix">
+                                    <span>streamzonemovies://details?id=</span>
+                                    <input type="text" id="notifUrlId" placeholder="your_movie_id">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" id="sendNotificationBtn">Send Notification <i class="fas fa-paper-plane"></i><span class="spinner"></span></button>
+                        </form>
+                        <div id="notificationMessage" class="message"></div>
+                    </div>
+                    <div class="notification-preview-col">
+                        <div class="notification-preview-wrapper">
+                            <h3 style="text-align: center; color: var(--accent-color); margin-bottom: 15px;">Live Preview</h3>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                                <img src="https://placehold.co/24x24/d1e231/0b0f30?text=S" alt="App Icon" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;">
+                                <span style="font-size: 13px; font-weight: bold; color: var(--text-color);">Stream Zone Movies</span>
+                                <span style="font-size: 13px; color: #aaa; margin-left: auto;">now</span>
+                            </div>
+                            <div style="padding-left: 32px; margin-top: 10px;">
+                                <h4 id="previewTitle" style="font-weight: bold; color: var(--text-color); margin: 0 0 4px 0; font-size: 16px;">Notification Title</h4>
+                                <p id="previewBody" style="font-size: 14px; color: #ccc; margin: 0;">Notification body will appear here...</p>
+                            </div>
+                            <img id="previewImage" alt="Notification Image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    
+    <script src="assets/core.js"></script>
+    <script src="assets/utils.js"></script>
+    <script src="notifications.js" defer></script>
+</body>
+</html>

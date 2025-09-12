@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Admin</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="adminPanel" style="display: none; width: 100%;">
+        <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+
+        <!-- SHARED: Sidebar Navigation -->
+        <nav id="mainMenu">
+            <div class="menu-header">Admin Menu</div>
+            <a class="menu-link" href="add_from_tmdb.html"><i class="fas fa-magic"></i> Add from TMDB</a>
+            <a class="menu-link" href="manual_add.html"><i class="fas fa-edit"></i> Manual Add</a>
+            <a class="menu-link" href="manage_content.html"><i class="fas fa-search"></i> Search & Edit/Delete</a>
+            <a class="menu-link" href="all_content.html"><i class="fas fa-film"></i> All Content</a>
+            <a class="menu-link" href="banners.html"><i class="fas fa-images"></i> Manage Banners</a>
+            <a class="menu-link" href="notifications.html"><i class="fas fa-paper-plane"></i> Send Notifications</a>
+            <a class="menu-link" href="user_management.html"><i class="fas fa-users-cog"></i> User Management</a>
+            <a href="https://storage1.streamzonemovies.online" target="_blank"><i class="fas fa-server"></i> My Server</a>
+        </nav>
+
+        <div class="main-content" id="mainContentArea">
+            <!-- SHARED: Admin Header -->
+            <div class="admin-header">
+                <h1 id="pageTitle">User Management Panel</h1>
+                <span id="adminEmailDisplay"></span>
+                <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            
+            <!-- PAGE-SPECIFIC CONTENT -->
+            <div class="page-container" style="display: block;">
+                <div class="form-group">
+                    <label for="user-search-email">Search User by Email</label>
+                    <input type="email" id="user-search-email" placeholder="user@example.com" />
+                </div>
+                <button id="user-search-btn">Search User<span class="spinner"></span></button>
+
+                <div id="user-message-area" class="message" style="display:none;"></div>
+                <hr id="user-form-divider" style="display:none;" />
+
+                <div id="user-edit-form-section" style="display:none;">
+                    <h3 id="user-form-title">Edit User</h3>
+                    <div class="form-group"><label for="user-doc-id">Document ID (User UID)</label><input type="text" id="user-doc-id" readonly /></div>
+                    <div class="form-group"><label for="user-edit-name">Full Name</label><input type="text" id="user-edit-name" /></div>
+                    <div class="form-group"><label for="user-edit-email">Email</label><input type="email" id="user-edit-email" /></div>
+                    <div class="form-group"><label for="user-edit-activated">Account Activated</label><select id="user-edit-activated"><option value="true">True</option><option value="false">False</option></select></div>
+                    <div class="form-group"><label for="user-edit-expiresAt">Subscription Expiration</label><input type="datetime-local" id="user-edit-expiresAt" /></div>
+                    
+                    <div class="form-group"><label for="user-edit-ads-disabled">Ad-Free Status</label><select id="user-edit-ads-disabled"><option value="false">Showing Ads (false)</option><option value="true">Ad-Free (true)</option></select></div>
+                    <div class="form-group"><label for="user-edit-ads-expiry">Ad-Free Expiration Date</label><input type="date" id="user-edit-ads-expiry" /></div>
+
+                    <button id="user-update-btn">Update Document<span class="spinner"></span></button>
+                    <button id="user-create-btn" style="display:none;">Create New Document<span class="spinner"></span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    
+    <script src="assets/core.js"></script>
+    <script src="assets/utils.js"></script>
+    <script src="user_management.js" defer></script>
+</body>
+</html>
