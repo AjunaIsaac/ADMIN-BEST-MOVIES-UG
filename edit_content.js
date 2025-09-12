@@ -37,7 +37,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const docRef = db.collection('StreamZone_v208_77').doc(docId);
         const docSnap = await docRef.get();
 
-        if (!docSnap.exists()) {
+        // ==========================================================
+        // THIS IS THE FIX: Removed the parentheses from .exists()
+        // ==========================================================
+        if (!docSnap.exists) { 
             throw new Error("Content document not found.");
         }
 
@@ -130,15 +133,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const seriesDataValue = document.getElementById('editSeriesData').value;
                 const seriesInfo = JSON.parse(seriesDataValue);
 
-                // Use a batch write to update the main doc and replace episodes
                 const batch = db.batch();
                 batch.update(docRef, payload);
 
-                // Delete old episodes
                 const oldEpisodes = await docRef.collection('episodes').get();
                 oldEpisodes.forEach(doc => batch.delete(doc.ref));
                 
-                // Add new episodes
                 for (const season of seriesInfo) {
                     for (const episode of season.episodes) {
                         const newEpisodeRef = docRef.collection('episodes').doc();
@@ -168,7 +168,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Cancel Button ---
     cancelEditBtn.addEventListener('click', () => {
-        // Go back to the previous page in history
         window.history.back();
     });
 });
