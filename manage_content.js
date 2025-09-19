@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Since Firestore doesn't support "OR" queries easily on different fields,
                 // we'll fetch based on the most likely query (search keywords) and then filter locally.
                 const lowerCaseTerm = term.toLowerCase();
-                const querySnapshot = await db.collection('StreamZone_v208_77')
+                const querySnapshot = await db.collection('movies')
                     .where('search_keywords', 'array-contains', lowerCaseTerm)
                     .limit(20)
                     .get();
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // If it might be an ID, we can do a more specific search.
                 if (/^\d+$/.test(term)) {
-                    const idQuery = await db.collection('StreamZone_v208_77').where('tmdbId', '==', Number(term)).get();
+                    const idQuery = await db.collection('movies').where('tmdbId', '==', Number(term)).get();
                     idQuery.forEach(doc => {
                         // Avoid adding duplicates if already found
                         if (!docs.some(d => d.id === doc.id)) {
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Create a batch write for efficient deletion
                 const batch = db.batch();
                 selectedMoviesForDeletion.forEach(id => {
-                    const docRef = db.collection('StreamZone_v208_77').doc(id);
+                    const docRef = db.collection('movies').doc(id);
                     batch.delete(docRef);
                 });
 

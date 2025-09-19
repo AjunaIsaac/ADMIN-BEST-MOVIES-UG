@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // --- Load and Populate Form ---
     try {
-        const docRef = db.collection('StreamZone_v208_77').doc(docId);
+        const docRef = db.collection('movies').doc(docId);
         const docSnap = await docRef.get();
 
         // ==========================================================
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const primaryType = document.getElementById('editPrimaryContentType').value;
-            const docRef = db.collection('StreamZone_v208_77').doc(currentId);
+            const docRef = db.collection('movies').doc(currentId);
             
             if (primaryType === 'tv') {
                 payload.contentType = 'tv';

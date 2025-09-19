@@ -77,7 +77,7 @@ async function checkForDuplicates(payload, excludeDocId = null) {
         }
     }
     if (payload.slug) {
-        const q = db.collection('StreamZone_v208_77').where('slug', '==', payload.slug);
+        const q = db.collection('movies').where('slug', '==', payload.slug);
         const snapshot = await q.get();
         for (const doc of snapshot.docs) {
             if (doc.id !== excludeDocId) return { found: true, field: 'Unique Text ID (slug)' };

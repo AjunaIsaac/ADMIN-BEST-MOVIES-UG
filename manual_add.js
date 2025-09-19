@@ -85,10 +85,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const seriesInfo = JSON.parse(seriesDataValue);
                     if (!Array.isArray(seriesInfo)) throw new Error("Invalid Series Data JSON structure.");
 
-                    const docRef = await db.collection('StreamZone_v208_77').add(payload);
+                    const docRef = await db.collection('movies').add(payload);
                     for (const season of seriesInfo) {
                         for (const episode of season.episodes) {
-                            await db.collection('StreamZone_v208_77').doc(docRef.id).collection('episodes').add({
+                            await db.collection('movies').doc(docRef.id).collection('episodes').add({
                                 season_number: season.season_number, ...episode,
                                 addedAt: firebase.firestore.FieldValue.serverTimestamp()
                             });
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
                     payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
 
-                    const docRef = await db.collection('StreamZone_v208_77').add(payload);
+                    const docRef = await db.collection('movies').add(payload);
                     if (sendNotificationChecked) {
                         await sendNotification(payload.title, payload.overview, payload.backdropUrl, `streamzonemovies://details?id=${docRef.id}`, manualAddMessage);
                     } else {

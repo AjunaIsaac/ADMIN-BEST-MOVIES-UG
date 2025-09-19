@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const filterValue = allContentFilter.value;
         try {
-            let query = db.collection('StreamZone_v208_77').orderBy('createdAt', 'desc');
+            let query = db.collection('movies').orderBy('createdAt', 'desc');
             
             // Map the display value to the actual value in Firestore if needed
             let actualFilterValue = (filterValue === 'latest_uploads') ? 'popular' : filterValue;
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm(`Are you sure you want to PERMANENTLY delete this content?`)) {
                 setLoading(target, true);
                 try {
-                    await db.collection('StreamZone_v208_77').doc(docId).delete();
+                    await db.collection('movies').doc(docId).delete();
                     card.remove(); // Remove from UI instantly
                     displayMessage(allContentMessage, 'Content deleted!', 'success');
                 } catch (err) { displayMessage(allContentMessage, `Error: ${err.message}`, 'error'); } 
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm(`Remove this item from the "${categoryText}" category?`)) {
                 setLoading(target, true);
                 try {
-                    const docRef = db.collection('StreamZone_v208_77').doc(docId);
+                    const docRef = db.collection('movies').doc(docId);
                     await db.runTransaction(async (transaction) => {
                         const doc = await transaction.get(docRef);
                         if (!doc.exists) throw "Document does not exist!";
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 if (isPermanentDelete) {
                     selectedForDeletion.forEach(id => {
-                        batch.delete(db.collection('StreamZone_v208_77').doc(id));
+                        batch.delete(db.collection('movies').doc(id));
                     });
                 } else {
                     // For removing from category, we need to read then write, so batching isn't straightforward.
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const updatePromises = [];
                     const categoryToRemove = allContentFilter.value;
                     selectedForDeletion.forEach(id => {
-                         const docRef = db.collection('StreamZone_v208_77').doc(id);
+                         const docRef = db.collection('movies').doc(id);
                          updatePromises.push(docRef.update({
                              type: firebase.firestore.FieldValue.arrayRemove(categoryToRemove),
                          }));
