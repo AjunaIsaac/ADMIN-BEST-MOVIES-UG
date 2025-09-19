@@ -1,23 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // These functions and variables are now available from utils.js:
-    // setLoading, displayMessage, populateCheckboxes, generateSlug,
-    // generateSearchKeywords, checkForDuplicates, sendNotification,
-    // and window.VJ_LIST, window.GENRE_LIST
-
-    // --- Page-Specific DOM Elements ---
+    // Functions and variables are available from utils.js
     const addMovieForm = document.getElementById('addMovieForm');
     const addContentBtn = document.getElementById('addContentBtn');
     const addMessage = document.getElementById('addMessage');
 
-    // --- Content Type Toggling ---
     function setupMasterContentTypeToggle(formElement) {
         if (!formElement) return;
         const primarySelector = formElement.querySelector('.primary-content-type-selector');
         const videoUrlGroup = formElement.querySelector('.video-url-group');
         const seriesDataGroup = formElement.querySelector('.series-data-group');
-        
         function toggleFields() {
-            if (!primarySelector) return;
             const isTV = primarySelector.value === 'tv';
             if (videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
             if (seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
@@ -28,13 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Initialize Page ---
     setupMasterContentTypeToggle(addMovieForm);
     populateCheckboxes('sortVjsCheckboxesTMDB', 'sortVjsTMDB', window.VJ_LIST);
     populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', window.GENRE_LIST);
 
-    // --- Form Submission Logic ---
-    if(addMovieForm) {
+    if (addMovieForm) {
         addMovieForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             setLoading(addContentBtn, true);
@@ -42,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const identifier = document.getElementById('contentIdentifier').value.trim();
             const vjName = document.getElementById('vjName').value.trim();
             const tmdbApiKey = document.getElementById('tmdbApiKey').value;
+            const selectedType = document.getElementById('primaryContentType').value; // 'movie' or 'tv'
 
             if (!vjName || !identifier) {
                 displayMessage(addMessage, 'VJ Name and Content Identifier are required.', 'error');
@@ -49,15 +40,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // ... (TMDB fetching logic is correct and unchanged) ...
+            // --- SIMPLIFIED TMDB FETCH LOGIC ---
             let tmdbData = null;
-            // ... (rest of the fetching logic) ...
-            if (!tmdbData || !tmdbData.id) {
-                displayMessage(addMessage, 'Could not find content on TMDB. Check name/ID.', 'error');
+            const isNumericId = /^\d+$/.test(identifier);
+            
+            try {
+                if (isNumericId) {
+                    // Search by ID only
+                    const response = await fetch(`https://api.themoviedb.org/3/${selectedType}/${identifier}?api_key=${tmdbApiKey}`);
+                    if (response.ok) {
+                        tmdbData = await response.json();
+                    }
+                } else {
+                    // Search by query only
+                    const searchUrl = `https://api.themoviedb.org/3/search/${selectedType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
+                    const response = await fetch(searchUrl);
+                    const searchResult = await response.json();
+                    if (response.ok && searchResult.results && searchResult.results.length > 0) {
+                        tmdbData = searchResult.results[0]; // Get the first result
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching from TMDB:", err);
+                displayMessage(addMessage, `Error fetching from TMDB: ${err.message}`, 'error');
                 setLoading(addContentBtn, false);
                 return;
             }
 
+            if (!tmdbData) {
+                displayMessage(addMessage, `Could not find any '${selectedType}' on TMDB with that name/ID.`, 'error');
+                setLoading(addContentBtn, false);
+                return;
+            }
+
+            // --- (The rest of the file is the same and correct) ---
+            
             // 2. Prepare data for Firestore
             const configResponse = await fetch(`https://api.themoviedb.org/3/configuration?api_key=${tmdbApiKey}`);
             const configData = await configResponse.json();
@@ -66,9 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const sendNotificationChecked = document.querySelector('#contentTypeCheckboxes input[value="send_notification"]').checked;
             const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input:checked')).map(cb => cb.value);
 
-            // ========================================================================
-            // THIS IS THE FIX. Use the global 'firebase' object for FieldValue.
-            // ========================================================================
             let payload = {
                 title: finalTitle,
                 title_lowercase: finalTitle.toLowerCase(),
@@ -85,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesTMDB input:checked')).map(cb => cb.value),
                 genres: tmdbData.genre_ids || []
             };
-            // ========================================================================
             
             // 3. Save to Firestore
             try {
@@ -95,9 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 let newDocId = null;
-                const finalApiType = tmdbData.name ? 'tv' : 'movie'; // More reliable check
 
-                if (finalApiType === 'tv') {
+                if (selectedType === 'tv') {
                     payload.contentType = 'tv';
                     payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
                     const seriesDataValue = document.getElementById('seriesData').value;
