@@ -22,35 +22,24 @@
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    <!-- 1. ADD THE APP CHECK SCRIPT -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
+    <!-- REMOVED: App Check script tag -->
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-       const firebaseConfig = {
-        apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
-        authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
-        projectId: "best-movies-ug-4d6d6",
-        storageBucket: "best-movies-ug-4d6d6.firebasestorage.app",
-        messagingSenderId: "583499166737",
-        appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
-        measurementId: "G-340GWH52KT"
-    };
+           // UPDATED: New Firebase project configuration
+           const firebaseConfig = {
+                apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
+                authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
+                projectId: "best-movies-ug-4d6d6",
+                storageBucket: "best-movies-ug-4d6d6.appspot.com", // Corrected URL
+                messagingSenderId: "583499166737",
+                appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
+                measurementId: "G-340GWH52KT"
+            };
             const app = firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth(app);
 
-            // 2. INITIALIZE AND ACTIVATE APP CHECK
-            try {
-                const appCheck = firebase.appCheck(app);
-                appCheck.activate(
-                    '6LfFvcUrAAAAAH6JzBwpbxJqzHTJ8qA_rzSe5OMP', // Your reCAPTCHA v3 Site KEY
-                    true // isTokenAutoRefreshEnabled
-                );
-                console.log("App Check successfully initialized on login page.");
-            } catch(e) {
-                console.error("App Check failed to initialize on login page", e);
-            }
-            // ------------------------------------
+            // REMOVED: App Check initialization block
 
             // Redirect if already logged in
             auth.onAuthStateChanged(user => {

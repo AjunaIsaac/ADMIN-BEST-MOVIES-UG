@@ -3,58 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Loading...</title>
-    <!-- Minimal styling for the loading message -->
     <style>
         body { font-family: Arial, sans-serif; background-color: #0b0f30; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .loader { font-size: 1.5em; }
     </style>
 </head>
 <body>
-
     <div class="loader">Loading Admin Panel...</div>
 
-    <!-- Firebase Scripts are required to check authentication -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-     <!-- Add this line -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
+    <!-- REMOVED: App Check script tag -->
 
-<!-- REPLACE your existing script block with this one -->
-<script>
-    const firebaseConfig = {
-    apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
-    authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
-    projectId: "best-movies-ug-4d6d6",
-    storageBucket: "best-movies-ug-4d6d6.firebasestorage.app",
-    messagingSenderId: "583499166737",
-    appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
-    measurementId: "G-340GWH52KT"
-};
-    
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(app);
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
+            authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
+            projectId: "best-movies-ug-4d6d6",
+            storageBucket: "best-movies-ug-4d6d6.appspot.com",
+            messagingSenderId: "583499166737",
+            appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
+            measurementId: "G-340GWH52KT"
+        };
+        
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth(app);
 
-    // --- NEW: Initialize and Activate App Check ---
-    try {
-        const appCheck = firebase.appCheck(app);
-        appCheck.activate(
-            '6LfFvcUrAAAAAH6JzBwpbxJqzHTJ8qA_rzSe5OMP', // Your reCAPTCHA v3 Site KEY
-            true // isTokenAutoRefreshEnabled
-        );
-    } catch(e) {
-        console.error("App Check failed to initialize on index page", e);
-    }
-    // ---------------------------------------------
+        // REMOVED: App Check initialization block
 
-    // The Redirect Logic
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            window.location.replace('add_from_tmdb.html');
-        } else {
-            window.location.replace('login.html');
-        }
-    });
-</script>
-
+        // The Redirect Logic
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                window.location.replace('add_from_tmdb.html');
+            } else {
+                window.location.replace('login.html');
+            }
+        });
+    </script>
 </body>
 </html>
