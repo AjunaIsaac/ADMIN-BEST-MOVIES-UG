@@ -70,7 +70,10 @@ async function checkForDuplicates(payload, excludeDocId = null) {
         return { found: true, field: 'Firestore connection error' };
     }
     if (payload.tmdbId && typeof payload.tmdbId === 'number') {
-        const q = db.collection('StreamZone_v208_77').where('tmdbId', '==', payload.tmdbId);
+        // ==========================================================
+        // THIS IS THE FIX: Changed to the 'movies' collection
+        // ==========================================================
+        const q = db.collection('movies').where('tmdbId', '==', payload.tmdbId);
         const snapshot = await q.get();
         for (const doc of snapshot.docs) {
             if (doc.id !== excludeDocId) return { found: true, field: 'TMDB ID' };
@@ -98,7 +101,7 @@ async function sendNotification(title, body, imageUrl = '', url = '', msgElement
         });
         const result = await response.json();
         if (response.ok) {
-            displayMessage(msgElement, 'Content saved! Notification sent successfully!', 'success');
+            // Do not display a message here, let the calling function do it.
             return true;
         } else {
             displayMessage(msgElement, `Content saved, but notification failed: ${result.error || 'Unknown error'}`, 'warn');
