@@ -11,7 +11,6 @@
     <div id="adminPanel" style="display: none; width: 100%;">
         <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
 
-        <!-- SHARED: Sidebar Navigation -->
         <nav id="mainMenu">
             <div class="menu-header">Admin Menu</div>
             <a class="menu-link" href="add_from_tmdb.html"><i class="fas fa-magic"></i> Add from TMDB</a>
@@ -25,18 +24,16 @@
         </nav>
 
         <div class="main-content" id="mainContentArea">
-            <!-- SHARED: Admin Header -->
             <div class="admin-header">
                 <h1 id="pageTitle">User Management Panel</h1>
                 <span id="adminEmailDisplay"></span>
                 <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
             </div>
             
-            <!-- PAGE-SPECIFIC CONTENT -->
             <div class="page-container" style="display: block;">
                 <div class="form-group">
-                    <label for="user-search-email">Search User by Email</label>
-                    <input type="email" id="user-search-email" placeholder="user@example.com" />
+                    <label for="user-search-input">Search User by Email, Name, or Phone</label>
+                    <input type="text" id="user-search-input" placeholder="e.g., user@example.com, Rafael, or 649386864" />
                 </div>
                 <button id="user-search-btn">Search User<span class="spinner"></span></button>
 
@@ -48,11 +45,11 @@
                     <div class="form-group"><label for="user-doc-id">Document ID (User UID)</label><input type="text" id="user-doc-id" readonly /></div>
                     <div class="form-group"><label for="user-edit-name">Full Name</label><input type="text" id="user-edit-name" /></div>
                     <div class="form-group"><label for="user-edit-email">Email</label><input type="email" id="user-edit-email" /></div>
+                    <div class="form-group"><label for="user-edit-phone">Phone Number</label><input type="text" id="user-edit-phone" /></div>
                     <div class="form-group"><label for="user-edit-activated">Account Activated</label><select id="user-edit-activated"><option value="true">True</option><option value="false">False</option></select></div>
                     <div class="form-group"><label for="user-edit-expiresAt">Subscription Expiration</label><input type="datetime-local" id="user-edit-expiresAt" /></div>
                     
-                    <div class="form-group"><label for="user-edit-ads-disabled">Ad-Free Status</label><select id="user-edit-ads-disabled"><option value="false">Showing Ads (false)</option><option value="true">Ad-Free (true)</option></select></div>
-                    <div class="form-group"><label for="user-edit-ads-expiry">Ad-Free Expiration Date</label><input type="date" id="user-edit-ads-expiry" /></div>
+                    <div id="user-status-info" style="display:none; margin-top: 20px; margin-bottom: 20px; padding: 15px; background-color: var(--primary-bg); border-radius: 8px; border: 1px solid #444;"></div>
 
                     <button id="user-update-btn">Update Document<span class="spinner"></span></button>
                     <button id="user-create-btn" style="display:none;">Create New Document<span class="spinner"></span></button>
@@ -64,11 +61,278 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
     
-    <script src="assets/core.js"></script>
-    <script src="assets/utils.js"></script>
-    <script src="user_management.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. FIREBASE INITIALIZATION (Self-contained) ---
+            const firebaseConfig = {
+              apiKey: "AIzaSyAn2vbkT9yjyWtJzNSHgRureco5gEjYd_Q",
+              authDomain: "stream-zone-movies-a83c1.firebaseapp.com",
+              projectId: "stream-zone-movies-a83c1",
+              storageBucket: "stream-zone-movies-a83c1.appspot.com",
+              messagingSenderId: "148342664213",
+              appId: "1:148342664213:web:56df2549cc480df7cf721c"
+            };
+
+            let db, auth;
+            try {
+                const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
+                const appCheck = firebase.appCheck(app);
+                appCheck.activate(
+                    '6LfFvcUrAAAAAH6JzBwpbxJqzHTJ8qA_rzSe5OMP',
+                    true
+                );
+                db = firebase.firestore(app);
+                auth = firebase.auth(app);
+            } catch (error) {
+                console.error("Critical error initializing Firebase:", error);
+                document.body.innerHTML = "<h1>Error: Application could not start.</h1>";
+                return;
+            }
+
+            // --- 2. CORE AUTH & UI LOGIC (from core.js) ---
+            const adminPanel = document.getElementById('adminPanel');
+            const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    try {
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        if (userDoc.exists && userDoc.data().isAdmin === true) {
+                            adminPanel.style.display = 'flex';
+                            adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+                        } else {
+                            await auth.signOut();
+                            window.location.href = 'login.html';
+                        }
+                    } catch (error) {
+                        console.error("Error verifying admin status:", error);
+                        await auth.signOut();
+                        window.location.href = 'login.html';
+                    }
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => { auth.signOut(); });
+            }
+
+            const menuToggleBtn = document.getElementById('menuToggleBtn');
+            const mainMenu = document.getElementById('mainMenu');
+            if (menuToggleBtn && mainMenu) {
+                menuToggleBtn.addEventListener('click', () => { mainMenu.classList.toggle('open'); });
+            }
+
+            const currentPage = window.location.pathname.split("/").pop();
+            const menuLinks = document.querySelectorAll('#mainMenu a');
+            menuLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+
+            // --- 3. HELPER FUNCTIONS (from utils.js) ---
+            function setLoading(button, isLoading) {
+                if (button) {
+                    button.classList.toggle('loading', isLoading);
+                    button.disabled = isLoading;
+                }
+            }
+
+            function displayMessage(element, msg, type) {
+                if (element) {
+                    element.textContent = msg;
+                    element.className = `message ${type}`;
+                    element.style.display = 'block';
+                    setTimeout(() => { element.style.display = 'none'; }, 8000);
+                }
+            }
+            
+            // --- 4. PAGE-SPECIFIC CODE (from user_management.js) ---
+            const userSearchInput = document.getElementById('user-search-input'); 
+            const userSearchBtn = document.getElementById('user-search-btn');
+            const userMessageArea = document.getElementById('user-message-area');
+            const userEditFormSection = document.getElementById('user-edit-form-section');
+            const userFormDivider = document.getElementById('user-form-divider');
+            const userDocIdInput = document.getElementById('user-doc-id');
+            const userEditNameInput = document.getElementById('user-edit-name');
+            const userEditEmailInput = document.getElementById('user-edit-email');
+            const userEditPhoneInput = document.getElementById('user-edit-phone');
+            const userEditActivatedSelect = document.getElementById('user-edit-activated');
+            const userEditExpiresAtInput = document.getElementById('user-edit-expiresAt');
+            const userUpdateBtn = document.getElementById('user-update-btn');
+            const userCreateBtn = document.getElementById('user-create-btn');
+            const userFormTitle = document.getElementById('user-form-title');
+            const userStatusInfo = document.getElementById('user-status-info');
+
+            function formatTimestampForInput(timestamp) {
+                if (!timestamp || typeof timestamp.toDate !== 'function') return '';
+                const date = timestamp.toDate();
+                const timezoneOffset = date.getTimezoneOffset() * 60000;
+                const localDate = new Date(date.getTime() - timezoneOffset);
+                return localDate.toISOString().slice(0, 16);
+            }
+            
+            function displayUserStatus(userData) {
+                if (!userStatusInfo) return;
+                let statusHTML = '<h4 style="margin-top:0; margin-bottom: 10px;">Subscription Status</h4>';
+                const expiresAt = userData.expiresAt;
+                if (expiresAt && typeof expiresAt.toDate === 'function') {
+                    const expiryDate = expiresAt.toDate();
+                    const now = new Date();
+                    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                    const formattedDate = expiryDate.toLocaleString('en-US', options);
+                    if (expiryDate < now) {
+                        statusHTML += `<p style="color: var(--danger-color); margin:0;">Status: Expired on ${formattedDate}</p>`;
+                    } else {
+                        statusHTML += `<p style="color: var(--success-color); margin:0;">Status: Active, expires on ${formattedDate}</p>`;
+                    }
+                } else {
+                    statusHTML += '<p style="margin:0;">Status: No subscription expiration information.</p>';
+                }
+                const modifiedTimestamp = userData.updatedAt || userData.createdAt;
+                if (modifiedTimestamp && typeof modifiedTimestamp.toDate === 'function') {
+                     const modifiedDate = modifiedTimestamp.toDate();
+                     const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                     const formattedModifiedDate = modifiedDate.toLocaleString('en-US', options);
+                     statusHTML += `<p style="font-size: 0.8em; color: #999; margin-top: 10px; margin-bottom: 0;">Last Modified: ${formattedModifiedDate}</p>`
+                }
+                userStatusInfo.innerHTML = statusHTML;
+                userStatusInfo.style.display = 'block';
+            }
+
+            function clearUserForm() {
+                userDocIdInput.value = '';
+                userEditNameInput.value = '';
+                userEditEmailInput.value = '';
+                userEditPhoneInput.value = '';
+                userEditActivatedSelect.value = 'true';
+                userEditExpiresAtInput.value = '';
+                userEditFormSection.style.display = 'none';
+                userFormDivider.style.display = 'none';
+                if (userStatusInfo) userStatusInfo.style.display = 'none';
+            }
+
+            userSearchBtn.addEventListener('click', async () => {
+                const searchTerm = userSearchInput.value.trim();
+                if (!searchTerm) {
+                    displayMessage(userMessageArea, 'Please enter an email, name, or phone number to search.', 'error');
+                    return;
+                }
+                clearUserForm();
+                setLoading(userSearchBtn, true);
+                try {
+                    const emailQuery = db.collection("users").where("email", "==", searchTerm).get();
+                    const nameQuery = db.collection("users").where("name", "==", searchTerm).get();
+                    const phoneQuery = db.collection("users").where("phone", "==", searchTerm).get();
+                    const [emailResults, nameResults, phoneResults] = await Promise.all([emailQuery, nameQuery, phoneQuery]);
+                    const results = new Map();
+                    emailResults.forEach(doc => results.set(doc.id, { id: doc.id, ...doc.data() }));
+                    nameResults.forEach(doc => results.set(doc.id, { id: doc.id, ...doc.data() }));
+                    phoneResults.forEach(doc => results.set(doc.id, { id: doc.id, ...doc.data() }));
+
+                    if (results.size === 0) {
+                        displayMessage(userMessageArea, 'No user found. You can create a new document.', 'info');
+                        userEditEmailInput.value = searchTerm.includes('@') ? searchTerm : '';
+                        userEditNameInput.value = !searchTerm.includes('@') ? searchTerm : '';
+                        userFormTitle.textContent = "Create New User Document";
+                        userDocIdInput.value = "Will be auto-generated";
+                        userUpdateBtn.style.display = 'none';
+                        userCreateBtn.style.display = 'block';
+                    } else {
+                        if (results.size > 1) {
+                            displayMessage(userMessageArea, `Found ${results.size} users. Displaying the first one. Please use a more specific search term.`, 'warn');
+                        } else {
+                            displayMessage(userMessageArea, 'User found and form populated.', 'success');
+                        }
+                        const [firstId, firstData] = results.entries().next().value;
+                        userDocIdInput.value = firstId;
+                        userEditNameInput.value = firstData.name || '';
+                        userEditEmailInput.value = firstData.email || '';
+                        userEditPhoneInput.value = firstData.phone || '';
+                        userEditActivatedSelect.value = firstData.activated ? 'true' : 'false';
+                        userEditExpiresAtInput.value = formatTimestampForInput(firstData.expiresAt);
+                        userFormTitle.textContent = "Edit User Document";
+                        userCreateBtn.style.display = 'none';
+                        userUpdateBtn.style.display = 'block';
+                        displayUserStatus(firstData);
+                    }
+                    userEditFormSection.style.display = 'block';
+                    userFormDivider.style.display = 'block';
+                } catch (error) {
+                    displayMessage(userMessageArea, `Error searching: ${error.message}`, 'error');
+                } finally {
+                    setLoading(userSearchBtn, false);
+                }
+            });
+
+            userUpdateBtn.addEventListener('click', async () => {
+                const userId = userDocIdInput.value;
+                if (!userId) { return; }
+                setLoading(userUpdateBtn, true);
+                try {
+                    const dateValue = userEditExpiresAtInput.value ? new Date(userEditExpiresAtInput.value) : null;
+                    const payload = {
+                        name: userEditNameInput.value,
+                        email: userEditEmailInput.value,
+                        phone: userEditPhoneInput.value,
+                        activated: userEditActivatedSelect.value === 'true',
+                        expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : firebase.firestore.FieldValue.delete(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    await db.collection("users").doc(userId).update(payload);
+                    displayMessage(userMessageArea, 'User document updated successfully!', 'success');
+                    const updatedDataForDisplay = { 
+                        ...payload, 
+                        expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
+                        updatedAt: firebase.firestore.Timestamp.now()
+                    };
+                    displayUserStatus(updatedDataForDisplay);
+                } catch (error) {
+                    displayMessage(userMessageArea, `Update failed: ${error.message}`, 'error');
+                } finally {
+                    setLoading(userUpdateBtn, false);
+                }
+            });
+
+            userCreateBtn.addEventListener('click', async () => {
+                const email = userEditEmailInput.value.trim();
+                const name = userEditNameInput.value.trim();
+                if (!email || !name) {
+                    displayMessage(userMessageArea, 'Email and Name are required for a new user.', 'error');
+                    return;
+                }
+                setLoading(userCreateBtn, true);
+                try {
+                    const dateValue = userEditExpiresAtInput.value ? new Date(userEditExpiresAtInput.value) : null;
+                    const newDocRef = db.collection("users").doc();
+                    await newDocRef.set({
+                        name: name,
+                        email: email,
+                        phone: userEditPhoneInput.value.trim(),
+                        activated: userEditActivatedSelect.value === 'true',
+                        expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    userDocIdInput.value = newDocRef.id;
+                    displayMessage(userMessageArea, `New user document created successfully: ${newDocRef.id}`, 'success');
+                    userCreateBtn.style.display = 'none';
+                    userUpdateBtn.style.display = 'block';
+                    userFormTitle.textContent = "Edit User Document";
+                    displayUserStatus({ 
+                        expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
+                        createdAt: firebase.firestore.Timestamp.now()
+                    });
+                } catch (error) {
+                    displayMessage(userMessageArea, `Creation failed: ${error.message}`, 'error');
+                } finally {
+                    setLoading(userCreateBtn, false);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

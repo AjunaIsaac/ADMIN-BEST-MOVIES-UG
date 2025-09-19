@@ -21,6 +21,7 @@
             <a class="menu-link" href="banners.html"><i class="fas fa-images"></i> Manage Banners</a>
             <a class="menu-link" href="notifications.html"><i class="fas fa-paper-plane"></i> Send Notifications</a>
             <a class="menu-link" href="user_management.html"><i class="fas fa-users-cog"></i> User Management</a>
+            <a class="menu-link" href="relworx_admin.html"><i class="fas fa-money-bill-wave"></i>Payments</a>
             <a href="https://storage1.streamzonemovies.online" target="_blank"><i class="fas fa-server"></i> My Server</a>
         </nav>
 
@@ -71,7 +72,25 @@
                     <div class="form-group genre-selection-group">
                         <label>Genres (Select all that apply)</label>
                         <div class="checkbox-group" id="editGenreCheckboxes">
-                            <!-- Options are the same as manual_add.html -->
+                            <label><input type="checkbox" name="editGenre" value="action"> Action</label>
+                            <label><input type="checkbox" name="editGenre" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="editGenre" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="editGenre" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="editGenre" value="crime"> Crime</label>
+                            <label><input type="checkbox" name="editGenre" value="documentary"> Documentary</label>
+                            <label><input type="checkbox" name="editGenre" value="drama"> Drama</label>
+                            <label><input type="checkbox" name="editGenre" value="family"> Family</label>
+                            <label><input type="checkbox" name="editGenre" value="fantasy"> Fantasy</label>
+                            <label><input type="checkbox" name="editGenre" value="history"> History</label>
+                            <label><input type="checkbox" name="editGenre" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="editGenre" value="music"> Music</label>
+                            <label><input type="checkbox" name="editGenre" value="mystery"> Mystery</label>
+                            <label><input type="checkbox" name="editGenre" value="romance"> Romance</label>
+                            <label><input type="checkbox" name="editGenre" value="science-fiction"> Science Fiction</label>
+                            <label><input type="checkbox" name="editGenre" value="tv-movie"> TV Movie</label>
+                            <label><input type="checkbox" name="editGenre" value="thriller"> Thriller</label>
+                            <label><input type="checkbox" name="editGenre" value="war"> War</label>
+                            <label><input type="checkbox" name="editGenre" value="western"> Western</label>
                         </div>
                     </div>
                     <div class="form-group"><label for="editReferenceId">Reference ID (TMDB or Custom Text)</label><input type="text" id="editReferenceId" placeholder="TMDB ID or your unique text ID"></div>
@@ -94,11 +113,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
     
     <script src="assets/core.js"></script>
     <script src="assets/utils.js"></script>
     <script src="edit_content.js" defer></script>
 </body>
-</html>
+</html>```

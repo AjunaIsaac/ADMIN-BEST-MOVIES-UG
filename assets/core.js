@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
         
-        // --- NEW: Initialize and Activate App Check ---
+        // --- Initialize and Activate App Check ---
         try {
             const appCheck = firebase.appCheck(app);
             appCheck.activate(
@@ -24,8 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e) {
             console.error("App Check failed to initialize on admin page", e);
         }
-        // ---------------------------------------------
-
+        
         window.db = firebase.firestore(app);
         window.auth = firebase.auth(app);
     } catch (error) {
@@ -47,6 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     // User is an admin, show the page content
                     if (adminPanel) adminPanel.style.display = 'flex';
                     if (adminEmailDisplay) adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+
+                    // ✅✅✅ NEW LINE ADDED HERE ✅✅✅
+                    // Broadcast an event that the admin is verified and ready.
+                    document.dispatchEvent(new Event('adminReady'));
+
                 } else {
                     // Not an admin, log out and redirect to login
                     await auth.signOut();
@@ -59,7 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             // No user is logged in, redirect to the login page
-            window.location.href = 'login.html';
+            // (but don't redirect if we are already on the login page)
+            if (window.location.pathname.indexOf('login.html') === -1) {
+                window.location.href = 'login.html';
+            }
         }
     });
 

@@ -1,9 +1,8 @@
-javascript
 document.addEventListener('DOMContentLoaded', () => {
     // These functions and variables are now available from utils.js:
     // setLoading, displayMessage, populateCheckboxes, generateSlug,
     // generateSearchKeywords, checkForDuplicates, sendNotification,
-    // VJ_LIST, GENRE_LIST
+    // and window.VJ_LIST, window.GENRE_LIST
 
     // --- Page-Specific DOM Elements ---
     const addMovieForm = document.getElementById('addMovieForm');
@@ -14,13 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupMasterContentTypeToggle(formElement) {
         if (!formElement) return;
         const primarySelector = formElement.querySelector('.primary-content-type-selector');
-        const mediaCategoriesGroup = formElement.querySelector('.media-categories-group');
         const videoUrlGroup = formElement.querySelector('.video-url-group');
         const seriesDataGroup = formElement.querySelector('.series-data-group');
         
-        const movieCategories = ["latest_uploads", "romance", "most_liked", "recent_movies", "animation", "indian", "horror", "comedy", "adventure", "scifi-fantasy", "action-thriller", "high-school", "nigerian", "send_notification"];
-        const tvCategories = ["latest_uploads", "most_liked", "recent_tv_shows", "upcoming_shows", "western_series", "Latest-TV-Series", "k_dramas", "send_notification"];
-
         function toggleFields() {
             if (!primarySelector) return;
             const isTV = primarySelector.value === 'tv';
@@ -35,8 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initialize Page ---
     setupMasterContentTypeToggle(addMovieForm);
-    populateCheckboxes('sortVjsCheckboxesTMDB', 'sortVjsTMDB', VJ_LIST);
-    populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', GENRE_LIST);
+    // FIX #1: Access the lists from the window object
+    populateCheckboxes('sortVjsCheckboxesTMDB', 'sortVjsTMDB', window.VJ_LIST);
+    populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', window.GENRE_LIST);
 
     // --- Form Submission Logic ---
     if(addMovieForm) {
@@ -57,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Fetch data from TMDB
             let tmdbData = null;
             const selectedPrimaryContentType = document.getElementById('primaryContentType').value;
-            let finalApiType = selectedPrimaryContentType;
             const isNumericId = /^\d+$/.test(identifier);
 
             if (isNumericId) {
@@ -100,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 backdropUrl: tmdbData.backdrop_path ? `${baseImageUrl}${tmdbData.backdrop_path}` : '',
                 overview: tmdbData.overview || "N/A",
                 vjName: vjName,
+                // FIX #2: Use firebase.firestore.FieldValue to get the timestamp
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 addedBy: auth.currentUser.email,
                 sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesTMDB input:checked')).map(cb => cb.value),
@@ -113,7 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (duplicateCheck.found) {
                     throw new Error(`Duplicate content found based on: ${duplicateCheck.field}.`);
                 }
-
+                
+                const finalApiType = document.getElementById('primaryContentType').value;
                 if (finalApiType === 'tv') {
                     payload.contentType = 'tv';
                     payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');

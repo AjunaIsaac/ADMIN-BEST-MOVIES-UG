@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relworx Payments - Admin</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="adminPanel" style="display: none; width: 100%;">
+        <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+        <nav id="mainMenu">
+            <div class="menu-header">Admin Menu</div>
+            <a class="menu-link" href="add_from_tmdb.html"><i class="fas fa-magic"></i> Add from TMDB</a>
+            <a class="menu-link" href="manual_add.html"><i class="fas fa-edit"></i> Manual Add</a>
+            <a class="menu-link" href="manage_content.html"><i class="fas fa-search"></i> Search & Edit/Delete</a>
+            <a class="menu-link" href="all_content.html"><i class="fas fa-film"></i> All Content</a>
+            <a class="menu-link" href="banners.html"><i class="fas fa-images"></i> Manage Banners</a>
+            <a class="menu-link" href="notifications.html"><i class="fas fa-paper-plane"></i> Send Notifications</a>
+            <a class="menu-link" href="user_management.html"><i class="fas fa-users-cog"></i> User Management</a>
+            <a class="menu-link" href="relworx_admin.html"><i class="fas fa-money-bill-wave"></i>Payments</a>
+            <a href="https://storage1.streamzonemovies.online" target="_blank"><i class="fas fa-server"></i> My Server</a>
+        </nav>
+        <div class="main-content" id="mainContentArea">
+            <div class="admin-header">
+                <h1 id="pageTitle">Relworx Payment Management</h1>
+                <span id="adminEmailDisplay"></span>
+                <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            <div class="page-container" style="display: block;">
+                <section class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Wallet Balance</h3>
+                        <p id="wallet-balance" class="loading">Loading...</p>
+                    </div>
+                </section>
+                <section class="section">
+                    <h2>Withdraw Funds</h2>
+                    <form id="withdraw-form">
+                        <div class="form-group">
+                            <label for="withdraw-phone">Phone Number (e.g., +256...)</label>
+                            <input type="tel" id="withdraw-phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="withdraw-amount">Amount (UGX)</label>
+                            <input type="number" id="withdraw-amount" required>
+                        </div>
+                        <button type="submit">Send Payment<span class="spinner"></span></button>
+                    </form>
+                    <div id="withdraw-message" class="message"></div>
+                </section>
+                <section class="section">
+                    <h2>Recent Transactions</h2>
+                    <div id="transactions-loading" class="loading">Loading transactions...</div>
+                    <table id="transactions-table">
+                        <thead><tr><th>Reference</th><th>Phone</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                        <tbody id="transactions-tbody"></tbody>
+                    </table>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
+    
+    <!-- Your existing core JS file MUST be included -->
+    <script src="assets/core.js"></script>
+    
+    <!-- ✅✅✅ NEW SCRIPT SECTION ✅✅✅ -->
+    <script>
+        // This event listener waits for the 'adminReady' signal from core.js
+        document.addEventListener('adminReady', () => {
+            console.log("Admin is ready. Loading Relworx dashboard logic.");
+
+            const functionsUrl = 'https://us-central1-stream-zone-movies-a83c1.cloudfunctions.net/adminHandler';
+
+            // --- HELPER FUNCTIONS ---
+            // We define them here to guarantee they exist.
+            function setLoading(btn, isLoading) {
+                if (!btn) return;
+                const spinner = btn.querySelector('.spinner');
+                if (isLoading) {
+                    btn.classList.add('loading');
+                    btn.disabled = true;
+                    if(spinner) spinner.style.display = 'inline-block';
+                } else {
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                    if(spinner) spinner.style.display = 'none';
+                }
+            }
+
+            function displayMessage(el, msg, type) {
+                if (!el) return;
+                el.className = `message ${type}`;
+                el.textContent = msg;
+                el.style.display = 'block';
+            }
+
+            async function fetchFromApi(endpoint, options = {}) {
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    console.error("fetchFromApi called but user is not authenticated.");
+                    return Promise.reject(new Error("User not authenticated"));
+                }
+                const token = await user.getIdToken(true);
+                const response = await fetch(`${functionsUrl}${endpoint}`, {
+                    ...options,
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...options.headers }
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `API Error: ${response.status}`);
+                }
+                return response.json();
+            }
+
+            function loadDashboardData() {
+                const balanceEl = document.getElementById('wallet-balance');
+                fetchFromApi('/balance?currency=UGX')
+                    .then(data => {
+                        balanceEl.classList.remove('loading');
+                        balanceEl.textContent = `${data.currency || ''} ${data.balance?.toLocaleString() || 'Error'}`;
+                    }).catch(err => {
+                        balanceEl.textContent = 'Error';
+                        console.error('Balance Error:', err);
+                    });
+
+                const tbody = document.getElementById('transactions-tbody');
+                const loadingEl = document.getElementById('transactions-loading');
+                fetchFromApi('/transactions?per_page=10')
+                    .then(data => {
+                        loadingEl.style.display = 'none';
+                        tbody.innerHTML = '';
+                        (data.data || []).forEach(tx => {
+                            tbody.innerHTML += `<tr>
+                                <td>${tx.customer_reference || tx.reference}</td>
+                                <td>${tx.msisdn}</td>
+                                <td>${tx.currency} ${tx.amount.toLocaleString()}</td>
+                                <td><span class="status-${(tx.status || '').toLowerCase()}">${tx.status}</span></td>
+                                <td>${new Date(tx.created_at).toLocaleString()}</td>
+                            </tr>`;
+                        });
+                    }).catch(err => {
+                        loadingEl.textContent = `Error: ${err.message}`;
+                    });
+            }
+
+            const withdrawForm = document.getElementById('withdraw-form');
+            withdrawForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); // Prevents the page from refreshing
+                const btn = e.target.querySelector('button');
+                setLoading(btn, true);
+
+                const withdrawMessage = document.getElementById('withdraw-message');
+                const phone = document.getElementById('withdraw-phone').value;
+                const amount = document.getElementById('withdraw-amount').value;
+
+                try {
+                    const response = await fetchFromApi('/withdraw', {
+                        method: 'POST',
+                        body: JSON.stringify({ msisdn: phone, amount: parseFloat(amount) })
+                    });
+                    displayMessage(withdrawMessage, `Success! Ref: ${response.internal_reference}`, 'success');
+                    withdrawForm.reset();
+                    setTimeout(loadDashboardData, 2000);
+                } catch (err) {
+                    displayMessage(withdrawMessage, `Error: ${err.message}`, 'error');
+                } finally {
+                    setLoading(btn, false);
+                }
+            });
+
+            // Initial load of data
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>
