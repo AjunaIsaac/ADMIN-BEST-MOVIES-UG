@@ -1,15 +1,23 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Functions and variables are available from utils.js
+ocument.addEventListener('DOMContentLoaded', () => {
+    // These functions and variables are now available from utils.js:
+    // setLoading, displayMessage, populateCheckboxes, generateSlug,
+    // generateSearchKeywords, checkForDuplicates, sendNotification,
+    // and window.VJ_LIST, window.GENRE_LIST
+    
+    // --- Page-Specific DOM Elements ---
     const addMovieForm = document.getElementById('addMovieForm');
     const addContentBtn = document.getElementById('addContentBtn');
     const addMessage = document.getElementById('addMessage');
-
+    
+    // --- Content Type Toggling ---
     function setupMasterContentTypeToggle(formElement) {
         if (!formElement) return;
         const primarySelector = formElement.querySelector('.primary-content-type-selector');
         const videoUrlGroup = formElement.querySelector('.video-url-group');
         const seriesDataGroup = formElement.querySelector('.series-data-group');
+        
         function toggleFields() {
+            if (!primarySelector) return;
             const isTV = primarySelector.value === 'tv';
             if (videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
             if (seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
@@ -19,61 +27,55 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleFields();
         }
     }
-
+    
+    // --- Initialize Page ---
     setupMasterContentTypeToggle(addMovieForm);
+    // FIX #1: Access the lists from the window object
     populateCheckboxes('sortVjsCheckboxesTMDB', 'sortVjsTMDB', window.VJ_LIST);
     populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', window.GENRE_LIST);
-
+    
+    // --- Form Submission Logic ---
     if (addMovieForm) {
         addMovieForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             setLoading(addContentBtn, true);
-
+            
             const identifier = document.getElementById('contentIdentifier').value.trim();
             const vjName = document.getElementById('vjName').value.trim();
             const tmdbApiKey = document.getElementById('tmdbApiKey').value;
-            const selectedType = document.getElementById('primaryContentType').value; // 'movie' or 'tv'
-
+            
             if (!vjName || !identifier) {
                 displayMessage(addMessage, 'VJ Name and Content Identifier are required.', 'error');
                 setLoading(addContentBtn, false);
                 return;
             }
-
-            // --- SIMPLIFIED TMDB FETCH LOGIC ---
+            
+            // 1. Fetch data from TMDB
             let tmdbData = null;
+            const selectedPrimaryContentType = document.getElementById('primaryContentType').value;
             const isNumericId = /^\d+$/.test(identifier);
             
-            try {
-                if (isNumericId) {
-                    // Search by ID only
-                    const response = await fetch(`https://api.themoviedb.org/3/${selectedType}/${identifier}?api_key=${tmdbApiKey}`);
-                    if (response.ok) {
-                        tmdbData = await response.json();
-                    }
-                } else {
-                    // Search by query only
-                    const searchUrl = `https://api.themoviedb.org/3/search/${selectedType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
-                    const response = await fetch(searchUrl);
-                    const searchResult = await response.json();
+            if (isNumericId) {
+                try {
+                    let response = await fetch(`https://api.themoviedb.org/3/${selectedPrimaryContentType}/${identifier}?api_key=${tmdbApiKey}`);
+                    if (response.ok) tmdbData = await response.json();
+                } catch (err) { console.warn(`Error fetching from TMDB by ID:`, err); }
+            } else {
+                try {
+                    let searchUrl = `https://api.themoviedb.org/3/search/${selectedPrimaryContentType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
+                    let response = await fetch(searchUrl);
+                    let searchResult = await response.json();
                     if (response.ok && searchResult.results && searchResult.results.length > 0) {
-                        tmdbData = searchResult.results[0]; // Get the first result
+                        tmdbData = searchResult.results[0];
                     }
-                }
-            } catch (err) {
-                console.error("Error fetching from TMDB:", err);
-                displayMessage(addMessage, `Error fetching from TMDB: ${err.message}`, 'error');
+                } catch (err) { console.error("Error searching TMDB:", err); }
+            }
+            
+            if (!tmdbData || !tmdbData.id) {
+                displayMessage(addMessage, 'Could not find content on TMDB. Check name/ID.', 'error');
                 setLoading(addContentBtn, false);
                 return;
             }
-
-            if (!tmdbData) {
-                displayMessage(addMessage, `Could not find any '${selectedType}' on TMDB with that name/ID.`, 'error');
-                setLoading(addContentBtn, false);
-                return;
-            }
-
-            // --- (The rest of the file is the same and correct) ---
             
             // 2. Prepare data for Firestore
             const configResponse = await fetch(`https://api.themoviedb.org/3/configuration?api_key=${tmdbApiKey}`);
@@ -82,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalTitle = tmdbData.title || tmdbData.name;
             const sendNotificationChecked = document.querySelector('#contentTypeCheckboxes input[value="send_notification"]').checked;
             const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input:checked')).map(cb => cb.value);
-
+            
             let payload = {
                 title: finalTitle,
                 title_lowercase: finalTitle.toLowerCase(),
@@ -93,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 backdropUrl: tmdbData.backdrop_path ? `${baseImageUrl}${tmdbData.backdrop_path}` : '',
                 overview: tmdbData.overview || "N/A",
                 vjName: vjName,
+                // FIX #2: Use firebase.firestore.FieldValue to get the timestamp
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 addedBy: auth.currentUser.email,
                 sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesTMDB input:checked')).map(cb => cb.value),
@@ -107,9 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(`Duplicate content found based on: ${duplicateCheck.field}.`);
                 }
                 
-                let newDocId = null;
-
-                if (selectedType === 'tv') {
+                const finalApiType = document.getElementById('primaryContentType').value;
+                if (finalApiType === 'tv') {
                     payload.contentType = 'tv';
                     payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'movie');
                     const seriesDataValue = document.getElementById('seriesData').value;
@@ -117,41 +119,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     const seriesInfo = JSON.parse(seriesDataValue);
                     if (!Array.isArray(seriesInfo)) throw new Error("Invalid Series Data JSON structure.");
                     
-                    const docRef = await db.collection('movies').add(payload);
-                    newDocId = docRef.id;
-
+                    const docRef = await db.collection('StreamZone_v208_77').add(payload);
                     for (const season of seriesInfo) {
                         for (const episode of season.episodes) {
-                            await db.collection('movies').doc(docRef.id).collection('episodes').add({
+                            await db.collection('StreamZone_v208_77').doc(docRef.id).collection('episodes').add({
                                 season_number: season.season_number,
                                 ...episode,
                                 addedAt: firebase.firestore.FieldValue.serverTimestamp()
                             });
                         }
                     }
+                    if (sendNotificationChecked) {
+                        await sendNotification(finalTitle, tmdbData.overview, payload.backdropUrl, `streamzonemovies://details?id=${docRef.id}`, addMessage);
+                    } else {
+                        displayMessage(addMessage, 'TV series added successfully!', 'success');
+                    }
                 } else { // It's a Movie
                     payload.contentType = 'movie';
                     payload.type = selectedTypes.filter(type => type !== 'send_notification' && type !== 'Latest-TV-Series');
                     payload.videoUrl = document.getElementById('videoSourceUrl').value;
                     
-                    const docRef = await db.collection('movies').add(payload);
-                    newDocId = docRef.id;
-                }
-                
-                const successMessage = `Content added successfully! <a href="edit_content.html?id=${newDocId}" style="color: var(--accent-color);" target="_blank">Click to view/edit.</a>`;
-                if (sendNotificationChecked) {
-                    await sendNotification(finalTitle, tmdbData.overview, payload.backdropUrl, `streamzonemovies://details?id=${newDocId}`, addMessage);
-                    addMessage.innerHTML += `<br/><a href="edit_content.html?id=${newDocId}" style="color: var(--accent-color);" target="_blank">View the new content.</a>`;
-                } else {
-                    addMessage.innerHTML = successMessage;
-                    addMessage.className = 'message success';
-                    addMessage.style.display = 'block';
+                    const docRef = await db.collection('StreamZone_v208_77').add(payload);
+                    if (sendNotificationChecked) {
+                        await sendNotification(finalTitle, tmdbData.overview, payload.backdropUrl, `streamzonemovies://details?id=${docRef.id}`, addMessage);
+                    } else {
+                        displayMessage(addMessage, 'Movie added successfully!', 'success');
+                    }
                 }
                 addMovieForm.reset();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             } catch (err) {
                 displayMessage(addMessage, `Error: ${err.message}`, 'error');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             } finally {
                 setLoading(addContentBtn, false);
             }
