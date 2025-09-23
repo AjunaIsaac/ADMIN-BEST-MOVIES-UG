@@ -1,14 +1,14 @@
-ocument.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     // These functions and variables are now available from utils.js:
     // setLoading, displayMessage, populateCheckboxes, generateSlug,
     // generateSearchKeywords, checkForDuplicates, sendNotification,
     // and window.VJ_LIST, window.GENRE_LIST
-    
+
     // --- Page-Specific DOM Elements ---
     const addMovieForm = document.getElementById('addMovieForm');
     const addContentBtn = document.getElementById('addContentBtn');
     const addMessage = document.getElementById('addMessage');
-    
+
     // --- Content Type Toggling ---
     function setupMasterContentTypeToggle(formElement) {
         if (!formElement) return;
@@ -27,41 +27,41 @@ ocument.addEventListener('DOMContentLoaded', () => {
             toggleFields();
         }
     }
-    
+
     // --- Initialize Page ---
     setupMasterContentTypeToggle(addMovieForm);
     // FIX #1: Access the lists from the window object
     populateCheckboxes('sortVjsCheckboxesTMDB', 'sortVjsTMDB', window.VJ_LIST);
     populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', window.GENRE_LIST);
-    
+
     // --- Form Submission Logic ---
-    if (addMovieForm) {
+    if(addMovieForm) {
         addMovieForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             setLoading(addContentBtn, true);
-            
+
             const identifier = document.getElementById('contentIdentifier').value.trim();
             const vjName = document.getElementById('vjName').value.trim();
             const tmdbApiKey = document.getElementById('tmdbApiKey').value;
-            
+
             if (!vjName || !identifier) {
                 displayMessage(addMessage, 'VJ Name and Content Identifier are required.', 'error');
                 setLoading(addContentBtn, false);
                 return;
             }
-            
+
             // 1. Fetch data from TMDB
             let tmdbData = null;
             const selectedPrimaryContentType = document.getElementById('primaryContentType').value;
             const isNumericId = /^\d+$/.test(identifier);
-            
+
             if (isNumericId) {
                 try {
                     let response = await fetch(`https://api.themoviedb.org/3/${selectedPrimaryContentType}/${identifier}?api_key=${tmdbApiKey}`);
                     if (response.ok) tmdbData = await response.json();
                 } catch (err) { console.warn(`Error fetching from TMDB by ID:`, err); }
             } else {
-                try {
+                 try {
                     let searchUrl = `https://api.themoviedb.org/3/search/${selectedPrimaryContentType}?api_key=${tmdbApiKey}&query=${encodeURIComponent(identifier)}`;
                     let response = await fetch(searchUrl);
                     let searchResult = await response.json();
@@ -70,13 +70,13 @@ ocument.addEventListener('DOMContentLoaded', () => {
                     }
                 } catch (err) { console.error("Error searching TMDB:", err); }
             }
-            
+
             if (!tmdbData || !tmdbData.id) {
                 displayMessage(addMessage, 'Could not find content on TMDB. Check name/ID.', 'error');
                 setLoading(addContentBtn, false);
                 return;
             }
-            
+
             // 2. Prepare data for Firestore
             const configResponse = await fetch(`https://api.themoviedb.org/3/configuration?api_key=${tmdbApiKey}`);
             const configData = await configResponse.json();
@@ -84,7 +84,7 @@ ocument.addEventListener('DOMContentLoaded', () => {
             const finalTitle = tmdbData.title || tmdbData.name;
             const sendNotificationChecked = document.querySelector('#contentTypeCheckboxes input[value="send_notification"]').checked;
             const selectedTypes = Array.from(document.querySelectorAll('#contentTypeCheckboxes input:checked')).map(cb => cb.value);
-            
+
             let payload = {
                 title: finalTitle,
                 title_lowercase: finalTitle.toLowerCase(),
