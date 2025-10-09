@@ -93,7 +93,7 @@ async function checkForDuplicates(payload, excludeDocId = null) {
 async function sendNotification(title, body, imageUrl = '', url = '', msgElement) {
     const payload = { data: { title, body, imageUrl, url } };
     try {
-        const functionUrl = 'https://spring-credit-724c.ajunaisaac-ug.workers.dev';
+        const functionUrl = 'https://bestmovies.ajunaisaac-ug.workers.dev';
         const response = await fetch(functionUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
