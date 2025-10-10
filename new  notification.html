@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Notifications - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- Redesign Styles --- */
+        
+        :root {
+            --primary-bg: #0A0F2A; /* Dark Navy Blue */
+            --card-bg: #1C2141; /* Slightly Lighter Blue for Cards */
+            --accent-color: #DFFF00; /* Vibrant Yellow-Green */
+            --text-primary: #FFFFFF;
+            --text-secondary: #a9a9b3;
+            --logout-bg: #e74c3c;
+            --input-bg: #0A0F2A;
+            --success-color: #4CAF50;
+            --danger-color: #f44336;
+            --info-color: #2196F3;
+        }
+
+        /* --- General Body & Font Styles --- */
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+        }
+
+        /* --- Responsive Menu Layout --- */
+        #adminPanel {
+            display: flex;
+        }
+
+        #mainMenu {
+            width: 250px;
+            flex-shrink: 0;
+            background-color: #111533;
+            min-height: 100vh;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        #mainMenu a {
+            display: block; padding: 15px 20px; color: var(--text-secondary);
+            text-decoration: none; transition: background-color 0.3s, color 0.3s;
+        }
+        #mainMenu a:hover, #mainMenu a.active {
+            background-color: var(--card-bg); color: var(--accent-color);
+        }
+        #mainMenu .menu-header {
+            padding: 20px; font-size: 1.2rem; font-weight: 600; color: var(--text-primary);
+        }
+        #mainMenu a i { margin-right: 10px; }
+
+        .main-content {
+            flex-grow: 1; padding: 1.5rem;
+        }
+        
+        /* --- Header --- */
+        .admin-header {
+            display: flex; flex-wrap: wrap; justify-content: space-between;
+            align-items: flex-start; gap: 15px; margin-bottom: 10px;
+        }
+        .header-title-section { flex-grow: 1; }
+        .admin-header h1 {
+            color: var(--accent-color); font-size: 2.5rem; font-weight: 700;
+            line-height: 1.1; margin: 0;
+        }
+        .user-info {
+            color: var(--text-secondary); font-size: 0.9rem; margin-top: 10px;
+        }
+        
+        /* --- Hamburger & Logout Buttons --- */
+        #menuToggleBtn {
+            display: block; position: static; background: transparent;
+            color: var(--accent-color); border: 2px solid var(--accent-color);
+            border-radius: 8px; width: 50px; height: 50px;
+            font-size: 1.5rem; cursor: pointer; padding: 0; margin-right: 20px;
+        }
+        .logout-btn {
+            background-color: var(--logout-bg); color: white; border: none;
+            border-radius: 8px; padding: 12px 20px; font-size: 1rem;
+            font-weight: 600; cursor: pointer; display: flex;
+            align-items: center; gap: 8px;
+        }
+
+        /* --- Card and Form Styles --- */
+        .content-card-layout {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+        .content-card-layout h2 {
+             font-size: 1.2rem; color: var(--text-primary); margin: 0 0 1rem 0;
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block; margin-bottom: 5px; color: var(--text-secondary);
+        }
+        .form-group input, .form-group textarea, .form-group .input-group-prefix {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid #33395b;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .form-group input, .form-group textarea {
+            padding: 15px;
+        }
+        .form-group textarea {
+            min-height: 80px; resize: vertical;
+        }
+
+        /* Specific styles for the deep link input */
+        .input-group-prefix { display: flex; }
+        .input-group-prefix span { padding: 15px; background-color: #2a2f50; border-right: 1px solid #33395b; white-space: nowrap;}
+        .input-group-prefix input { border: none; flex-grow: 1; }
+
+        /* General Button */
+        .gradient-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #FF416C, #FFDE00);
+            color: white; border: none; border-radius: 8px; padding: 15px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer;
+            margin-top: 1.5rem; transition: transform 0.2s ease;
+        }
+        .gradient-btn:hover { transform: scale(1.02); }
+
+        /* Notification Layout & Preview */
+        .notification-layout { display: flex; flex-wrap: wrap; gap: 30px; }
+        .notification-form-col, .notification-preview-col { flex: 1; min-width: 300px; }
+        .notification-preview-wrapper {
+            background: var(--input-bg);
+            border: 1px solid #33395b;
+            padding: 20px;
+            border-radius: 12px;
+            height: 100%;
+        }
+        #previewImage {
+            display: none; width: 100%; height: auto; margin-top: 12px;
+            border-radius: 8px; object-fit: cover; border: 1px solid #333;
+        }
+
+        /* Search Results Styling */
+        .search-result-item {
+            background-color: var(--primary-bg); border-radius: 8px; padding: 1rem;
+            margin-top: 1rem; display: flex; gap: 1rem; align-items: flex-start;
+        }
+        .search-result-item img { width: 80px; height: 120px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+        .search-result-info { flex: 1; }
+        .search-result-info h3 { margin: 0; font-size: 1.1rem; }
+        .search-result-info p { font-size: 0.9rem; color: var(--text-secondary); margin: 5px 0 0 0; }
+        .select-btn {
+            padding: 8px 12px; cursor: pointer; border-radius: 4px; border: none;
+            background-color: var(--accent-color); color: var(--primary-bg); font-weight: bold;
+            align-self: center;
+        }
+        .overview-snippet {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        /* General Message Styling */
+        .message { padding: 15px; border-radius: 8px; margin-top: 1rem; text-align: center; display: none; }
+        .message.success { background-color: var(--success-color); }
+        .message.error { background-color: var(--danger-color); }
+        .message.info { background-color: var(--info-color); }
+        
+        /* Mobile Menu Functionality */
+        @media (max-width: 768px) {
+             #adminPanel { flex-direction: column; }
+            .admin-header { align-items: center; }
+            .admin-header h1 { font-size: 2rem; }
+            #mainMenu {
+                position: fixed; left: 0; top: 0; height: 100%;
+                transform: translateX(-100%);
+            }
+            #mainMenu.open { transform: translateX(0); }
+        }
+         @media (min-width: 769px) {
+             #menuToggleBtn { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div id="adminPanel">
+        <!-- The Menu (Sidebar) -->
+        <nav id="mainMenu">
+            <div class="menu-header">Admin Menu</div>
+            <a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <hr style="border-color: #333; margin: 10px 0;">
+            <a href="manage-movies.html"><i class="fas fa-film"></i> Manage Movies</a>
+            <a href="manage-series.html"><i class="fas fa-tv"></i> Manage Series</a>
+             <a class="menu-link" href="new  notification.html"><i class="fas fa-edit"></i>Push Notification</a>
+            <a href="manage-banners.html"><i class="fas fa-images"></i> Manage Banners</a>
+            <a href="manage-notifications.html" class="active"><i class="fas fa-paper-plane"></i> Notifications</a>
+            <a href="manage-users.html"><i class="fas fa-users-cog"></i> User Management</a>
+        </nav>
+
+        <!-- The Main Content Area -->
+        <div class="main-content">
+            <div class="admin-header">
+                <div style="display: flex; align-items: center;">
+                    <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+                    <div class="header-title-section">
+                        <h1>Manage<br>Notifications</h1>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            
+            <p class="user-info">Logged in as: support@streamzonemovies.online</p>
+
+            <!-- Search Card -->
+            <div id="notificationSearchCard" class="content-card-layout">
+                <h2>1. Search for Content to Notify About</h2>
+                <div class="form-group">
+                    <input type="text" id="notificationSearchQuery" placeholder="Search any Movie or TV Show on TMDB...">
+                </div>
+                <button id="searchContentBtn" class="gradient-btn">Search TMDB</button>
+                <div id="notificationSearchResults"></div>
+            </div>
+
+            <!-- Notification Form Card -->
+            <div id="notificationFormCard" class="content-card-layout">
+                <h2>2. Compose and Send Notification</h2>
+                <div class="notification-layout">
+                    <div class="notification-form-col">
+                        <form id="notificationForm">
+                            <div class="form-group"><label for="notifTitle">Title</label><input type="text" id="notifTitle" required></div>
+                            <div class="form-group"><label for="notifBody">Body</label><textarea id="notifBody" required></textarea></div>
+                            <div class="form-group"><label for="notifImageUrl">Image URL</label><input type="url" id="notifImageUrl"></div>
+                            
+                            <div class="form-group">
+                                <label for="notifUrlId">App Page to Open (Auto-filled)</label>
+                                <div class="input-group-prefix">
+                                    <span>streamzonemovies://details?id=</span>
+                                    <input type="text" id="notifUrlId" placeholder="Select content to fill">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" id="sendNotificationBtn" class="gradient-btn">Send Notification <i class="fas fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+                    <div class="notification-preview-col">
+                        <div class="notification-preview-wrapper">
+                            <h3 style="text-align: center; color: var(--accent-color); margin-bottom: 15px;">Live Preview</h3>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                                <img src="https://placehold.co/24x24/d1e231/0b0f30?text=S" alt="App Icon" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;">
+                                <span style="font-size: 13px; font-weight: bold; color: var(--text-primary);">Stream Zone Movies</span>
+                                <span style="font-size: 13px; color: #aaa; margin-left: auto;">now</span>
+                            </div>
+                            <div style="padding-left: 32px; margin-top: 10px;">
+                                <h4 id="previewTitle" style="font-weight: bold; color: var(--text-primary); margin: 0 0 4px 0; font-size: 16px;">Notification Title</h4>
+                                <p id="previewBody" style="font-size: 14px; color: var(--text-secondary); margin: 0;">Notification body will appear here...</p>
+                            </div>
+                            <img id="previewImage" alt="Notification Image">
+                        </div>
+                    </div>
+                </div>
+                 <div id="notificationMessage" class="message"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const firebaseConfig = {
+    apiKey: "AIzaSyAuhAOtwhENHLAxwl8jtwafxFx3M2TWxDk",
+    authDomain: "stream-zone-movies1.firebaseapp.com",
+    projectId: "stream-zone-movies1",
+    storageBucket: "stream-zone-movies1.firebasestorage.app",
+    messagingSenderId: "319851420625",
+    appId: "1:319851420625:web:73fa1d0302de6755295ef0",
+    measurementId: "G-W139021D8L"
+  };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
+    const auth = firebase.auth(app);
+
+    // --- TMDB API Key ---
+    const TMDB_API_KEY = "f7a3b097ba7a990fd0c8ef3147646fb5";
+
+    // --- DOM Elements ---
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const mainMenu = document.getElementById('mainMenu');
+    const searchContentBtn = document.getElementById('searchContentBtn');
+    const searchResultsContainer = document.getElementById('notificationSearchResults');
+    const notifForm = document.getElementById('notificationForm');
+    const sendNotificationBtn = document.getElementById('sendNotificationBtn');
+    const notificationMessage = document.getElementById('notificationMessage');
+    const notifTitleInput = document.getElementById('notifTitle');
+    const notifBodyInput = document.getElementById('notifBody');
+    const notifImageUrlInput = document.getElementById('notifImageUrl');
+    const notifUrlIdInput = document.getElementById('notifUrlId');
+    const previewTitle = document.getElementById('previewTitle');
+    const previewBody = document.getElementById('previewBody');
+    const previewImage = document.getElementById('previewImage');
+
+    // --- Helper Functions ---
+    const setLoading = (btn, isLoading) => { if(btn) { btn.disabled = isLoading; btn.style.cursor = isLoading ? 'wait' : 'pointer'; }};
+    const displayMessage = (el, msg, type) => { el.textContent = msg; el.className = `message ${type}`; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 8000); };
+    
+    // --- Authentication & Menu ---
+    auth.onAuthStateChanged(user => {
+        if (!user) window.location.href = 'index.html';
+    });
+    document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
+    if (menuToggleBtn && mainMenu) {
+        menuToggleBtn.addEventListener('click', () => mainMenu.classList.toggle('open'));
+    }
+
+    // --- ✅ CORRECTED: Sends a data-only notification payload ---
+    async function sendNotification(title, body, imageUrl = '', url = '') {
+        // Wrap the notification details inside a 'data' object
+        const payload = {
+            data: { title, body, imageUrl, url }
+        };
+
+        try {
+            const functionUrl = 'https://spring-credit-724c.ajunaisaac-ug.workers.dev';
+            const response = await fetch(functionUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const result = await response.json();
+                throw new Error(result.error || 'Unknown error from server');
+            }
+            
+            displayMessage(notificationMessage, 'Notification sent successfully!', 'success');
+            return true; 
+        } catch (error) {
+            displayMessage(notificationMessage, `Failed to send: ${error.message}`, 'error');
+            return false;
+        }
+    }
+
+    // --- Search TMDB Logic (Unchanged) ---
+    searchContentBtn.addEventListener('click', async () => {
+        const query = document.getElementById('notificationSearchQuery').value.trim();
+        if (!query) {
+            searchResultsContainer.innerHTML = `<p class="message error" style="display:block">Please enter a search term.</p>`;
+            return;
+        }
+        setLoading(searchContentBtn, true);
+        searchContentBtn.textContent = "Searching TMDB...";
+        searchResultsContainer.innerHTML = `<p class="message info" style="display:block">Searching TMDB...</p>`;
+        
+        try {
+            const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            const results = data.results.filter(item => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path);
+
+            if (results.length === 0) {
+                searchResultsContainer.innerHTML = `<p class="message info" style="display:block">No content found on TMDB matching that term.</p>`;
+                return;
+            }
+
+            searchResultsContainer.innerHTML = '<h2>Select a result from TMDB</h2>';
+            results.forEach(item => {
+                const title = item.title || item.name;
+                const releaseDate = item.release_date || item.first_air_date;
+                const year = releaseDate ? `(${releaseDate.split('-')[0]})` : '';
+                const overview = item.overview ? item.overview.substring(0, 120) + '...' : 'No overview available.';
+
+                const resultHTML = `
+                    <div class="search-result-item">
+                        <img src="https://image.tmdb.org/t/p/w200${item.poster_path}" alt="Poster">
+                        <div class="search-result-info">
+                            <h3>${title} ${year}</h3>
+                            <p><strong>Type:</strong> ${item.media_type.toUpperCase()}</p>
+                            <p class="overview-snippet">${overview}</p>
+                        </div>
+                        <button class="select-btn select-tmdb-btn" data-tmdb-id="${item.id}">Select</button>
+                    </div>`;
+                searchResultsContainer.insertAdjacentHTML('beforeend', resultHTML);
+            });
+
+        } catch (error) {
+            searchResultsContainer.innerHTML = `<p class="message error" style="display:block">Error searching TMDB: ${error.message}</p>`;
+        } finally {
+            setLoading(searchContentBtn, false);
+            searchContentBtn.textContent = "Search TMDB";
+        }
+    });
+
+    // --- Handle Selection Logic (Unchanged) ---
+    searchResultsContainer.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('select-tmdb-btn')) {
+            const tmdbId = parseInt(e.target.dataset.tmdbId);
+            searchResultsContainer.innerHTML = `<p class="message info" style="display:block">Finding that item in your database...</p>`;
+
+            try {
+                const snapshot = await db.collection('movies').where('tmdbId', '==', tmdbId).get();
+                if (snapshot.empty) {
+                    searchResultsContainer.innerHTML = `<p class="message error" style="display:block">This item was found on TMDB but has not been added to your database yet. Please add it first.</p>`;
+                    return;
+                }
+
+                searchResultsContainer.innerHTML = '<h2>Choose the version to notify about</h2>';
+                snapshot.forEach(doc => {
+                    const item = doc.data();
+                    const resultHTML = `
+                        <div class="search-result-item">
+                            <img src="${item.posterUrl || 'https://placehold.co/80x120?text=N/A'}" alt="Poster">
+                            <div class="search-result-info">
+                                <h3>${item.title}</h3>
+                                <p><strong>VJ:</strong> ${item.vjName}</p>
+                            </div>
+                            <button class="select-btn select-final-btn" 
+                                    data-id="${doc.id}" 
+                                    data-title="${item.title.replace(/"/g, '&quot;')}" 
+                                    data-vj="${item.vjName.replace(/"/g, '&quot;')}"
+                                    data-overview="${item.overview.replace(/"/g, '&quot;')}" 
+                                    data-backdrop="${item.backdropUrl}">Use This Version</button>
+                        </div>`;
+                    searchResultsContainer.insertAdjacentHTML('beforeend', resultHTML);
+                });
+            } catch (error) {
+                 searchResultsContainer.innerHTML = `<p class="message error" style="display:block">Error querying your database: ${error.message}</p>`;
+            }
+        }
+
+        if (e.target.classList.contains('select-final-btn')) {
+            const button = e.target;
+            
+            notifTitleInput.value = `${button.dataset.title} by ${button.dataset.vj}`;
+            notifBodyInput.value = button.dataset.overview;
+            notifImageUrlInput.value = button.dataset.backdrop || '';
+            notifUrlIdInput.value = button.dataset.id || '';
+
+            notifTitleInput.dispatchEvent(new Event('input'));
+            notifBodyInput.dispatchEvent(new Event('input'));
+            notifImageUrlInput.dispatchEvent(new Event('input'));
+
+            searchResultsContainer.innerHTML = `<p class="message success" style="display:block">Form has been auto-filled. Ready to send.</p>`;
+            document.getElementById('notificationFormCard').scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+
+    // --- Live Preview & Form Submission (Unchanged) ---
+    if (notifForm) {
+        notifTitleInput.addEventListener('input', () => {
+            previewTitle.textContent = notifTitleInput.value || 'Notification Title';
+        });
+        notifBodyInput.addEventListener('input', () => {
+            previewBody.textContent = notifBodyInput.value || 'Notification body will appear here...';
+        });
+        notifImageUrlInput.addEventListener('input', () => {
+            const url = notifImageUrlInput.value;
+            if (url) {
+                previewImage.src = url;
+                previewImage.style.display = 'block';
+                previewImage.onerror = () => { previewImage.style.display = 'none'; };
+            } else {
+                previewImage.style.display = 'none';
+            }
+        });
+
+        notifForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            setLoading(sendNotificationBtn, true);
+
+            const title = notifTitleInput.value.trim();
+            const body = notifBodyInput.value.trim();
+            const imageUrl = notifImageUrlInput.value.trim();
+            const contentId = notifUrlIdInput.value.trim();
+
+            if (!title || !body) {
+                displayMessage(notificationMessage, 'Title and Body are required.', 'error');
+                setLoading(sendNotificationBtn, false);
+                return;
+            }
+            
+            const fullUrl = contentId ? `streamzonemovies://details?id=${contentId}` : '';
+
+            const success = await sendNotification(title, body, imageUrl, fullUrl);
+            
+            if (success) {
+                notifForm.reset();
+                searchResultsContainer.innerHTML = '';
+                previewTitle.textContent = 'Notification Title';
+                previewBody.textContent = 'Notification body will appear here...';
+                previewImage.style.display = 'none';
+                previewImage.src = '';
+            }
+            
+            setLoading(sendNotificationBtn, false);
+        });
+    }
+});
+</script>
+</body>
+</html>

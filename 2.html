@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Content - Admin</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div id="adminPanel" style="display: none; width: 100%;">
+<button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+code
+Code
+<!-- SHARED: Sidebar Navigation -->
+    <nav id="mainMenu">
+        <div class="menu-header">Admin Menu</div>
+        <a class="menu-link" href="add_from_tmdb.html"><i class="fas fa-magic"></i> Add from TMDB</a>
+        <a class="menu-link" href="manual_add.html"><i class="fas fa-edit"></i> Manual Add</a>
+        <a class="menu-link" href="manage_content.html"><i class="fas fa-search"></i> Search & Edit/Delete</a>
+        <a class="menu-link" href="all_content.html"><i class="fas fa-film"></i> All Content</a>
+        <a class="menu-link" href="banners.html"><i class="fas fa-images"></i> Manage Banners</a>
+        <a class="menu-link" href="notifications.html"><i class="fas fa-paper-plane"></i> Send Notifications</a>
+        <a class="menu-link" href="user_management.html"><i class="fas fa-users-cog"></i> User Management</a>
+        <a class="menu-link" href="relworx_admin.html"><i class="fas fa-money-bill-wave"></i>Payments</a>
+        <a href="https://storage1.streamzonemovies.online" target="_blank"><i class="fas fa-server"></i> My Server</a>
+    </nav>
+
+    <div class="main-content" id="mainContentArea">
+        <!-- SHARED: Admin Header -->
+        <div class="admin-header">
+            <h1 id="pageTitle">All Available Content</h1>
+            <span id="adminEmailDisplay"></span>
+            <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
+        </div>
+        
+        <!-- PAGE-SPECIFIC CONTENT -->
+        <div class="page-container" style="display: block;">
+            <div class="form-group">
+                <label for="allContentFilter">Filter by Category:</label>
+                <select id="allContentFilter">
+                    <option value="all">All Content</option>
+                    <option value="latest_uploads">Latest Uploads</option>
+                    <option value="romance">Latest-Movies</option>
+                    <option value="Latest-TV-Series">Latest Tv Shows</option>
+                    <option value="most_liked">Most Liked</option>
+                    <option value="recent_movies">Recently Added Movies</option>
+                    <option value="recent_tv_shows">Recently Added TV Shows</option>
+                    <option value="animation">Animation</option>
+                    <option value="indian">Indian</option>
+                    <option value="horror">Horror</option>
+                    <option value="comedy">Comedy</option>
+                    <option value="adventure">Adventure</option>
+                    <option value="scifi-fantasy">Sci-fi & Fantasy</option>
+                    <option value="action-thriller">Action & Thriller</option>
+                    <option value="high-school">High School</option>
+                    <option value="nigerian">Nigerian Movies</option>
+                    <option value="upcoming_shows">Upcoming Shows</option>
+                    <option value="western_series">Western Series</option>
+                    <option value="k_dramas">K Dramas</option>
+                </select>
+            </div>
+            <div id="allContentContainer" class="movie-grid"></div>
+            <button type="button" id="deleteSelectedAllContentBtn" style="display: none; background-color: var(--danger-color); margin-top: 20px;">
+                Delete Selected (<span id="selectedAllContentCount">0</span>)<span class="spinner"></span>
+            </button>
+            <div id="allContentMessage" class="message"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- 1. FIREBASE INITIALIZATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
+            authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
+            projectId: "best-movies-ug-4d6d6",
+            storageBucket: "best-movies-ug-4d6d6.appspot.com",
+            messagingSenderId: "583499166737",
+            appId: "1:583499166737:web:8fe01624b46b8e063f6db0"
+        };
+
+        let db, auth;
+        try {
+            const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
+            db = firebase.firestore(app);
+            auth = firebase.auth(app);
+        } catch (error) {
+            console.error("Critical error initializing Firebase:", error);
+            document.body.innerHTML = "<h1>Error: Application could not start.</h1>";
+            return;
+        }
+
+        // --- 2. CORE AUTH & UI LOGIC ---
+        const adminPanel = document.getElementById('adminPanel');
+        const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                if (adminPanel) adminPanel.style.display = 'flex';
+                if (adminEmailDisplay) adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+                displayAllContent(); // Load content after user is confirmed
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => { auth.signOut(); });
+        }
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        const mainMenu = document.getElementById('mainMenu');
+        if (menuToggleBtn && mainMenu) {
+            menuToggleBtn.addEventListener('click', () => { mainMenu.classList.toggle('open'); });
+        }
+        const currentPage = window.location.pathname.split("/").pop();
+        const menuLinks = document.querySelectorAll('#mainMenu a');
+        menuLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
+        });
+
+        // --- 3. HELPER FUNCTIONS ---
+        function setLoading(button, isLoading) {
+            if (button) {
+                button.classList.toggle('loading', isLoading);
+                button.disabled = isLoading;
+            }
+        }
+
+        function displayMessage(element, msg, type) {
+            if (element) {
+                element.textContent = msg;
+                element.className = `message ${type}`;
+                element.style.display = 'block';
+                setTimeout(() => { element.style.display = 'none'; }, 8000);
+            }
+        }
+
+        // --- 4. PAGE-SPECIFIC CODE for "All Content" ---
+        const allContentContainer = document.getElementById('allContentContainer');
+        const allContentFilter = document.getElementById('allContentFilter');
+        const allContentMessage = document.getElementById('allContentMessage');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedAllContentBtn');
+        const selectedCountSpan = document.getElementById('selectedAllContentCount');
+
+        let selectedForDeletion = new Set();
+
+        async function displayAllContent() {
+            allContentContainer.innerHTML = '<div class="message info" style="display:block;">Loading content...</div>';
+            selectedForDeletion.clear();
+            updateDeleteSelectedButton();
+
+            const filterValue = allContentFilter.value;
+            try {
+                let query = db.collection('movies').orderBy('createdAt', 'desc'); // Using 'movies' collection
+                
+                let actualFilterValue = (filterValue === 'latest_uploads') ? 'popular' : filterValue;
+
+                if (filterValue !== 'all') {
+                    query = query.where('type', 'array-contains', actualFilterValue);
+                }
+                
+                const snapshot = await query.limit(100).get();
+
+                if (snapshot.empty) {
+                    allContentContainer.innerHTML = '';
+                    displayMessage(allContentMessage, 'No content found for this filter.', 'info');
+                    return;
+                }
+
+                allContentContainer.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const item = { id: doc.id, ...doc.data() };
+                    const isPermanentDeleteView = (filterValue === 'all');
+                    
+                    const cardHtml = `
+                        <div class="content-card">
+                            <input type="checkbox" class="select-card-checkbox" data-id="${item.id}">
+                            <img src="${item.posterUrl || 'https://placehold.co/500x750/333/eee?text=No+Poster'}" alt="${item.title}" loading="lazy">
+                            <div class="content-card-content">
+                                <h3>${item.title}</h3>
+                                <p class="vj-name">VJ: ${item.vjName}</p>
+                                <div class="content-card-actions">
+                                    <button class="action-btn edit" data-id="${item.id}">Edit</button>
+                                    <button class="action-btn ${isPermanentDeleteView ? 'delete' : 'remove-from-category'}" data-id="${item.id}">
+                                        ${isPermanentDeleteView ? 'Delete' : 'Remove'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                    allContentContainer.insertAdjacentHTML('beforeend', cardHtml);
+                });
+                displayMessage(allContentMessage, `Showing ${snapshot.size} item(s).`, 'success');
+
+            } catch (err) {
+                allContentContainer.innerHTML = '';
+                displayMessage(allContentMessage, `Error fetching content: ${err.message}`, 'error');
+            }
+        }
+
+        function updateDeleteSelectedButton() {
+            selectedCountSpan.textContent = selectedForDeletion.size;
+            deleteSelectedBtn.style.display = selectedForDeletion.size > 0 ? 'block' : 'none';
+            
+            const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
+            if (allContentFilter.value === 'all') {
+                deleteSelectedBtn.firstChild.textContent = `Permanently Delete Selected (${selectedForDeletion.size}) `;
+            } else {
+                deleteSelectedBtn.firstChild.textContent = `Remove Selected from ${filterText} (${selectedForDeletion.size}) `;
+            }
+        }
+
+        allContentFilter.addEventListener('change', displayAllContent);
+
+        allContentContainer.addEventListener('click', async (e) => {
+            const target = e.target;
+            const card = target.closest('.content-card');
+            if (!card) return;
+
+            const docId = target.dataset.id || card.querySelector('.select-card-checkbox')?.dataset.id;
+            if (!docId) return;
+
+            if (target.matches('.select-card-checkbox')) {
+                if (target.checked) {
+                    selectedForDeletion.add(docId);
+                } else {
+                    selectedForDeletion.delete(docId);
+                }
+                updateDeleteSelectedButton();
+                return;
+            }
+
+            if (target.matches('.action-btn.edit')) {
+                // NOTE: This now assumes an 'edit_content.html' page exists
+                window.location.href = `edit_content.html?id=${docId}`;
+                return;
+            }
+            
+            if (target.matches('.action-btn.delete')) {
+                if (confirm(`Are you sure you want to PERMANENTLY delete this content?`)) {
+                    setLoading(target, true);
+                    try {
+                        await db.collection('movies').doc(docId).delete();
+                        card.remove();
+                        displayMessage(allContentMessage, 'Content deleted!', 'success');
+                    } catch (err) { displayMessage(allContentMessage, `Error: ${err.message}`, 'error'); } 
+                    finally { setLoading(target, false); }
+                }
+                return;
+            }
+
+            if (target.matches('.action-btn.remove-from-category')) {
+                const categoryToRemove = allContentFilter.value;
+                const categoryText = allContentFilter.options[allContentFilter.selectedIndex].text;
+                if (confirm(`Remove this item from the "${categoryText}" category?`)) {
+                    setLoading(target, true);
+                    try {
+                        const docRef = db.collection('movies').doc(docId);
+                         await docRef.update({
+                             type: firebase.firestore.FieldValue.arrayRemove(categoryToRemove),
+                         });
+                        card.remove();
+                        displayMessage(allContentMessage, 'Removed from category!', 'success');
+                    } catch (err) { displayMessage(allContentMessage, `Error: ${err.message}`, 'error'); } 
+                    finally { setLoading(target, false); }
+                }
+            }
+        });
+
+        deleteSelectedBtn.addEventListener('click', async () => {
+            if (selectedForDeletion.size === 0) return;
+            
+            const isPermanentDelete = allContentFilter.value === 'all';
+            const actionText = isPermanentDelete ? 'permanently delete' : 'remove from the category';
+            
+            if (confirm(`Are you sure you want to ${actionText} ${selectedForDeletion.size} item(s)?`)) {
+                setLoading(deleteSelectedBtn, true);
+                const batch = db.batch();
+                try {
+                    if (isPermanentDelete) {
+                        selectedForDeletion.forEach(id => {
+                            batch.delete(db.collection('movies').doc(id));
+                        });
+                    } else {
+                        const categoryToRemove = allContentFilter.value;
+                        selectedForDeletion.forEach(id => {
+                            const docRef = db.collection('movies').doc(id);
+                            batch.update(docRef, { type: firebase.firestore.FieldValue.arrayRemove(categoryToRemove) });
+                        });
+                    }
+                    await batch.commit();
+                    displayMessage(allContentMessage, 'Bulk action completed successfully!', 'success');
+                    displayAllContent();
+                } catch (err) {
+                     displayMessage(allContentMessage, `Error during bulk action: ${err.message}`, 'error');
+                } finally {
+                    setLoading(deleteSelectedBtn, false);
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

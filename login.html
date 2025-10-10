@@ -22,25 +22,25 @@
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    <!-- REMOVED: App Check script tag -->
+    <!-- REMOVED: App Check script tag is gone -->
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-           // UPDATED: New Firebase project configuration
-           const firebaseConfig = {
-                apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
-                authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
-                projectId: "best-movies-ug-4d6d6",
-                storageBucket: "best-movies-ug-4d6d6.appspot.com", // Corrected URL
-                messagingSenderId: "583499166737",
-                appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
-                measurementId: "G-340GWH52KT"
-            };
+          // CORRECTED: This is the config for best-movies-ug
+          const firebaseConfig = {
+            apiKey: "AIzaSyAzgjVQ5iXpCx93EF5sGbpIPn5_8ouieu8",
+            authDomain: "best-movies-ug.firebaseapp.com",
+            projectId: "best-movies-ug",
+            storageBucket: "best-movies-ug.appspot.com", // Corrected URL
+            messagingSenderId: "569921014995",
+            appId: "1:569921014995:web:c4e0c02679d4e67a33d826"
+          };
+          
             const app = firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth(app);
 
-            // REMOVED: App Check initialization block
-
+            // REMOVED: The entire App Check initialization block is gone.
+            
             // Redirect if already logged in
             auth.onAuthStateChanged(user => {
                 if (user) {

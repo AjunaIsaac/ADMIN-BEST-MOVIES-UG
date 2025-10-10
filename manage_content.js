@@ -9,76 +9,75 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let selectedMoviesForDeletion = new Set();
 
-    // --- Search Logic ---
-    if (searchManageBtn) {
-        searchManageBtn.addEventListener('click', async () => {
-            setLoading(searchManageBtn, true);
-            manageSearchResults.innerHTML = '';
-            selectedMoviesForDeletion.clear();
-            confirmDeleteBtn.style.display = 'none';
-            
-            const term = document.getElementById('manageContentIdentifier').value.trim();
-            if (!term) {
-                displayMessage(manageMessage, 'Enter a name or ID to search.', 'error');
-                setLoading(searchManageBtn, false);
-                return;
-            }
-
-            try {
-                // Since Firestore doesn't support "OR" queries easily on different fields,
-                // we'll fetch based on the most likely query (search keywords) and then filter locally.
-                const lowerCaseTerm = term.toLowerCase();
-                const querySnapshot = await db.collection('movies')
-                    .where('search_keywords', 'array-contains', lowerCaseTerm)
-                    .limit(20)
-                    .get();
-
-                let docs = [];
-                querySnapshot.forEach(doc => {
-                    docs.push({ id: doc.id, ...doc.data() });
-                });
-
-                // If it might be an ID, we can do a more specific search.
-                if (/^\d+$/.test(term)) {
-                    const idQuery = await db.collection('movies').where('tmdbId', '==', Number(term)).get();
-                    idQuery.forEach(doc => {
-                        // Avoid adding duplicates if already found
-                        if (!docs.some(d => d.id === doc.id)) {
-                             docs.push({ id: doc.id, ...doc.data() });
-                        }
-                    });
+    // The 'adminReady' event is dispatched from core.js after the user is verified.
+    document.addEventListener('adminReady', () => {
+        // --- Search Logic ---
+        if (searchManageBtn) {
+            searchManageBtn.addEventListener('click', async () => {
+                setLoading(searchManageBtn, true);
+                manageSearchResults.innerHTML = '';
+                selectedMoviesForDeletion.clear();
+                confirmDeleteBtn.style.display = 'none';
+                
+                const term = document.getElementById('manageContentIdentifier').value.trim();
+                if (!term) {
+                    displayMessage(manageMessage, 'Enter a name or ID to search.', 'error');
+                    setLoading(searchManageBtn, false);
+                    return;
                 }
 
+                try {
+                    // UPDATED: Query the 'movies' collection
+                    const lowerCaseTerm = term.toLowerCase();
+                    const querySnapshot = await db.collection('movies')
+                        .where('search_keywords', 'array-contains', lowerCaseTerm)
+                        .limit(20)
+                        .get();
 
-                if (docs.length === 0) {
-                    displayMessage(manageMessage, 'No content found.', 'info');
-                } else {
-                    docs.forEach(item => {
-                        manageSearchResults.innerHTML += `
-                            <div class="result-item">
-                                <span><strong>${item.title}</strong> (ID: ${item.tmdbId || item.slug || 'N/A'}) - VJ: ${item.vjName}</span>
-                                <div class="result-item-actions">
-                                    <button class="action-btn edit" data-id="${item.id}">Edit</button>
-                                    <button class="action-btn select-delete" data-id="${item.id}">Select</button>
-                                </div>
-                            </div>`;
+                    let docs = [];
+                    querySnapshot.forEach(doc => {
+                        docs.push({ id: doc.id, ...doc.data() });
                     });
-                    displayMessage(manageMessage, `Found ${docs.length} item(s).`, 'success');
+
+                    // UPDATED: Query the 'movies' collection for ID search
+                    if (/^\d+$/.test(term)) {
+                        const idQuery = await db.collection('movies').where('tmdbId', '==', Number(term)).get();
+                        idQuery.forEach(doc => {
+                            if (!docs.some(d => d.id === doc.id)) {
+                                 docs.push({ id: doc.id, ...doc.data() });
+                            }
+                        });
+                    }
+
+                    if (docs.length === 0) {
+                        displayMessage(manageMessage, 'No content found.', 'info');
+                    } else {
+                        docs.forEach(item => {
+                            manageSearchResults.innerHTML += `
+                                <div class="result-item">
+                                    <span><strong>${item.title}</strong> (ID: ${item.tmdbId || item.slug || 'N/A'}) - VJ: ${item.vjName}</span>
+                                    <div class="result-item-actions">
+                                        <button class="action-btn edit" data-id="${item.id}">Edit</button>
+                                        <button class="action-btn select-delete" data-id="${item.id}">Select</button>
+                                    </div>
+                                </div>`;
+                        });
+                        displayMessage(manageMessage, `Found ${docs.length} item(s).`, 'success');
+                    }
+                } catch (err) {
+                    displayMessage(manageMessage, `Error searching: ${err.message}`, 'error');
+                } finally {
+                    setLoading(searchManageBtn, false);
                 }
-            } catch (err) {
-                displayMessage(manageMessage, `Error searching: ${err.message}`, 'error');
-            } finally {
-                setLoading(searchManageBtn, false);
-            }
-        });
-    }
+            });
+        }
+    });
 
     // --- Event Delegation for Results ---
     if (manageSearchResults) {
         manageSearchResults.addEventListener('click', (e) => {
             const target = e.target;
             
-            // Handle SELECT FOR DELETION
             if (target.matches('.select-delete')) {
                 const id = target.dataset.id;
                 if (selectedMoviesForDeletion.has(id)) {
@@ -97,10 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Handle EDIT button click
             if (target.matches('.action-btn.edit')) {
                 const docId = target.dataset.id;
-                // Redirect to the edit page, passing the document ID as a URL parameter
                 window.location.href = `edit_content.html?id=${docId}`;
             }
         });
@@ -112,16 +109,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm(`Are you sure you want to permanently delete ${selectedMoviesForDeletion.size} item(s)?`)) {
                 setLoading(confirmDeleteBtn, true);
                 
-                // Create a batch write for efficient deletion
                 const batch = db.batch();
                 selectedMoviesForDeletion.forEach(id => {
+                    // UPDATED: Delete from the 'movies' collection
                     const docRef = db.collection('movies').doc(id);
                     batch.delete(docRef);
                 });
 
                 try {
                     await batch.commit();
-                    displayMessage(manageMessage, `Deleted ${selectedMoviesForDeletion.size} items. Re-search to see changes.`, 'success');
+                    displayMessage(manageMessage, `Deleted ${selectedMoviesForDeletion.size} items. Please search again to see the changes.`, 'success');
                     manageSearchResults.innerHTML = '';
                     confirmDeleteBtn.style.display = 'none';
                     selectedMoviesForDeletion.clear();

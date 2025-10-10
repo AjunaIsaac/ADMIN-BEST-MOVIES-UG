@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Live TV Channel - Admin</title>
+    <!-- External assets -->
+    <link rel="stylesheet" href="assets/style.css"> <!-- You can keep this for base styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- ✅✅✅ EMBEDDED CSS FOR THIS PAGE ✅✅✅ -->
+    <style>
+        .page-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: normal;
+        }
+        .message {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #218838;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="adminPanel" style="display: none; width: 100%;">
+        <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+
+        <!-- SHARED: Sidebar Navigation -->
+        <nav id="mainMenu">
+            <div class="menu-header">Admin Menu</div>
+            <a class="menu-link" href="add_from_tmdb.html"><i class="fas fa-magic"></i> Add from TMDB</a>
+            <a class="menu-link" href="manual_add.html"><i class="fas fa-edit"></i> Manual Add</a>
+            <a class="menu-link" href="add_tv_channel.html"><i class="fas fa-tv"></i> Add Live TV Channel</a>
+            <a class="menu-link" href="manage_tv.html"><i class="fas fa-tasks"></i> Manage Live TV</a>
+             <a class="menu-link" href="new  notification.html"><i class="fas fa-edit"></i>Push Notification</a>
+            <a class="menu-link" href="manage_content.html"><i class="fas fa-search"></i> Search & Edit/Delete</a>
+            <a class="menu-link" href="all_content.html"><i class="fas fa-film"></i> All Content</a>
+            <a class="menu-link" href="banners.html"><i class="fas fa-images"></i> Manage Banners</a>
+            <a class="menu-link" href="notifications.html"><i class="fas fa-paper-plane"></i> Send Notifications</a>
+            <a class="menu-link" href="user_management.html"><i class="fas fa-users-cog"></i> User Management</a>
+            <a class="menu-link" href="relworx_admin.html"><i class="fas fa-money-bill-wave"></i>Payments</a>
+            <a href="https://storage1.streamzonemovies.online" target="_blank"><i class="fas fa-server"></i> My Server</a>
+        </nav>
+
+        <div class="main-content" id="mainContentArea">
+            <div class="admin-header">
+                <h1 id="pageTitle">Edit Live TV Channel</h1>
+                <span id="adminEmailDisplay"></span>
+                <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            
+            <div class="page-container" style="display: block;">
+                <form id="editTvForm">
+                    <div class="form-group">
+                        <label for="channelName">Channel Name</label>
+                        <input type="text" id="channelName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categories</label>
+                        <div class="checkbox-group" id="channelCategoriesCheckboxes"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="channelLogoUrl">Logo URL</label>
+                        <input type="url" id="channelLogoUrl" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="channelStreamUrl">Stream URL (M3U8 or MP4)</label>
+                        <input type="url" id="channelStreamUrl" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="channelDescription">Description</label>
+                        <textarea id="channelDescription" rows="4"></textarea>
+                    </div>
+                    
+                    <button type="submit" id="updateTvBtn">Update Channel<span class="spinner"></span></button>
+                </form>
+                <div id="editMessage" class="message"></div>
+                <a href="manage_tv.html" class="back-link">&larr; Back to Manage Channels</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- External Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
+    
+    <!-- Shared Scripts (MUST be before embedded script) -->
+    <script src="assets/core.js"></script>
+    <script src="assets/utils.js"></script>
+
+    <!-- ✅✅✅ EMBEDDED JAVASCRIPT FOR THIS PAGE ✅✅✅ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('adminReady', () => {
+                
+                const TV_CATEGORIES = [
+                    "Sports", "News", "Movies", "Entertainment", 
+                    "Kids", "Music", "Documentary", "General"
+                ];
+
+                const editTvForm = document.getElementById('editTvForm');
+                const updateTvBtn = document.getElementById('updateTvBtn');
+                const editMessage = document.getElementById('editMessage');
+                
+                populateCheckboxes('channelCategoriesCheckboxes', 'channelCategory', TV_CATEGORIES);
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const channelId = urlParams.get('id');
+
+                if (!channelId) {
+                    displayMessage(editMessage, "No channel ID provided.", "error");
+                    editTvForm.style.display = 'none';
+                    return;
+                }
+                
+                const docRef = db.collection('live_tv').doc(channelId);
+
+                const loadChannelData = async () => {
+                    try {
+                        const doc = await docRef.get();
+                        if (!doc.exists) throw new Error("Channel not found.");
+                        
+                        const data = doc.data();
+                        document.getElementById('channelName').value = data.name || '';
+                        document.getElementById('channelLogoUrl').value = data.logoUrl || '';
+                        document.getElementById('channelStreamUrl').value = data.streamUrl || '';
+                        document.getElementById('channelDescription').value = data.description || '';
+
+                        if (data.category && Array.isArray(data.category)) {
+                            data.category.forEach(cat => {
+                                const checkbox = document.querySelector(`#channelCategoriesCheckboxes input[value="${cat}"]`);
+                                if (checkbox) checkbox.checked = true;
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Error loading channel data:", error);
+                        displayMessage(editMessage, `Error: ${error.message}`, 'error');
+                        editTvForm.style.display = 'none';
+                    }
+                };
+
+                editTvForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    setLoading(updateTvBtn, true);
+
+                    const selectedCategories = Array.from(
+                        document.querySelectorAll('#channelCategoriesCheckboxes input:checked')
+                    ).map(cb => cb.value);
+
+                    const payload = {
+                        name: document.getElementById('channelName').value.trim(),
+                        logoUrl: document.getElementById('channelLogoUrl').value.trim(),
+                        streamUrl: document.getElementById('channelStreamUrl').value.trim(),
+                        description: document.getElementById('channelDescription').value.trim(),
+                        category: selectedCategories
+                    };
+
+                    if (!payload.name || !payload.logoUrl || !payload.streamUrl || payload.category.length === 0) {
+                        displayMessage(editMessage, 'Name, Logo URL, Stream URL, and at least one Category are required.', 'error');
+                        setLoading(updateTvBtn, false);
+                        return;
+                    }
+
+                    try {
+                        await docRef.update(payload);
+                        displayMessage(editMessage, "Channel updated successfully!", "success");
+                    } catch (error) {
+                        console.error("Error updating document:", error);
+                        displayMessage(editMessage, `Error: ${error.message}`, 'error');
+                    } finally {
+                        setLoading(updateTvBtn, false);
+                    }
+                });
+
+                loadChannelData();
+            });
+        });
+    </script>
+</body>
+</html>

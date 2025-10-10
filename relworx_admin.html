@@ -41,7 +41,7 @@
                     <h2>Withdraw Funds</h2>
                     <form id="withdraw-form">
                         <div class="form-group">
-                            <label for="withdraw-phone">Phone Number (e.g., +256...)</label>
+                            <label for="withdraw-phone">Phone Number (e.g., 256...)</label>
                             <input type="tel" id="withdraw-phone" required>
                         </div>
                         <div class="form-group">
@@ -68,33 +68,83 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
+    <!-- REMOVED: App Check script is not needed -->
     
-    <!-- Your existing core JS file MUST be included -->
-    <script src="assets/core.js"></script>
-    
-    <!-- ✅✅✅ NEW SCRIPT SECTION ✅✅✅ -->
     <script>
-        // This event listener waits for the 'adminReady' signal from core.js
-        document.addEventListener('adminReady', () => {
-            console.log("Admin is ready. Loading Relworx dashboard logic.");
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. FIREBASE INITIALIZATION ---
+            const firebaseConfig = {
+                apiKey: "AIzaSyAzgjVQ5iXpCx93EF5sGbpIPn5_8ouieu8",
+                authDomain: "best-movies-ug.firebaseapp.com",
+                projectId: "best-movies-ug",
+                storageBucket: "best-movies-ug.appspot.com",
+                messagingSenderId: "569921014995",
+                appId: "1:569921014995:web:c4e0c02679d4e67a33d826"
+            };
 
-            const functionsUrl = 'https://us-central1-best-movies-ug-4d6d6.cloudfunctions.net/adminHandler';
+            let db, auth;
+            try {
+                const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
+                db = firebase.firestore(app);
+                auth = firebase.auth(app);
+            } catch (error) {
+                console.error("Critical error initializing Firebase:", error);
+                document.body.innerHTML = "<h1>Error: Application could not start.</h1>";
+                return;
+            }
 
-            // --- HELPER FUNCTIONS ---
-            // We define them here to guarantee they exist.
+            // --- 2. CORE AUTH & UI LOGIC ---
+            const adminPanel = document.getElementById('adminPanel');
+            const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    try {
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        if (userDoc.exists && userDoc.data().isAdmin === true) {
+                            adminPanel.style.display = 'flex';
+                            adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+                            // Load the dashboard data once the admin is confirmed
+                            loadDashboardData();
+                        } else {
+                            await auth.signOut();
+                            window.location.href = 'login.html';
+                        }
+                    } catch (e) {
+                        console.error("Error verifying admin status:", e);
+                        await auth.signOut();
+                        window.location.href = 'login.html';
+                    }
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => { auth.signOut(); });
+            }
+            const menuToggleBtn = document.getElementById('menuToggleBtn');
+            const mainMenu = document.getElementById('mainMenu');
+            if (menuToggleBtn && mainMenu) {
+                menuToggleBtn.addEventListener('click', () => { mainMenu.classList.toggle('open'); });
+            }
+            const currentPage = window.location.pathname.split("/").pop();
+            const menuLinks = document.querySelectorAll('#mainMenu a');
+            menuLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+
+            // --- 3. PAGE-SPECIFIC CODE for Payments ---
+            
+            // UPDATED: Cloud Function URL for the new project
+            const functionsUrl = 'https://us-central1-best-movies-ug.cloudfunctions.net/adminHandler';
+
             function setLoading(btn, isLoading) {
                 if (!btn) return;
-                const spinner = btn.querySelector('.spinner');
-                if (isLoading) {
-                    btn.classList.add('loading');
-                    btn.disabled = true;
-                    if(spinner) spinner.style.display = 'inline-block';
-                } else {
-                    btn.classList.remove('loading');
-                    btn.disabled = false;
-                    if(spinner) spinner.style.display = 'none';
-                }
+                btn.classList.toggle('loading', isLoading);
+                btn.disabled = isLoading;
             }
 
             function displayMessage(el, msg, type) {
@@ -107,8 +157,7 @@
             async function fetchFromApi(endpoint, options = {}) {
                 const user = firebase.auth().currentUser;
                 if (!user) {
-                    console.error("fetchFromApi called but user is not authenticated.");
-                    return Promise.reject(new Error("User not authenticated"));
+                    throw new Error("User not authenticated");
                 }
                 const token = await user.getIdToken(true);
                 const response = await fetch(`${functionsUrl}${endpoint}`, {
@@ -155,7 +204,7 @@
 
             const withdrawForm = document.getElementById('withdraw-form');
             withdrawForm.addEventListener('submit', async (e) => {
-                e.preventDefault(); // Prevents the page from refreshing
+                e.preventDefault();
                 const btn = e.target.querySelector('button');
                 setLoading(btn, true);
 
@@ -177,9 +226,6 @@
                     setLoading(btn, false);
                 }
             });
-
-            // Initial load of data
-            loadDashboardData();
         });
     </script>
 </body>

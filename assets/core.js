@@ -1,17 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Firebase Configuration (for best-movies-ug) ---
+    // --- Firebase Configuration for the new project ---
     const firebaseConfig = {
-        apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
-        authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
-        projectId: "best-movies-ug-4d6d6",
-        storageBucket: "best-movies-ug-4d6d6.appspot.com",
-        messagingSenderId: "583499166737",
-        appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
-        measurementId: "G-340GWH52KT"
+      apiKey: "AIzaSyAzgjVQ5iXpCx93EF5sGbpIPn5_8ouieu8",
+      authDomain: "best-movies-ug.firebaseapp.com",
+      projectId: "best-movies-ug",
+      storageBucket: "best-movies-ug.appspot.com", // Corrected to appspot.com
+      messagingSenderId: "569921014995",
+      appId: "1:569921014995:web:c4e0c02679d4e67a33d826"
     };
 
+    // Initialize Firebase and export db/auth for other scripts to use
     try {
         const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
+        
+        // --- App Check section has been completely removed ---
+
         window.db = firebase.firestore(app);
         window.auth = firebase.auth(app);
     } catch (error) {
@@ -23,20 +26,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminPanel = document.getElementById('adminPanel');
     const adminEmailDisplay = document.getElementById('adminEmailDisplay');
 
-    // --- SIMPLIFIED CORE AUTHENTICATION ---
+    // --- Core Authentication Check (Runs on EVERY page) ---
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            // The user is logged in. The security rules will handle if they are an admin or not.
-            // We just show the panel.
-            if (adminPanel) adminPanel.style.display = 'flex';
-            if (adminEmailDisplay) adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+            // User is logged in, now check if they are an admin in the database
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists && userDoc.data().isAdmin === true) {
+                    // User is a verified admin, show the page content
+                    if (adminPanel) adminPanel.style.display = 'flex';
+                    if (adminEmailDisplay) adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+
+                    // Broadcast an event that the admin is verified and ready.
+                    // This tells other scripts on the page that it's safe to run.
+                    document.dispatchEvent(new Event('adminReady'));
+
+                } else {
+                    // Logged in, but not an admin. Log out and redirect.
+                    await auth.signOut();
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error("Error verifying admin status:", error);
+                await auth.signOut();
+                window.location.href = 'login.html';
+            }
         } else {
-            // No user is logged in, redirect to the login page.
-            window.location.href = 'login.html';
+            // No user is logged in, redirect to the login page
+            // (but don't redirect if we are already on the login page to avoid a loop)
+            if (window.location.pathname.indexOf('login.html') === -1) {
+                window.location.href = 'login.html';
+            }
         }
     });
 
-    // --- Shared UI Functionality (Unchanged) ---
+    // --- Shared UI Functionality ---
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
@@ -52,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Highlight Active Menu Link ---
     const currentPage = window.location.pathname.split("/").pop();
     const menuLinks = document.querySelectorAll('#mainMenu a');
     menuLinks.forEach(link => {

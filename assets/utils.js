@@ -2,7 +2,12 @@
 // It should be included in any HTML page that needs these helpers.
 
 // --- Global Constants (can be accessed via window object) ---
-window.VJ_LIST = ["VJ JUNIOR", "VJ TONNY", "VJ PAX", "VJ EMMY", "VJ RYAN", "HEAVY Q", "VJ MK", "VJ MARK", "VJ SHIELD", "VJ ISMA K", "ILLESS", "VJ BONNY", "VJ NEIL", "VJ JOVAN", "VJ TOM", "VJ SHAO K", "VJ JINGO", "VJ ICE P", "VJ KEVO", "VJ KEVIN", "VJ KIN", "VJ KRISS SWEET", "VJ HD", "VJ DAN DE", "VJ SAMMY", "VJ IVO", "VJ LITTLE T", "VJ LASH", "VJ MOX", "VJ MUBA", "VJ EDDY", "VJ KAM", "VJ LANCE", "VJ KS", "VJ ULIO", "VJ AARON", "VJ CABS", "VJ BANKS", "VJ JIMMY", "VJ BAROS", "VJ SOUL", "VJ SON", "VJ KIMULI", "VJ FREDY", "VJ JUMPERS", "VJ ASHIM", "VJ PAULETA", "VJ MARTIN K", "VJ HENRICO", "VJ MUSA", "VJ UNCLE T", "VJ WAZA", "VJ RONAGE"];
+<<<<<<< HEAD
+// UPDATED: Added VJ LIGHT
+window.VJ_LIST = ["VJ JUNIOR", "VJ TONNY", "VJ PAX", "VJ EMMY", "VJ LIGHT", "VJ RYAN", "HEAVY Q", "VJ MK", "VJ MARK", "VJ SHIELD", "VJ ISMA K", "ILLESS", "VJ BONNY", "VJ NEIL", "VJ JOVAN", "VJ TOM", "VJ SHAO K", "VJ JINGO", "VJ ICE P", "VJ KEVO", "VJ KEVIN", "VJ KIN", "VJ KRISS SWEET", "VJ HD", "VJ DAN DE", "VJ SAMMY", "VJ IVO", "VJ LITTLE T", "VJ LASH", "VJ MOX", "VJ MUBA", "VJ EDDY", "VJ KAM", "VJ LANCE", "VJ KS", "VJ ULIO", "VJ AARON", "VJ CABS", "VJ BANKS", "VJ JIMMY", "VJ BAROS", "VJ SOUL", "VJ SON", "VJ KIMULI", "VJ FREDY", "VJ JUMPERS", "VJ ASHIM", "VJ PAULETA", "VJ MARTIN K", "VJ HENRICO", "VJ MUSA", "VJ UNCLE T", "VJ WAZA", "VJ RONAGE"];
+=======
+window.VJ_LIST = ["VJ JUNIOR", "VJ TONNY", "VJ PAX", "VJ EMMY", "VJ LIGHT","VJ ZAIDI","VJ RYAN", "HEAVY Q", "VJ MK", "VJ MARK", "VJ SHIELD", "VJ ISMA K", "ILLESS", "VJ BONNY", "VJ NEIL", "VJ JOVAN", "VJ TOM", "VJ SHAO K", "VJ JINGO", "VJ ICE P", "VJ KEVO", "VJ KEVIN", "VJ KIN", "VJ KRISS SWEET", "VJ HD", "VJ DAN DE", "VJ SAMMY", "VJ IVO", "VJ LITTLE T", "VJ LASH", "VJ MOX", "VJ MUBA", "VJ EDDY", "VJ KAM", "VJ LANCE", "VJ KS", "VJ ULIO", "VJ AARON", "VJ CABS", "VJ BANKS", "VJ JIMMY", "VJ BAROS", "VJ SOUL", "VJ SON", "VJ KIMULI", "VJ FREDY", "VJ JUMPERS", "VJ ASHIM", "VJ PAULETA", "VJ MARTIN K", "VJ HENRICO", "VJ MUSA", "VJ UNCLE T", "VJ WAZA", "VJ RONAGE"];
+>>>>>>> af61ca9f3a2381efdc0d698a5bcfe2dd5d71ad42
 window.GENRE_LIST = ["ACTION", "HORROR", "SERIES", "ADVENTURE", "LOVE STORY", "COMEDY", "CRIME", "FAMILY", "SCI FI", "ROMANCE", "KUNGU FU", "DRAMA", "SPORT", "THRILLER", "ANIMATION", "DOCUMENTARY", "FANTASY", "HISTORY", "MUSIC", "MYSTERY", "WAR", "WESTERN"];
 
 
@@ -64,15 +69,13 @@ function generateSearchKeywords(title, vjName) {
 }
 
 // --- Firestore Helpers ---
+// UPDATED: Now queries the 'movies' collection
 async function checkForDuplicates(payload, excludeDocId = null) {
     if (!window.db) {
         console.error("Firestore (db) is not initialized.");
         return { found: true, field: 'Firestore connection error' };
     }
     if (payload.tmdbId && typeof payload.tmdbId === 'number') {
-        // ==========================================================
-        // THIS IS THE FIX: Changed to the 'movies' collection
-        // ==========================================================
         const q = db.collection('movies').where('tmdbId', '==', payload.tmdbId);
         const snapshot = await q.get();
         for (const doc of snapshot.docs) {
@@ -90,6 +93,7 @@ async function checkForDuplicates(payload, excludeDocId = null) {
 }
 
 // --- Notification Helper ---
+// UPDATED: New functionUrl
 async function sendNotification(title, body, imageUrl = '', url = '', msgElement) {
     const payload = { data: { title, body, imageUrl, url } };
     try {
@@ -101,7 +105,7 @@ async function sendNotification(title, body, imageUrl = '', url = '', msgElement
         });
         const result = await response.json();
         if (response.ok) {
-            // Do not display a message here, let the calling function do it.
+            // Let the calling function handle the success message
             return true;
         } else {
             displayMessage(msgElement, `Content saved, but notification failed: ${result.error || 'Unknown error'}`, 'warn');

@@ -17,65 +17,69 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewBody = document.getElementById('previewBody');
     const previewImage = document.getElementById('previewImage');
 
-    // --- Live Preview Logic ---
-    if (notifTitleInput) {
-        notifTitleInput.addEventListener('input', () => {
-            previewTitle.textContent = notifTitleInput.value || 'Notification Title';
-        });
-    }
+    // This event listener ensures the code below only runs AFTER core.js has verified the admin.
+    document.addEventListener('adminReady', () => {
+        // --- Live Preview Logic ---
+        if (notifTitleInput) {
+            notifTitleInput.addEventListener('input', () => {
+                previewTitle.textContent = notifTitleInput.value || 'Notification Title';
+            });
+        }
 
-    if (notifBodyInput) {
-        notifBodyInput.addEventListener('input', () => {
-            previewBody.textContent = notifBodyInput.value || 'Notification body will appear here...';
-        });
-    }
+        if (notifBodyInput) {
+            notifBodyInput.addEventListener('input', () => {
+                previewBody.textContent = notifBodyInput.value || 'Notification body will appear here...';
+            });
+        }
 
-    if (notifImageUrlInput) {
-        notifImageUrlInput.addEventListener('input', () => {
-            const url = notifImageUrlInput.value;
-            if (url) {
-                previewImage.src = url;
-                previewImage.style.display = 'block';
-                // Hide preview if the image URL is broken
-                previewImage.onerror = () => { previewImage.style.display = 'none'; };
-            } else {
-                previewImage.style.display = 'none';
-            }
-        });
-    }
+        if (notifImageUrlInput) {
+            notifImageUrlInput.addEventListener('input', () => {
+                const url = notifImageUrlInput.value;
+                if (url) {
+                    previewImage.src = url;
+                    previewImage.style.display = 'block';
+                    // Hide preview if the image URL is broken
+                    previewImage.onerror = () => { previewImage.style.display = 'none'; };
+                } else {
+                    previewImage.style.display = 'none';
+                }
+            });
+        }
 
-    // --- Form Submission Logic ---
-    if (notifForm) {
-        notifForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            setLoading(sendNotificationBtn, true);
+        // --- Form Submission Logic ---
+        if (notifForm) {
+            notifForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                setLoading(sendNotificationBtn, true);
 
-            const title = notifTitleInput.value.trim();
-            const body = notifBodyInput.value.trim();
-            const imageUrl = notifImageUrlInput.value.trim();
-            const contentId = notifUrlIdInput.value.trim();
-            
-            if (!title || !body) {
-                displayMessage(notificationMessage, 'Title and Body are required.', 'error');
+                const title = notifTitleInput.value.trim();
+                const body = notifBodyInput.value.trim();
+                const imageUrl = notifImageUrlInput.value.trim();
+                const contentId = notifUrlIdInput.value.trim();
+                
+                if (!title || !body) {
+                    displayMessage(notificationMessage, 'Title and Body are required.', 'error');
+                    setLoading(sendNotificationBtn, false);
+                    return;
+                }
+
+                // UPDATED: Changed the deep link URL for the new app
+                const fullUrl = contentId ? `bestmoviesug://details?id=${contentId}` : '';
+
+                // The sendNotification function is in utils.js and handles everything else
+                const success = await sendNotification(title, body, imageUrl, fullUrl, notificationMessage);
+                
+                if (success) {
+                    notifForm.reset();
+                    // Reset preview manually
+                    previewTitle.textContent = 'Notification Title';
+                    previewBody.textContent = 'Notification body will appear here...';
+                    previewImage.style.display = 'none';
+                    previewImage.src = '';
+                }
+                
                 setLoading(sendNotificationBtn, false);
-                return;
-            }
-
-            const fullUrl = contentId ? `streamzonemovies://details?id=${contentId}` : '';
-
-            // The sendNotification function is in utils.js and handles everything else
-            const success = await sendNotification(title, body, imageUrl, fullUrl, notificationMessage);
-            
-            if (success) {
-                notifForm.reset();
-                // Reset preview manually
-                previewTitle.textContent = 'Notification Title';
-                previewBody.textContent = 'Notification body will appear here...';
-                previewImage.style.display = 'none';
-                previewImage.src = '';
-            }
-            
-            setLoading(sendNotificationBtn, false);
-        });
-    }
+            });
+        }
+    });
 });

@@ -67,135 +67,126 @@ document.addEventListener('DOMContentLoaded', () => {
         if (userStatusInfo) userStatusInfo.style.display = 'none';
     }
 
-    // --- Search Logic ---
-    userSearchBtn.addEventListener('click', async () => {
-        const searchTerm = userSearchInput.value.trim();
-        if (!searchTerm) {
-            displayMessage(userMessageArea, 'Please enter an email, name, or phone number to search.', 'error');
-            return;
-        }
-        clearUserForm();
-        setLoading(userSearchBtn, true);
-        try {
-            const emailQuery = db.collection("users").where("email", "==", searchTerm).get();
-            const nameQuery = db.collection("users").where("name", "==", searchTerm).get();
-            const phoneQuery = db.collection("users").where("phone", "==", searchTerm).get();
-            const [emailResults, nameResults, phoneResults] = await Promise.all([emailQuery, nameQuery, phoneQuery]);
-            const results = new Map();
-            emailResults.forEach(doc => results.set(doc.id, { id: doc.id, ...doc.data() }));
-            nameResults.forEach(doc => results.set(doc.id, { id: doc.id, ...doc.data() }));
-            phoneResults.forEach(doc => results.set(doc.id, { id: doc.id, ...doc.data() }));
+    // This event listener ensures the code below only runs AFTER core.js has verified the admin.
+    document.addEventListener('adminReady', () => {
+        // --- Search Logic ---
+        userSearchBtn.addEventListener('click', async () => {
+            const searchTerm = userSearchInput.value.trim();
+            if (!searchTerm) {
+                displayMessage(userMessageArea, 'Please enter an email, name, or phone number to search.', 'error');
+                return;
+            }
+            clearUserForm();
+            setLoading(userSearchBtn, true);
+            try {
+                const emailQuery = db.collection("users").where("email", "==", searchTerm).get();
+                const nameQuery = db.collection("users").where("name", "==", searchTerm).get();
+                const phoneQuery = db.collection("users").where("phone", "==", searchTerm).get();
+                const [emailResults, nameResults, phoneResults] = await Promise.all([emailQuery, nameQuery, phoneQuery]);
+                const results = new Map();
+                emailResults.forEach(doc => results.set(doc.id, { id: doc.id, ...doc.data() }));
+                nameResults.forEach(doc => results.set(doc.id, { id: doc.id, ...doc.data() }));
+                phoneResults.forEach(doc => results.set(doc.id, { id: doc.id, ...doc.data() }));
 
-            if (results.size === 0) {
-                displayMessage(userMessageArea, 'No user found. You can create a new document.', 'info');
-                userEditEmailInput.value = searchTerm.includes('@') ? searchTerm : '';
-                userEditNameInput.value = !searchTerm.includes('@') ? searchTerm : '';
-                userFormTitle.textContent = "Create New User Document";
-                userDocIdInput.value = "Will be auto-generated";
-                userUpdateBtn.style.display = 'none';
-                userCreateBtn.style.display = 'block';
-            } else {
-                if (results.size > 1) {
-                    displayMessage(userMessageArea, `Found ${results.size} users. Displaying the first one. Please use a more specific search term.`, 'warn');
+                if (results.size === 0) {
+                    displayMessage(userMessageArea, 'No user found. You can create a new document.', 'info');
+                    userEditEmailInput.value = searchTerm.includes('@') ? searchTerm : '';
+                    userEditNameInput.value = !searchTerm.includes('@') ? searchTerm : '';
+                    userFormTitle.textContent = "Create New User Document";
+                    userDocIdInput.value = "Will be auto-generated";
+                    userUpdateBtn.style.display = 'none';
+                    userCreateBtn.style.display = 'block';
                 } else {
-                    displayMessage(userMessageArea, 'User found and form populated.', 'success');
+                    if (results.size > 1) {
+                        displayMessage(userMessageArea, `Found ${results.size} users. Displaying the first one. Please use a more specific search term.`, 'warn');
+                    } else {
+                        displayMessage(userMessageArea, 'User found and form populated.', 'success');
+                    }
+                    const [firstId, firstData] = results.entries().next().value;
+                    userDocIdInput.value = firstId;
+                    userEditNameInput.value = firstData.name || '';
+                    userEditEmailInput.value = firstData.email || '';
+                    userEditPhoneInput.value = firstData.phone || '';
+                    userEditActivatedSelect.value = firstData.activated ? 'true' : 'false';
+                    userEditExpiresAtInput.value = formatTimestampForInput(firstData.expiresAt);
+                    userFormTitle.textContent = "Edit User Document";
+                    userCreateBtn.style.display = 'none';
+                    userUpdateBtn.style.display = 'block';
+                    displayUserStatus(firstData);
                 }
-                const [firstId, firstData] = results.entries().next().value;
-                userDocIdInput.value = firstId;
-                userEditNameInput.value = firstData.name || '';
-                userEditEmailInput.value = firstData.email || '';
-                userEditPhoneInput.value = firstData.phone || '';
-                userEditActivatedSelect.value = firstData.activated ? 'true' : 'false';
-                userEditExpiresAtInput.value = formatTimestampForInput(firstData.expiresAt);
-                userFormTitle.textContent = "Edit User Document";
+                userEditFormSection.style.display = 'block';
+                userFormDivider.style.display = 'block';
+            } catch (error) {
+                displayMessage(userMessageArea, `Error searching: ${error.message}`, 'error');
+            } finally {
+                setLoading(userSearchBtn, false);
+            }
+        });
+
+        // --- Update Logic ---
+        userUpdateBtn.addEventListener('click', async () => {
+            const userId = userDocIdInput.value;
+            if (!userId) { return; }
+            setLoading(userUpdateBtn, true);
+            try {
+                const dateValue = userEditExpiresAtInput.value ? new Date(userEditExpiresAtInput.value) : null;
+                const payload = {
+                    name: userEditNameInput.value,
+                    email: userEditEmailInput.value,
+                    phone: userEditPhoneInput.value,
+                    activated: userEditActivatedSelect.value === 'true',
+                    expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : firebase.firestore.FieldValue.delete(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                await db.collection("users").doc(userId).update(payload);
+                displayMessage(userMessageArea, 'User document updated successfully!', 'success');
+                const updatedDataForDisplay = { 
+                    ...payload, 
+                    expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
+                    updatedAt: firebase.firestore.Timestamp.now()
+                };
+                displayUserStatus(updatedDataForDisplay);
+            } catch (error) {
+                displayMessage(userMessageArea, `Update failed: ${error.message}`, 'error');
+            } finally {
+                setLoading(userUpdateBtn, false);
+            }
+        });
+
+        // --- Create Logic ---
+        userCreateBtn.addEventListener('click', async () => {
+            const email = userEditEmailInput.value.trim();
+            const name = userEditNameInput.value.trim();
+            if (!email || !name) {
+                displayMessage(userMessageArea, 'Email and Name are required for a new user.', 'error');
+                return;
+            }
+            setLoading(userCreateBtn, true);
+            try {
+                const dateValue = userEditExpiresAtInput.value ? new Date(userEditExpiresAtInput.value) : null;
+                const newDocRef = db.collection("users").doc();
+                await newDocRef.set({
+                    name: name,
+                    email: email,
+                    phone: userEditPhoneInput.value.trim(),
+                    activated: userEditActivatedSelect.value === 'true',
+                    expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                userDocIdInput.value = newDocRef.id;
+                displayMessage(userMessageArea, `New user document created successfully: ${newDocRef.id}`, 'success');
                 userCreateBtn.style.display = 'none';
                 userUpdateBtn.style.display = 'block';
-                displayUserStatus(firstData);
+                userFormTitle.textContent = "Edit User Document";
+                displayUserStatus({ 
+                    expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
+                    createdAt: firebase.firestore.Timestamp.now()
+                });
+            } catch (error) {
+                displayMessage(userMessageArea, `Creation failed: ${error.message}`, 'error');
+            } finally {
+                setLoading(userCreateBtn, false);
             }
-            userEditFormSection.style.display = 'block';
-            userFormDivider.style.display = 'block';
-        } catch (error) {
-            displayMessage(userMessageArea, `Error searching: ${error.message}`, 'error');
-        } finally {
-            setLoading(userSearchBtn, false);
-        }
-    });
-
-    // --- Update Logic ---
-    userUpdateBtn.addEventListener('click', async () => {
-        const userId = userDocIdInput.value;
-        if (!userId) { return; }
-        setLoading(userUpdateBtn, true);
-        try {
-            const dateValue = userEditExpiresAtInput.value ? new Date(userEditExpiresAtInput.value) : null;
-            
-            // ========================================================================
-            // THIS IS THE FIX. Use the global 'firebase' object for FieldValue.
-            // ========================================================================
-            const payload = {
-                name: userEditNameInput.value,
-                email: userEditEmailInput.value,
-                phone: userEditPhoneInput.value,
-                activated: userEditActivatedSelect.value === 'true',
-                expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : firebase.firestore.FieldValue.delete(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            // ========================================================================
-
-            await db.collection("users").doc(userId).update(payload);
-            displayMessage(userMessageArea, 'User document updated successfully!', 'success');
-            const updatedDataForDisplay = { 
-                ...payload, 
-                expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
-                updatedAt: firebase.firestore.Timestamp.now()
-            };
-            displayUserStatus(updatedDataForDisplay);
-        } catch (error) {
-            displayMessage(userMessageArea, `Update failed: ${error.message}`, 'error');
-        } finally {
-            setLoading(userUpdateBtn, false);
-        }
-    });
-
-    // --- Create Logic ---
-    userCreateBtn.addEventListener('click', async () => {
-        const email = userEditEmailInput.value.trim();
-        const name = userEditNameInput.value.trim();
-        if (!email || !name) {
-            displayMessage(userMessageArea, 'Email and Name are required for a new user.', 'error');
-            return;
-        }
-        setLoading(userCreateBtn, true);
-        try {
-            const dateValue = userEditExpiresAtInput.value ? new Date(userEditExpiresAtInput.value) : null;
-            const newDocRef = db.collection("users").doc();
-            
-            // ========================================================================
-            // THIS IS THE FIX. Use the global 'firebase' object for FieldValue.
-            // ========================================================================
-            await newDocRef.set({
-                name: name,
-                email: email,
-                phone: userEditPhoneInput.value.trim(),
-                activated: userEditActivatedSelect.value === 'true',
-                expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            // ========================================================================
-
-            userDocIdInput.value = newDocRef.id;
-            displayMessage(userMessageArea, `New user document created successfully: ${newDocRef.id}`, 'success');
-            userCreateBtn.style.display = 'none';
-            userUpdateBtn.style.display = 'block';
-            userFormTitle.textContent = "Edit User Document";
-            displayUserStatus({ 
-                expiresAt: dateValue ? firebase.firestore.Timestamp.fromDate(dateValue) : null,
-                createdAt: firebase.firestore.Timestamp.now()
-            });
-        } catch (error) {
-            displayMessage(userMessageArea, `Creation failed: ${error.message}`, 'error');
-        } finally {
-            setLoading(userCreateBtn, false);
-        }
+        });
     });
 });

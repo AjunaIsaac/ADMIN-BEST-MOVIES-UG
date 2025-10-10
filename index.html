@@ -1,44 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Loading...</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #0b0f30; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .loader { font-size: 1.5em; }
-    </style>
-</head>
 <body>
-    <div class="loader">Loading Admin Panel...</div>
+    <div id="adminPanel" style="display: none; width: 100%;">
+        <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
 
+        <!-- SHARED: Sidebar Navigation -->
+        <nav id="mainMenu">
+            <div class="menu-header">Admin Menu</div>
+            <a class="menu-link" href="add_from_tmdb.html"><i class="fas fa-magic"></i> Add from TMDB</a>
+            <a class="menu-link" href="manual_add.html"><i class="fas fa-edit"></i> Manual Add</a>
+            <a class="menu-link" href="manage_content.html"><i class="fas fa-search"></i> Search & Edit/Delete</a>
+            <a class="menu-link" href="all_content.html"><i class="fas fa-film"></i> All Content</a>
+            <a class="menu-link" href="banners.html"><i class="fas fa-images"></i> Manage Banners</a>
+            <a class="menu-link" href="notifications.html"><i class="fas fa-paper-plane"></i> Send Notifications</a>
+            <a class="menu-link" href="user_management.html"><i class="fas fa-users-cog"></i> User Management</a>
+            <a class="menu-link" href="relworx_admin.html"><i class="fas fa-money-bill-wave"></i>Payments</a>
+            <a href="https://storage1.streamzonemovies.online" target="_blank"><i class="fas fa-server"></i> My Server</a>
+        </nav>
+
+        <div class="main-content" id="mainContentArea">
+            <!-- SHARED: Admin Header -->
+            <div class="admin-header">
+                <h1 id="pageTitle">Add Content from TMDB</h1>
+                <span id="adminEmailDisplay"></span>
+                <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            
+            <!-- PAGE-SPECIFIC CONTENT -->
+            <div class="page-container" style="display: block;">
+                <form id="addMovieForm">
+                    <div class="form-group"><label for="tmdbApiKey">TMDB API Key</label><input type="text" id="tmdbApiKey" value="f7a3b097ba7a990fd0c8ef3147646fb5" readonly></div>
+                    <div class="form-group"><label for="primaryContentType">Primary Content Type</label><select id="primaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
+                    <div class="form-group media-categories-group">
+                        <label>Categories (Select all that apply)</label>
+                        <div class="checkbox-group" id="contentTypeCheckboxes">
+                             <label><input type="checkbox" name="contentType" value="romance">Latest Movies</label>
+                            <label><input type="checkbox" name="contentType" value="most_liked">Most Liked</label>
+                            <label><input type="checkbox" name="contentType" value="recent_movies">Recently Added Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="recent_tv_shows">Recently Added TV Shows</label>
+                            <label><input type="checkbox" name="contentType" value="animation"> Animation</label>
+                            <label><input type="checkbox" name="contentType" value="indian"> Indian</label>
+                            <label><input type="checkbox" name="contentType" value="horror"> Horror</label>
+                            <label><input type="checkbox" name="contentType" value="comedy"> Comedy</label>
+                            <label><input type="checkbox" name="contentType" value="adventure"> Adventure</label>
+                            <label><input type="checkbox" name="contentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
+                            <label><input type="checkbox" name="contentType" value="action-thriller"> Action & Thriller</label>
+                            <label><input type="checkbox" name="contentType" value="high-school"> High School</label>
+                            <label><input type="checkbox" name="contentType" value="nigerian"> Nigerian Movies</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="upcoming_shows"> Upcoming Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="western_series"> Western Series</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="Latest-TV-Series"> Latest Tv Shows</label>
+                            <label class="tv-only-category"><input type="checkbox" name="contentType" value="k_dramas"> K Dramas</label>
+                             <label><input type="checkbox" name="contentType" value="send_notification"> Send Notification</label>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="contentIdentifier">Content Name or TMDB ID</label><input type="text" id="contentIdentifier" placeholder="e.g., The Matrix or TMDB ID 603" required></div>
+                    <div class="form-group"><label for="vjName">VJ Name</label><input type="text" id="vjName" required></div>
+                    <div class="form-group video-url-group"><label for="videoSourceUrl">Video Source URL</label><input type="url" id="videoSourceUrl" placeholder="e.g., https://example.com/video.mp4"></div>
+                    <div class="form-group series-data-group" style="display: none;"><label for="seriesData">Series Data (JSON)</label><textarea id="seriesData" rows="8"></textarea></div>
+                    
+                    <hr class="sort-page-section" />
+                    <div class="sort-page-section">
+                        <h3>For Sort Page Only</h3>
+                        <div class="form-group"><label>VJs for Sort Page</label><div class="checkbox-group" id="sortVjsCheckboxesTMDB"></div></div>
+                        <div class="form-group"><label>Genres for Sort Page</label><div class="checkbox-group" id="sortGenresCheckboxesTMDB"></div></div>
+                    </div>
+                    <button type="submit" id="addContentBtn">Add Content<span class="spinner"></span></button>
+                </form>
+                <div id="addMessage" class="message"></div>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    <!-- REMOVED: App Check script tag -->
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
-            authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
-            projectId: "best-movies-ug-4d6d6",
-            storageBucket: "best-movies-ug-4d6d6.appspot.com",
-            messagingSenderId: "583499166737",
-            appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
-            measurementId: "G-340GWH52KT"
-        };
-        
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth(app);
-
-        // REMOVED: App Check initialization block
-
-        // The Redirect Logic
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                window.location.replace('add_from_tmdb.html');
-            } else {
-                window.location.replace('login.html');
-            }
-        });
-    </script>
+    <!-- App Check script has been removed -->
+    
+    <script src="assets/core.js"></script>
+    <script src="assets/utils.js"></script>
+    <script src="add_from_tmdb.js" defer></script>
 </body>
-</html>
