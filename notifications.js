@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // UPDATED: Changed the deep link URL for the new app
-                const fullUrl = contentId ? `bestmoviesug://details?id=${contentId}` : '';
+                const fullUrl = contentId ? `streamzonemovies://details?id=${contentId}` : '';
 
                 // The sendNotification function is in utils.js and handles everything else
                 const success = await sendNotification(title, body, imageUrl, fullUrl, notificationMessage);
