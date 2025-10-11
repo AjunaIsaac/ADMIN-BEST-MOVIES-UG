@@ -105,13 +105,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         newDocId = docRef.id;
                     }
 
+                    const successMessage = `Content added successfully! <a href="edit_content.html?id=${newDocId}" style="color: var(--accent-color);" target="_blank">Click to view/edit.</a>`;
                     if (sendNotificationChecked) {
                         const notificationSent = await sendNotification(payload.title, payload.overview, payload.backdropUrl, `bestmoviesug://details?id=${newDocId}`, manualAddMessage);
                         if (notificationSent) {
-                             displayMessage(manualAddMessage, 'Content saved! Notification sent successfully!', 'success');
+                             manualAddMessage.innerHTML = `Content saved! Notification sent successfully! <br/><a href="edit_content.html?id=${newDocId}" style="color: var(--accent-color);" target="_blank">View the new content.</a>`;
+                             manualAddMessage.className = 'message success';
+                             manualAddMessage.style.display = 'block';
                         }
                     } else {
-                        displayMessage(manualAddMessage, 'Content added successfully!', 'success');
+                        manualAddMessage.innerHTML = successMessage;
+                        manualAddMessage.className = 'message success';
+                        manualAddMessage.style.display = 'block';
                     }
 
                     manualAddForm.reset();
