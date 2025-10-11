@@ -24,14 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (primarySelector) {
             primarySelector.addEventListener('change', toggleFields);
-            toggleFields();
+            // Don't call toggleFields() here, wait for adminReady
         }
     }
 
     // --- Initialize Page ---
     // The 'adminReady' event is dispatched from core.js after the user is verified.
     document.addEventListener('adminReady', () => {
-        console.log("Admin is ready. Initializing TMDB page.");
+        console.log("Admin is ready. Initializing TMDB page elements.");
         setupMasterContentTypeToggle(addMovieForm);
         populateCheckboxes('sortVjsCheckboxesTMDB', 'sortVjsTMDB', window.VJ_LIST);
         populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', window.GENRE_LIST);
@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const identifier = document.getElementById('contentIdentifier').value.trim();
             const vjName = document.getElementById('vjName').value.trim();
             const tmdbApiKey = document.getElementById('tmdbApiKey').value;
+            const selectedType = document.getElementById('primaryContentType').value;
 
             if (!vjName || !identifier) {
                 displayMessage(addMessage, 'VJ Name and Content Identifier are required.', 'error');
@@ -55,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // --- Simplified TMDB Fetch Logic ---
             let tmdbData = null;
-            const selectedType = document.getElementById('primaryContentType').value;
             const isNumericId = /^\d+$/.test(identifier);
 
             try {

@@ -2,7 +2,6 @@
 // It should be included in any HTML page that needs these helpers.
 
 // --- Global Constants (can be accessed via window object) ---
-// UPDATED: Merged both VJ lists to include VJ LIGHT and VJ ZAIDI
 window.VJ_LIST = ["VJ JUNIOR", "VJ TONNY", "VJ PAX", "VJ EMMY", "VJ LIGHT", "VJ ZAIDI", "VJ RYAN", "HEAVY Q", "VJ MK", "VJ MARK", "VJ SHIELD", "VJ ISMA K", "ILLESS", "VJ BONNY", "VJ NEIL", "VJ JOVAN", "VJ TOM", "VJ SHAO K", "VJ JINGO", "VJ ICE P", "VJ KEVO", "VJ KEVIN", "VJ KIN", "VJ KRISS SWEET", "VJ HD", "VJ DAN DE", "VJ SAMMY", "VJ IVO", "VJ LITTLE T", "VJ LASH", "VJ MOX", "VJ MUBA", "VJ EDDY", "VJ KAM", "VJ LANCE", "VJ KS", "VJ ULIO", "VJ AARON", "VJ CABS", "VJ BANKS", "VJ JIMMY", "VJ BAROS", "VJ SOUL", "VJ SON", "VJ KIMULI", "VJ FREDY", "VJ JUMPERS", "VJ ASHIM", "VJ PAULETA", "VJ MARTIN K", "VJ HENRICO", "VJ MUSA", "VJ UNCLE T", "VJ WAZA", "VJ RONAGE"];
 window.GENRE_LIST = ["ACTION", "HORROR", "SERIES", "ADVENTURE", "LOVE STORY", "COMEDY", "CRIME", "FAMILY", "SCI FI", "ROMANCE", "KUNGU FU", "DRAMA", "SPORT", "THRILLER", "ANIMATION", "DOCUMENTARY", "FANTASY", "HISTORY", "MUSIC", "MYSTERY", "WAR", "WESTERN"];
 
@@ -89,7 +88,7 @@ async function checkForDuplicates(payload, excludeDocId = null) {
 }
 
 // --- Notification Helper ---
-// This uses the correct functionUrl
+// This uses the correct functionUrl for the 'best-movies-ug' project
 async function sendNotification(title, body, imageUrl = '', url = '', msgElement) {
     const payload = { data: { title, body, imageUrl, url } };
     try {
