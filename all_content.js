@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // This event listener ensures the code below only runs AFTER core.js has verified the admin.
     document.addEventListener('adminReady', () => {
+        
         // --- Main Function to Display Content ---
         async function displayAllContent() {
             allContentContainer.innerHTML = '<div class="message info" style="display:block;">Loading content...</div>';
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const filterValue = allContentFilter.value;
             try {
-                // UPDATED: Query the 'movies' collection
+                // CORRECT: Queries the 'movies' collection
                 let query = db.collection('movies').orderBy('createdAt', 'desc');
                 
                 let actualFilterValue = (filterValue === 'latest_uploads') ? 'popular' : filterValue;
@@ -111,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (confirm(`Are you sure you want to PERMANENTLY delete this content?`)) {
                     setLoading(target, true);
                     try {
-                        // UPDATED: Delete from the 'movies' collection
+                        // CORRECT: Deletes from the 'movies' collection
                         await db.collection('movies').doc(docId).delete();
                         card.remove();
                         displayMessage(allContentMessage, 'Content deleted!', 'success');
@@ -127,11 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (confirm(`Remove this item from the "${categoryText}" category?`)) {
                     setLoading(target, true);
                     try {
-                        // UPDATED: Update the 'movies' collection
+                        // CORRECT: Updates the 'movies' collection
                         const docRef = db.collection('movies').doc(docId);
-                        await docRef.update({
-                            type: firebase.firestore.FieldValue.arrayRemove(categoryToRemove),
-                        });
+                         await docRef.update({
+                             type: firebase.firestore.FieldValue.arrayRemove(categoryToRemove),
+                         });
                         card.remove();
                         displayMessage(allContentMessage, 'Removed from category!', 'success');
                     } catch (err) { displayMessage(allContentMessage, `Error: ${err.message}`, 'error'); } 
@@ -152,13 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     if (isPermanentDelete) {
                         selectedForDeletion.forEach(id => {
-                            // UPDATED: Delete from the 'movies' collection
+                            // CORRECT: Deletes from the 'movies' collection
                             batch.delete(db.collection('movies').doc(id));
                         });
                     } else {
                         const categoryToRemove = allContentFilter.value;
                         selectedForDeletion.forEach(id => {
-                            // UPDATED: Update the 'movies' collection
+                            // CORRECT: Updates the 'movies' collection
                             const docRef = db.collection('movies').doc(id);
                             batch.update(docRef, { type: firebase.firestore.FieldValue.arrayRemove(categoryToRemove) });
                         });
