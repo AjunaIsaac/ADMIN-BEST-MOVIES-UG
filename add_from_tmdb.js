@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // These functions and variables are available from the updated utils.js
+    // These functions and variables are available from utils.js:
+    // setLoading, displayMessage, populateCheckboxes, generateSlug,
+    // generateSearchKeywords, checkForDuplicates, sendNotification,
+    // and window.VJ_LIST, window.GENRE_LIST
+
+    // --- Page-Specific DOM Elements ---
     const addMovieForm = document.getElementById('addMovieForm');
     const addContentBtn = document.getElementById('addContentBtn');
     const addMessage = document.getElementById('addMessage');
@@ -26,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initialize Page ---
     // The 'adminReady' event is dispatched from core.js after the user is verified.
     document.addEventListener('adminReady', () => {
+        console.log("Admin is ready. Initializing TMDB page.");
         setupMasterContentTypeToggle(addMovieForm);
         populateCheckboxes('sortVjsCheckboxesTMDB', 'sortVjsTMDB', window.VJ_LIST);
         populateCheckboxes('sortGenresCheckboxesTMDB', 'sortGenresTMDB', window.GENRE_LIST);

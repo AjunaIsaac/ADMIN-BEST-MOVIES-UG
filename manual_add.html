@@ -1,124 +1,131 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual Add - Admin</title>
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
-<body>
-    <div id="adminPanel" style="display: none; width: 100%;">
-        <button id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+document.addEventListener('DOMContentLoaded', () => {
+    // Functions and variables from utils.js are available.
+    const manualAddForm = document.getElementById('manualAddForm');
+    const manualAddBtn = document.getElementById('manualAddContentBtn');
+    const manualAddMessage = document.getElementById('manualAddMessage');
 
-         <nav id="mainMenu">
-            <div class="menu-header">Admin Menu</div>
-            <a class="menu-link" href="add_from_tmdb.html"><i class="fas fa-magic"></i> Add from TMDB</a>
-            <a class="menu-link" href="manual_add.html"><i class="fas fa-edit"></i> Manual Add</a>
-            <a class="menu-link" href="manage_content.html"><i class="fas fa-search"></i> Search & Edit/Delete</a>
-            <a class="menu-link" href="all_content.html"><i class="fas fa-film"></i> All Content</a>
-            <a class="menu-link" href="manage_tv.html"><i class="fas fa-tasks"></i> Manage Live TV</a>
-            <a class="menu-link" href="banners.html"><i class="fas fa-images"></i> Manage Banners</a>
-            <a class="menu-link" href="notifications.html"><i class="fas fa-paper-plane"></i> Send Notifications</a>
-            <a class="menu-link" href="user_management.html"><i class="fas fa-users-cog"></i> User Management</a>
-            
-            <!-- ✅✅✅ NEW LINK ADDED HERE ✅✅✅ -->
-            <a class="menu-link" href="relworx_admin.html"><i class="fas fa-money-bill-wave"></i>Payments</a>
-            
-            <a href="https://lukyamuzi.streamzonemovies.online" target="_blank"><i class="fas fa-server"></i> My Server</a>
-        </nav>
+    // --- Content Type Toggling ---
+    function setupMasterContentTypeToggle(formElement) {
+        if (!formElement) return;
+        const primarySelector = formElement.querySelector('.primary-content-type-selector');
+        const videoUrlGroup = formElement.querySelector('.video-url-group');
+        const seriesDataGroup = formElement.querySelector('.series-data-group');
+        
+        function toggleFields() {
+            if (!primarySelector) return;
+            const isTV = primarySelector.value === 'tv';
+            if (videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
+            if (seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
+        }
+        if (primarySelector) {
+            primarySelector.addEventListener('change', toggleFields);
+            toggleFields(); // Run on initial load
+        }
+    }
 
-        <div class="main-content" id="mainContentArea">
-            <!-- SHARED: Admin Header -->
-            <div class="admin-header">
-                <h1 id="pageTitle">Manually Add Content</h1>
-                <span id="adminEmailDisplay"></span>
-                <button class="logout-btn" id="logoutBtn">Logout <i class="fas fa-sign-out-alt"></i></button>
-            </div>
-            
-            <!-- PAGE-SPECIFIC CONTENT -->
-            <div class="page-container" style="display: block;">
-                <form id="manualAddForm">
-                    <div class="form-group"><label for="manualTitle">Title</label><input type="text" id="manualTitle" required></div>
-                    <div class="form-group"><label for="manualOverview">Overview</label><textarea id="manualOverview" rows="4" required></textarea></div>
-                    <div class="form-group"><label for="manualPosterUrl">Poster Image URL</label><input type="url" id="manualPosterUrl" required></div>
-                    <div class="form-group"><label for="manualBackdropUrl">Backdrop Image URL</label><input type="url" id="manualBackdropUrl"></div>
-                    <div class="form-group"><label for="manualVjName">VJ Name</label><input type="text" id="manualVjName" required></div>
-                    <div class="form-group"><label for="manualPrimaryContentType">Primary Content Type</label><select id="manualPrimaryContentType" class="primary-content-type-selector" required><option value="movie">Movie</option><option value="tv">TV Series</option></select></div>
-                    <div class="form-group media-categories-group">
-                        <label>Categories</label>
-                        <div class="checkbox-group" id="manualContentTypeCheckboxes">
-                            <label><input type="checkbox" name="manualContentType" value="latest_uploads"> Latest Uploads</label>
-                            <label><input type="checkbox" name="manualContentType" value="romance"> Latest-Movies</label>
-                            <label><input type="checkbox" name="manualContentType" value="most_liked">Most Liked</label>
-                            <label><input type="checkbox" name="manualContentType" value="recent_movies">Recently Added Movies</label>
-                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="recent_tv_shows">Recently Added TV Shows</label>
-                            <label><input type="checkbox" name="manualContentType" value="animation"> Animation</label>
-                            <label><input type="checkbox" name="manualContentType" value="indian"> Indian</label>
-                            <label><input type="checkbox" name="manualContentType" value="horror"> Horror</label>
-                            <label><input type="checkbox" name="manualContentType" value="comedy"> Comedy</label>
-                            <label><input type="checkbox" name="manualContentType" value="adventure"> Adventure</label>
-                            <label><input type="checkbox" name="manualContentType" value="scifi-fantasy"> Sci-fi & Fantasy</label>
-                            <label><input type="checkbox" name="manualContentType" value="action-thriller"> Action & Thriller</label>
-                            <label><input type="checkbox" name="manualContentType" value="high-school"> High School</label>
-                            <label><input type="checkbox" name="manualContentType" value="nigerian"> Nigerian Movies</label>
-                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="upcoming_shows"> Upcoming Shows</label>
-                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="western_series"> Western Series</label>
-                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="Latest-TV-Series">Latest Tv shows</label>
-                            <label class="tv-only-category"><input type="checkbox" name="manualContentType" value="k_dramas"> K Dramas</label>
-                            <label><input type="checkbox" name="manualContentType" value="send_notification"> Send Notification</label>
-                        </div>
-                    </div>
+    // This event listener ensures the code below only runs AFTER core.js has verified the admin.
+    document.addEventListener('adminReady', () => {
+        // --- Initialize Page ---
+        setupMasterContentTypeToggle(manualAddForm);
+        // Use window object to access global lists from utils.js
+        populateCheckboxes('sortVjsCheckboxesManual', 'sortVjsManual', window.VJ_LIST);
+        populateCheckboxes('sortGenresCheckboxesManual', 'sortGenresManual', window.GENRE_LIST);
+        
+        // --- Form Submission Logic ---
+        if(manualAddForm) {
+            manualAddForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                setLoading(manualAddBtn, true);
 
-                    <div class="form-group genre-selection-group">
-                        <label>Genres (Select all that apply)</label>
-                        <div class="checkbox-group" id="manualGenreCheckboxes">
-                            <label><input type="checkbox" name="manualGenre" value="action"> Action</label>
-                            <label><input type="checkbox" name="manualGenre" value="adventure"> Adventure</label>
-                            <label><input type="checkbox" name="manualGenre" value="animation"> Animation</label>
-                            <label><input type="checkbox" name="manualGenre" value="comedy"> Comedy</label>
-                            <label><input type="checkbox" name="manualGenre" value="crime"> Crime</label>
-                            <label><input type="checkbox" name="manualGenre" value="documentary"> Documentary</label>
-                            <label><input type="checkbox" name="manualGenre" value="drama"> Drama</label>
-                            <label><input type="checkbox" name="manualGenre" value="family"> Family</label>
-                            <label><input type="checkbox" name="manualGenre" value="fantasy"> Fantasy</label>
-                            <label><input type="checkbox" name="manualGenre" value="history"> History</label>
-                            <label><input type="checkbox" name="manualGenre" value="horror"> Horror</label>
-                            <label><input type="checkbox" name="manualGenre" value="music"> Music</label>
-                            <label><input type="checkbox" name="manualGenre" value="mystery"> Mystery</label>
-                            <label><input type="checkbox" name="manualGenre" value="romance"> Romance</label>
-                            <label><input type="checkbox" name="manualGenre" value="science-fiction"> Science Fiction</label>
-                            <label><input type="checkbox" name="manualGenre" value="tv-movie"> TV Movie</label>
-                            <label><input type="checkbox" name="manualGenre" value="thriller"> Thriller</label>
-                            <label><input type="checkbox" name="manualGenre" value="war"> War</label>
-                            <label><input type="checkbox" name="manualGenre" value="western"> Western</label>
-                        </div>
-                    </div>
-                    <div class="form-group"><label for="manualReferenceId">Unique Text ID (e.g., mercy-for-none)</label><input type="text" id="manualReferenceId" placeholder="Enter a unique text identifier" required></div>
+                const sendNotificationChecked = document.querySelector('#manualContentTypeCheckboxes input[value="send_notification"]').checked;
+                const manualTitle = document.getElementById('manualTitle').value.trim();
+                const manualVjName = document.getElementById('manualVjName').value.trim();
+                const manualPosterUrl = document.getElementById('manualPosterUrl').value.trim();
+                
+                if (!manualTitle || !manualVjName || !manualPosterUrl) {
+                    displayMessage(manualAddMessage, 'Title, VJ Name, and Poster URL are required.', 'error');
+                    setLoading(manualAddBtn, false);
+                    return;
+                }
 
-                    <div class="form-group video-url-group"><label for="manualVideoSourceUrl">Video Source URL</label><input type="url" id="manualVideoSourceUrl"></div>
-                    <div class="form-group series-data-group" style="display: none;"><label for="manualSeriesData">Series Data (JSON)</label><textarea id="manualSeriesData" rows="8"></textarea></div>
+                const referenceIdInput = document.getElementById('manualReferenceId').value.trim();
+                const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input:checked')).map(cb => cb.value);
 
-                    <hr class="sort-page-section" />
-                    <div class="sort-page-section">
-                        <h3>For Sort Page Only</h3>
-                        <div class="form-group"><label>VJs for Sort Page</label><div class="checkbox-group" id="sortVjsCheckboxesManual"></div></div>
-                        <div class="form-group"><label>Genres for Sort Page</label><div class="checkbox-group" id="sortGenresCheckboxesManual"></div></div>
-                    </div>
-                    <button type="submit" id="manualAddContentBtn">Add Manually<span class="spinner"></span></button>
-                </form>
-                <div id="manualAddMessage" class="message"></div>
-            </div>
-        </div>
-    </div>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    
-    
-    <script src="assets/core.js"></script>
-    <script src="assets/utils.js"></script>
-    <script src="manual_add.js" defer></script>
-</body>
-</html>
+                let payload = {
+                    title: manualTitle,
+                    title_lowercase: manualTitle.toLowerCase(),
+                    search_keywords: generateSearchKeywords(manualTitle, manualVjName),
+                    slug: generateSlug(referenceIdInput || manualTitle),
+                    tmdbId: /^\d+$/.test(referenceIdInput) ? Number(referenceIdInput) : null,
+                    overview: document.getElementById('manualOverview').value.trim(),
+                    posterUrl: manualPosterUrl,
+                    backdropUrl: document.getElementById('manualBackdropUrl').value.trim(),
+                    vjName: manualVjName,
+                    genres: Array.from(document.querySelectorAll('#manualGenreCheckboxes input:checked')).map(cb => cb.value),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    addedBy: auth.currentUser.email,
+                    sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesManual input:checked')).map(cb => cb.value),
+                    sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesManual input:checked')).map(cb => cb.value),
+                };
+
+                try {
+                    const duplicateCheck = await checkForDuplicates(payload);
+                    if (duplicateCheck.found) {
+                        throw new Error(`Duplicate content found based on: ${duplicateCheck.field}.`);
+                    }
+
+                    let newDocId = null;
+                    const primaryType = document.getElementById('manualPrimaryContentType').value;
+
+                    if (primaryType === 'tv') {
+                        payload.contentType = 'tv';
+                        payload.type = selectedTypes.filter(type => type !== 'send_notification');
+                        const seriesDataValue = document.getElementById('manualSeriesData').value;
+                        if (!seriesDataValue) throw new Error("Series Data (JSON) is required for a TV Show.");
+                        const seriesInfo = JSON.parse(seriesDataValue);
+                        if (!Array.isArray(seriesInfo)) throw new Error("Invalid Series Data JSON structure.");
+
+                        const docRef = await db.collection('movies').add(payload);
+                        newDocId = docRef.id;
+
+                        for (const season of seriesInfo) {
+                            for (const episode of season.episodes) {
+                                await db.collection('movies').doc(docRef.id).collection('episodes').add({
+                                    season_number: season.season_number, ...episode,
+                                    addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        }
+                    } else { // It's a Movie
+                        payload.contentType = 'movie';
+                        payload.type = selectedTypes.filter(type => type !== 'send_notification');
+                        payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
+
+                        const docRef = await db.collection('movies').add(payload);
+                        newDocId = docRef.id;
+                    }
+
+                    const successMessage = `Content added successfully! <a href="edit_content.html?id=${newDocId}" style="color: var(--accent-color);" target="_blank">Click to view/edit.</a>`;
+                    if (sendNotificationChecked) {
+                        const notificationSent = await sendNotification(payload.title, payload.overview, payload.backdropUrl, `bestmoviesug://details?id=${newDocId}`, manualAddMessage);
+                        if (notificationSent) {
+                             manualAddMessage.innerHTML = `Content saved! Notification sent successfully! <br/><a href="edit_content.html?id=${newDocId}" style="color: var(--accent-color);" target="_blank">View the new content.</a>`;
+                             manualAddMessage.className = 'message success';
+                             manualAddMessage.style.display = 'block';
+                        }
+                    } else {
+                        manualAddMessage.innerHTML = successMessage;
+                        manualAddMessage.className = 'message success';
+                        manualAddMessage.style.display = 'block';
+                    }
+
+                    manualAddForm.reset();
+                } catch (err) {
+                    displayMessage(manualAddMessage, `Error: ${err.message}`, 'error');
+                } finally {
+                    setLoading(manualAddBtn, false);
+                }
+            });
+        }
+    });
+});
