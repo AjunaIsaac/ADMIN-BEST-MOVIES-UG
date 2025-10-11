@@ -1,6 +1,8 @@
+// This event listener is the key. It ensures no code runs until the HTML is fully loaded.
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Firebase Configuration for the 'best-movies-ug' project ---
- const firebaseConfig = {
+    
+    // --- Firebase Configuration ---
+   \const firebaseConfig = {
   apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
   authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
   projectId: "best-movies-ug-4d6d6",
@@ -15,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
         db = firebase.firestore(app);
         auth = firebase.auth(app);
-        // Make db and auth globally available for other scripts to use
+        // Make db and auth globally available for other scripts
         window.db = db;
         window.auth = auth;
     } catch (error) {
@@ -24,61 +26,37 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // --- Core Authentication Check (Runs on EVERY page) ---
+    // --- Get All UI Elements AFTER the DOM is ready ---
+    const adminPanel = document.getElementById('adminPanel');
+    const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const mainMenu = document.getElementById('mainMenu');
+    const menuLinks = document.querySelectorAll('#mainMenu a');
+
+    // --- Attach All Event Listeners AFTER the DOM is ready ---
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut();
+        });
+    }
+    if (menuToggleBtn && mainMenu) {
+        menuToggleBtn.addEventListener('click', () => {
+            mainMenu.classList.toggle('open');
+        });
+    }
+
+    // --- Core Authentication Check ---
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             try {
                 const userDoc = await db.collection('users').doc(user.uid).get();
-                // Check if the user document exists and they have the admin flag
                 if (userDoc.exists && userDoc.data().isAdmin === true) {
-                    // --- User is a verified admin ---
-                    
-                    const adminPanel = document.getElementById('adminPanel');
-                    const adminEmailDisplay = document.getElementById('adminEmailDisplay');
-
-                    // 1. Show the main admin panel content
+                    // All elements are guaranteed to exist now.
                     if (adminPanel) adminPanel.style.display = 'flex';
                     if (adminEmailDisplay) adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
-
-                    // --- Attach All Shared UI Event Listeners Here ---
-                    // This guarantees they run only after the user is verified and the panel is visible.
-
-                    const logoutBtn = document.getElementById('logoutBtn');
-                    if (logoutBtn) {
-                        logoutBtn.addEventListener('click', () => {
-                            auth.signOut();
-                        });
-                    }
-
-                    const menuToggleBtn = document.getElementById('menuToggleBtn');
-                    const mainMenu = document.getElementById('mainMenu');
-                    if (menuToggleBtn && mainMenu) {
-                        menuToggleBtn.addEventListener('click', () => {
-                            mainMenu.classList.toggle('open');
-                        });
-                    }
-
-                    // --- Highlight Active Menu Link & Add Mobile Close Behavior ---
-                    const currentPage = window.location.pathname.split("/").pop();
-                    const menuLinks = document.querySelectorAll('#mainMenu a');
-                    menuLinks.forEach(link => {
-                        if (link.getAttribute('href') === currentPage) {
-                            link.classList.add('active');
-                        }
-                        // Add click listener to close menu on mobile after navigation
-                        link.addEventListener('click', () => {
-                            if (window.innerWidth < 769 && mainMenu) {
-                                mainMenu.classList.remove('open');
-                            }
-                        });
-                    });
-
-                    // 2. Broadcast that everything is ready for page-specific scripts
-                    console.log("Admin verified. Firing adminReady event.");
                     document.dispatchEvent(new Event('adminReady'));
-
                 } else {
-                    // User is logged in but is not an admin.
                     await auth.signOut();
                     window.location.href = 'login.html';
                 }
@@ -88,10 +66,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'login.html';
             }
         } else {
-            // No user is logged in. Redirect to the login page.
             if (!window.location.pathname.includes('login.html')) {
                 window.location.href = 'login.html';
             }
         }
+    });
+
+    // --- Highlight Active Menu Link & Add Mobile Close Behavior ---
+    const currentPage = window.location.pathname.split("/").pop();
+    menuLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPage) {
+            link.classList.add('active');
+        }
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 769 && mainMenu) {
+                mainMenu.classList.remove('open');
+            }
+        });
     });
 });
