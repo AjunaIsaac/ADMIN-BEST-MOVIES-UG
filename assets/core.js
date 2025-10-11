@@ -1,8 +1,8 @@
-// This event listener is the key. It ensures no code runs until the HTML is fully loaded.
+// This event listener ensures no code runs until the HTML is fully loaded.
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- Firebase Configuration ---
-   \const firebaseConfig = {
+      const firebaseConfig = {
   apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
   authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
   projectId: "best-movies-ug-4d6d6",
@@ -84,4 +84,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
-});
+}); // This is the single, correct closing brace for 'DOMContentLoaded'
