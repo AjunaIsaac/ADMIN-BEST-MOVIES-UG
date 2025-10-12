@@ -1,181 +1,134 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Functions from utils.js are available.
+    // Functions and variables from utils.js are available.
+    const manualAddForm = document.getElementById('manualAddForm');
+    const manualAddBtn = document.getElementById('manualAddContentBtn');
+    const manualAddMessage = document.getElementById('manualAddMessage');
 
-    // --- Page-Specific DOM Elements ---
-    const allContentContainer = document.getElementById('allContentContainer');
-    const allContentFilter = document.getElementById('allContentFilter');
-    const allContentMessage = document.getElementById('allContentMessage');
-    const deleteSelectedBtn = document.getElementById('deleteSelectedAllContentBtn');
-    const selectedCountSpan = document.getElementById('selectedAllContentCount');
-
-    let selectedForDeletion = new Set();
-
-    // This event listener ensures the code below only runs AFTER core.js has verified the admin.
-    document.addEventListener('adminReady', () => {
+    // --- Content Type Toggling ---
+    function setupMasterContentTypeToggle(formElement) {
+        if (!formElement) return;
+        const primarySelector = formElement.querySelector('.primary-content-type-selector');
+        const videoUrlGroup = formElement.querySelector('.video-url-group');
+        const seriesDataGroup = formElement.querySelector('.series-data-group');
         
-        // --- Main Function to Display Content ---
-        async function displayAllContent() {
-            allContentContainer.innerHTML = '<div class="message info" style="display:block;">Loading content...</div>';
-            selectedForDeletion.clear();
-            updateDeleteSelectedButton();
-
-            const filterValue = allContentFilter.value;
-            try {
-                // Query the correct 'movies' collection
-                let query = db.collection('movies').orderBy('createdAt', 'desc');
-                
-                let actualFilterValue = (filterValue === 'latest_uploads') ? 'popular' : filterValue;
-
-                if (filterValue !== 'all') {
-                    query = query.where('type', 'array-contains', actualFilterValue);
-                }
-                
-                const snapshot = await query.limit(100).get();
-
-                if (snapshot.empty) {
-                    allContentContainer.innerHTML = '';
-                    displayMessage(allContentMessage, 'No content found for this filter.', 'info');
-                    return;
-                }
-
-                allContentContainer.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const item = { id: doc.id, ...doc.data() };
-                    const isPermanentDeleteView = (filterValue === 'all');
-                    
-                    const cardHtml = `
-                        <div class="content-card">
-                            <input type="checkbox" class="select-card-checkbox" data-id="${item.id}">
-                            <img src="${item.posterUrl || 'https://placehold.co/500x750/333/eee?text=No+Poster'}" alt="${item.title}" loading="lazy">
-                            <div class="content-card-content">
-                                <h3>${item.title}</h3>
-                                <p class="vj-name">VJ: ${item.vjName}</p>
-                                <div class="content-card-actions">
-                                    <button class="action-btn edit" data-id="${item.id}">Edit</button>
-                                    <button class="action-btn ${isPermanentDeleteView ? 'delete' : 'remove-from-category'}" data-id="${item.id}">
-                                        ${isPermanentDeleteView ? 'Delete' : 'Remove'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>`;
-                    allContentContainer.insertAdjacentHTML('beforeend', cardHtml);
-                });
-                displayMessage(allContentMessage, `Showing ${snapshot.size} item(s).`, 'success');
-
-            } catch (err) {
-                allContentContainer.innerHTML = '';
-                displayMessage(allContentMessage, `Error fetching content: ${err.message}`, 'error');
-            }
+        function toggleFields() {
+            if (!primarySelector) return;
+            const isTV = primarySelector.value === 'tv';
+            if (videoUrlGroup) videoUrlGroup.style.display = isTV ? 'none' : 'block';
+            if (seriesDataGroup) seriesDataGroup.style.display = isTV ? 'block' : 'none';
         }
-
-        // --- Helper Function to Update Delete Button ---
-        function updateDeleteSelectedButton() {
-            if (!selectedCountSpan || !deleteSelectedBtn) return;
-            selectedCountSpan.textContent = selectedForDeletion.size;
-            deleteSelectedBtn.style.display = selectedForDeletion.size > 0 ? 'block' : 'none';
-            
-            const filterText = allContentFilter.options[allContentFilter.selectedIndex].text;
-            if (allContentFilter.value === 'all') {
-                deleteSelectedBtn.firstChild.textContent = `Permanently Delete Selected (${selectedForDeletion.size}) `;
-            } else {
-                deleteSelectedBtn.firstChild.textContent = `Remove Selected from ${filterText} (${selectedForDeletion.size}) `;
-            }
+        if (primarySelector) {
+            primarySelector.addEventListener('change', toggleFields);
+            // Don't call toggleFields() here, wait for adminReady
         }
+    }
 
-        // --- Event Listeners ---
-        allContentFilter.addEventListener('change', displayAllContent);
-
-        allContentContainer.addEventListener('click', async (e) => {
-            const target = e.target;
-            const card = target.closest('.content-card');
-            if (!card) return;
-
-            const docId = target.dataset.id || card.querySelector('.select-card-checkbox')?.dataset.id;
-            if (!docId) return;
-
-            if (target.matches('.select-card-checkbox')) {
-                if (target.checked) {
-                    selectedForDeletion.add(docId);
-                } else {
-                    selectedForDeletion.delete(docId);
-                }
-                updateDeleteSelectedButton();
-                return;
-            }
-
-            if (target.matches('.action-btn.edit')) {
-                window.location.href = `edit_content.html?id=${docId}`;
-                return;
-            }
-            
-            if (target.matches('.action-btn.delete')) {
-                if (confirm(`Are you sure you want to PERMANENTLY delete this content?`)) {
-                    setLoading(target, true);
-                    try {
-                        // Delete from the 'movies' collection
-                        await db.collection('movies').doc(docId).delete();
-                        card.remove();
-                        displayMessage(allContentMessage, 'Content deleted!', 'success');
-                    } catch (err) { displayMessage(allContentMessage, `Error: ${err.message}`, 'error'); } 
-                    finally { setLoading(target, false); }
-                }
-                return;
-            }
-
-            if (target.matches('.action-btn.remove-from-category')) {
-                const categoryToRemove = allContentFilter.value;
-                const categoryText = allContentFilter.options[allContentFilter.selectedIndex].text;
-                if (confirm(`Remove this item from the "${categoryText}" category?`)) {
-                    setLoading(target, true);
-                    try {
-                        // Update the 'movies' collection
-                        const docRef = db.collection('movies').doc(docId);
-                         await docRef.update({
-                             type: firebase.firestore.FieldValue.arrayRemove(categoryToRemove),
-                         });
-                        card.remove();
-                        displayMessage(allContentMessage, 'Removed from category!', 'success');
-                    } catch (err) { displayMessage(allContentMessage, `Error: ${err.message}`, 'error'); } 
-                    finally { setLoading(target, false); }
-                }
-            }
-        });
-
-        deleteSelectedBtn.addEventListener('click', async () => {
-            if (selectedForDeletion.size === 0) return;
-            
-            const isPermanentDelete = allContentFilter.value === 'all';
-            const actionText = isPermanentDelete ? 'permanently delete' : 'remove from the category';
-            
-            if (confirm(`Are you sure you want to ${actionText} ${selectedForDeletion.size} item(s)?`)) {
-                setLoading(deleteSelectedBtn, true);
-                const batch = db.batch();
-                try {
-                    if (isPermanentDelete) {
-                        selectedForDeletion.forEach(id => {
-                            // Delete from the 'movies' collection
-                            batch.delete(db.collection('movies').doc(id));
-                        });
-                    } else {
-                        const categoryToRemove = allContentFilter.value;
-                        selectedForDeletion.forEach(id => {
-                            // Update the 'movies' collection
-                            const docRef = db.collection('movies').doc(id);
-                            batch.update(docRef, { type: firebase.firestore.FieldValue.arrayRemove(categoryToRemove) });
-                        });
-                    }
-                    await batch.commit();
-                    displayMessage(allContentMessage, 'Bulk action completed successfully!', 'success');
-                    displayAllContent();
-                } catch (err) {
-                     displayMessage(allContentMessage, `Error during bulk action: ${err.message}`, 'error');
-                } finally {
-                    setLoading(deleteSelectedBtn, false);
-                }
-            }
-        });
-
-        // --- Initial Load ---
-        displayAllContent();
+    // --- Initialize Page ---
+    // The 'adminReady' event is dispatched from core.js after the user is verified.
+    document.addEventListener('adminReady', () => {
+        console.log("Admin is ready. Initializing Manual Add page elements.");
+        setupMasterContentTypeToggle(manualAddForm);
+        // Use window object to access global lists from utils.js
+        populateCheckboxes('sortVjsCheckboxesManual', 'sortVjsManual', window.VJ_LIST);
+        populateCheckboxes('sortGenresCheckboxesManual', 'sortGenresManual', window.GENRE_LIST);
     });
+        
+    // --- Form Submission Logic ---
+    if(manualAddForm) {
+        manualAddForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            setLoading(manualAddBtn, true);
+
+            const sendNotificationChecked = document.querySelector('#manualContentTypeCheckboxes input[value="send_notification"]').checked;
+            const manualTitle = document.getElementById('manualTitle').value.trim();
+            const manualVjName = document.getElementById('manualVjName').value.trim();
+            const manualPosterUrl = document.getElementById('manualPosterUrl').value.trim();
+            
+            if (!manualTitle || !manualVjName || !manualPosterUrl) {
+                displayMessage(manualAddMessage, 'Title, VJ Name, and Poster URL are required.', 'error');
+                setLoading(manualAddBtn, false);
+                return;
+            }
+
+            const referenceIdInput = document.getElementById('manualReferenceId').value.trim();
+            const selectedTypes = Array.from(document.querySelectorAll('#manualContentTypeCheckboxes input:checked')).map(cb => cb.value);
+
+            let payload = {
+                title: manualTitle,
+                title_lowercase: manualTitle.toLowerCase(),
+                search_keywords: generateSearchKeywords(manualTitle, manualVjName),
+                slug: generateSlug(referenceIdInput || manualTitle),
+                tmdbId: /^\d+$/.test(referenceIdInput) ? Number(referenceIdInput) : null,
+                overview: document.getElementById('manualOverview').value.trim(),
+                posterUrl: manualPosterUrl,
+                backdropUrl: document.getElementById('manualBackdropUrl').value.trim(),
+                vjName: manualVjName,
+                genres: Array.from(document.querySelectorAll('#manualGenreCheckboxes input:checked')).map(cb => cb.value),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                addedBy: auth.currentUser.email,
+                sort_vjs: Array.from(document.querySelectorAll('#sortVjsCheckboxesManual input:checked')).map(cb => cb.value),
+                sort_genres: Array.from(document.querySelectorAll('#sortGenresCheckboxesManual input:checked')).map(cb => cb.value),
+            };
+
+            try {
+                const duplicateCheck = await checkForDuplicates(payload);
+                if (duplicateCheck.found) {
+                    throw new Error(`Duplicate content found based on: ${duplicateCheck.field}.`);
+                }
+
+                let newDocId = null;
+                const primaryType = document.getElementById('manualPrimaryContentType').value;
+
+                if (primaryType === 'tv') {
+                    payload.contentType = 'tv';
+                    payload.type = selectedTypes.filter(type => type !== 'send_notification');
+                    const seriesDataValue = document.getElementById('manualSeriesData').value;
+                    if (!seriesDataValue) throw new Error("Series Data (JSON) is required for a TV Show.");
+                    const seriesInfo = JSON.parse(seriesDataValue);
+                    if (!Array.isArray(seriesInfo)) throw new Error("Invalid Series Data JSON structure.");
+
+                    const docRef = await db.collection('movies').add(payload);
+                    newDocId = docRef.id;
+
+                    for (const season of seriesInfo) {
+                        for (const episode of season.episodes) {
+                            await db.collection('movies').doc(docRef.id).collection('episodes').add({
+                                season_number: season.season_number, ...episode,
+                                addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    }
+                } else { // It's a Movie
+                    payload.contentType = 'movie';
+                    payload.type = selectedTypes.filter(type => type !== 'send_notification');
+                    payload.videoUrl = document.getElementById('manualVideoSourceUrl').value;
+
+                    const docRef = await db.collection('movies').add(payload);
+                    newDocId = docRef.id;
+                }
+
+                const successMessage = `Content added successfully! <a href="edit_content.html?id=${newDocId}" style="color: var(--accent-color);" target="_blank">Click to view/edit.</a>`;
+                if (sendNotificationChecked) {
+                    const notificationSent = await sendNotification(payload.title, payload.overview, payload.backdropUrl, `bestmoviesug://details?id=${newDocId}`, manualAddMessage);
+                    if (notificationSent) {
+                         manualAddMessage.innerHTML = `Content saved! Notification sent successfully! <br/><a href="edit_content.html?id=${newDocId}" style="color: var(--accent-color);" target="_blank">View the new content.</a>`;
+                         manualAddMessage.className = 'message success';
+                         manualAddMessage.style.display = 'block';
+                    }
+                } else {
+                    manualAddMessage.innerHTML = successMessage;
+                    manualAddMessage.className = 'message success';
+                    manualAddMessage.style.display = 'block';
+                }
+
+                manualAddForm.reset();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (err) {
+                displayMessage(manualAddMessage, `Error: ${err.message}`, 'error');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } finally {
+                setLoading(manualAddBtn, false);
+            }
+        });
+    }
 });
