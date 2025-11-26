@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF--8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
     <link rel="stylesheet" href="assets/style.css">
@@ -19,33 +19,39 @@
         </div>
     </div>
 
-    <!-- Firebase Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    <!-- REMOVED: App Check script tag is gone -->
+    <!-- ✅ UPDATED: Firebase Scripts (Latest Modular Version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-          // CORRECTED: This is the config for best-movies-ug
-        const firebaseConfig = {
-  apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
-  authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
-  projectId: "best-movies-ug-4d6d6",
-  storageBucket: "best-movies-ug-4d6d6.firebasestorage.app",
-  messagingSenderId: "583499166737",
-  appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
-  measurementId: "G-340GWH52KT"
-};
+            const firebaseConfig = {
+              apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
+              authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
+              projectId: "best-movies-ug-4d6d6",
+              storageBucket: "best-movies-ug-4d6d6.firebasestorage.app",
+              messagingSenderId: "583499166737",
+              appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
+              measurementId: "G-340GWH52KT"
+            };
           
             const app = firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth(app);
 
-            // REMOVED: The entire App Check initialization block is gone.
+            // ✅ ADDED: Initialize App Check for the login page
+            const appCheck = firebase.appCheck(app);
+            appCheck.activate(
+              new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcbAhksAAAAAMODEm_XTJPyJRclPJwe4GAAYLAP'),
+              true // Auto-refresh tokens
+            );
             
             // Redirect if already logged in
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    window.location.href = 'add_from_tmdb.html'; // Default page after login
+                    // It's better to check for admin status here too, just in case
+                    // but for simplicity, we redirect. The main panel will validate.
+                    window.location.href = 'add_from_tmdb.html'; 
                 }
             });
 
@@ -59,14 +65,18 @@
                 btn.disabled = true;
                 
                 try {
+                    // This sign-in call is now protected by App Check
                     await auth.signInWithEmailAndPassword(
                         document.getElementById('loginEmail').value,
                         document.getElementById('loginPassword').value
                     );
                     // The onAuthStateChanged listener above will handle the redirect
                 } catch (error) {
-                    // Provide a more detailed error message
-                    loginMessage.textContent = `Login failed: ${error.message}`;
+                    let errorMessage = error.message;
+                    if (error.code && error.code.includes('app-check')) {
+                        errorMessage = "Security check failed. You cannot log in from this browser or network.";
+                    }
+                    loginMessage.textContent = `Login failed: ${errorMessage}`;
                     loginMessage.className = 'message error';
                     loginMessage.style.display = 'block';
                     btn.classList.remove('loading');
