@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF--8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
     <link rel="stylesheet" href="assets/style.css">
@@ -19,10 +19,10 @@
         </div>
     </div>
 
-    <!-- ✅ UPDATED: Firebase Scripts (Latest Modular Version) -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js"></script>
+    <!-- ✅✅✅ CORRECTED FIREBASE SCRIPTS (-compat versions) ✅✅✅ -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script> <!-- Ensure this is here -->
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -39,7 +39,7 @@
             const app = firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth(app);
 
-            // ✅ ADDED: Initialize App Check for the login page
+            // This App Check code is correct for the -compat library
             const appCheck = firebase.appCheck(app);
             appCheck.activate(
               new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcbAhksAAAAAMODEm_XTJPyJRclPJwe4GAAYLAP'),
@@ -49,9 +49,7 @@
             // Redirect if already logged in
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    // It's better to check for admin status here too, just in case
-                    // but for simplicity, we redirect. The main panel will validate.
-                    window.location.href = 'add_from_tmdb.html'; 
+                    window.location.href = 'add_from_tmdb.html';
                 }
             });
 
@@ -65,12 +63,10 @@
                 btn.disabled = true;
                 
                 try {
-                    // This sign-in call is now protected by App Check
                     await auth.signInWithEmailAndPassword(
                         document.getElementById('loginEmail').value,
                         document.getElementById('loginPassword').value
                     );
-                    // The onAuthStateChanged listener above will handle the redirect
                 } catch (error) {
                     let errorMessage = error.message;
                     if (error.code && error.code.includes('app-check')) {
