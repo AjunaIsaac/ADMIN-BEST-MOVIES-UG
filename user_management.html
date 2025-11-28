@@ -61,28 +61,38 @@
     </div>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
-    <!-- REMOVED: App Check script is not needed -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <!-- ✅ APP CHECK SCRIPT INCLUDED HERE -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- 1. FIREBASE INITIALIZATION (Self-contained) ---
-                 const firebaseConfig = {
-  apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
-  authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
-  projectId: "best-movies-ug-4d6d6",
-  storageBucket: "best-movies-ug-4d6d6.firebasestorage.app",
-  messagingSenderId: "583499166737",
-  appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
-  measurementId: "G-340GWH52KT"
-};
+            // --- 1. FIREBASE INITIALIZATION ---
+            const firebaseConfig = {
+                apiKey: "AIzaSyCozaGjxZ3CLFiGjnzatKtStDHgoH71wk4",
+                authDomain: "best-movies-ug-4d6d6.firebaseapp.com",
+                projectId: "best-movies-ug-4d6d6",
+                storageBucket: "best-movies-ug-4d6d6.firebasestorage.app",
+                messagingSenderId: "583499166737",
+                appId: "1:583499166737:web:8fe01624b46b8e063f6db0",
+                measurementId: "G-340GWH52KT"
+            };
 
             let db, auth;
             try {
                 const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
-                // REMOVED: All App Check initialization code is gone
+                
+                // ✅✅✅ APP CHECK INITIALIZATION (Restored) ✅✅✅
+                if (firebase.appCheck) {
+                    const appCheck = firebase.appCheck(app);
+                    appCheck.activate(
+                        new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcbAhksAAAAAMODEm_XTJPyJRclPJwe4GAAYLAP'),
+                        true // Auto-refresh tokens
+                    );
+                    console.log("App Check activated successfully for User Management.");
+                }
+
                 db = firebase.firestore(app);
                 auth = firebase.auth(app);
             } catch (error) {
@@ -94,23 +104,44 @@
             // --- 2. CORE AUTH & UI LOGIC ---
             const adminPanel = document.getElementById('adminPanel');
             const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+            
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     try {
+                        // This Firestore read is protected by App Check
                         const userDoc = await db.collection('users').doc(user.uid).get();
-                        if (userDoc.exists && userDoc.data().isAdmin === true) {
-                            adminPanel.style.display = 'flex';
-                            adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+                        
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            if (userData.isAdmin === true) {
+                                // ✅ SUCCESS: User is Admin
+                                adminPanel.style.display = 'flex';
+                                adminEmailDisplay.textContent = `Logged in as: ${user.email}`;
+                            } else {
+                                // ❌ FAIL: User exists but isAdmin is not true
+                                console.warn("Access Denied: User is not an admin.");
+                                await auth.signOut();
+                                window.location.href = 'login.html';
+                            }
                         } else {
+                            // ❌ FAIL: User document does not exist
+                            console.warn("Access Denied: No user profile found.");
                             await auth.signOut();
                             window.location.href = 'login.html';
                         }
                     } catch (error) {
                         console.error("Error verifying admin status:", error);
+                        
+                        // If App Check fails (permission-denied), we log it but handle the redirect carefully
+                        if (error.code === 'permission-denied') {
+                            alert("Security check failed. This browser is not authorized to access the Admin Panel.");
+                        }
+                        
                         await auth.signOut();
                         window.location.href = 'login.html';
                     }
                 } else {
+                    // Not logged in
                     window.location.href = 'login.html';
                 }
             });
